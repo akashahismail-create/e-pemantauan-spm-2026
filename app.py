@@ -331,26 +331,43 @@ st.write(f"Jumlah: {len(filtered_list)} laporan")
 if st.session_state.is_admin:
     st.warning("⚠️ Anda Admin - Boleh padam laporan. Pemantau biasa TIDAK ada butang padam.")
 
-for idx_real, sel in enumerate(filtered_list):
-    idx_in_main = -1
-    for i, orig in enumerate(lap_list):
-        if orig == sel:
-            idx_in_main = i
-            break
-    with st.container(border=True):
-        c_head1, c_head2 = st.columns([3,1])
-        with c_head1:
-            st.markdown(f"**{sel['no_pusat']}** | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} | {sel['mata_pelajaran'][:40]}")
-            st.caption(f"Pemantau: {sel['nama_pemantau']} | {sel['tarikh_submit']} | Hadir: {sel['calon_hadir']}/{sel.get('calon_berdaftar',0)}")
-        with c_head2:
-            if st.session_state.is_admin and idx_in_main != -1:
-                if st.button(f"🗑️ Padam", key=f"del_{MODE}_{idx_in_main}_{idx_real}", type="secondary", use_container_width=True):
-                    new_list = [l for j,l in enumerate(lap_list) if j != idx_in_main]
-                    save_all_laporan(new_list)
-                    st.success(f"Laporan {sel['no_pusat']} dipadam Admin!")
-                    st.rerun()
-            else:
-                st.caption("🔒 Tiada akses padam")
+# ===== PILIHAN LAPORAN - MACAM TADI, TIDAK PAPAR SEMUA =====
+if len(filtered_list) > 1:
+    pilihan_labels = []
+    for l in filtered_list:
+        mp_short = l.get('mata_pelajaran','')[:30]
+        pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:20]} | {l.get('tarikh_lawatan','')} | {mp_short}")
+
+    idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE} ({len(filtered_list)} laporan):", range(len(filtered_list)), format_func=lambda i: pilihan_labels[i])
+    sel = filtered_list[idx_pilih]
+else:
+    idx_pilih = 0
+    sel = filtered_list[0]
+    st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} | {sel['mata_pelajaran'][:40]}")
+
+# Cari index sebenar untuk delete
+idx_in_main = -1
+for i, orig in enumerate(lap_list):
+    if orig == sel:
+        idx_in_main = i
+        break
+
+# Bar info + butang padam (hanya admin)
+with st.container(border=True):
+    c_head1, c_head2, c_head3 = st.columns([2,2,1])
+    with c_head1:
+        st.caption(f"Pemantau: {sel['nama_pemantau']} | {sel['tarikh_submit']}")
+    with c_head2:
+        st.caption(f"Hadir: {sel['calon_hadir']}/{sel.get('calon_berdaftar',0)} | Tidak Hadir: {sel.get('calon_tidak_hadir',0)}")
+    with c_head3:
+        if st.session_state.is_admin and idx_in_main != -1:
+            if st.button(f"🗑️ Padam Laporan Ini", key=f"del_{MODE}_{idx_in_main}", type="secondary", use_container_width=True):
+                new_list = [l for j,l in enumerate(lap_list) if j != idx_in_main]
+                save_all_laporan(new_list)
+                st.success(f"Laporan {sel['no_pusat']} dipadam Admin!")
+                st.rerun()
+        else:
+            st.caption("🔒 Tiada akses padam")
 
         html = f"""
         <div style="border:1px solid #ccc;border-radius:10px;overflow:hidden;background:white;font-family:Arial;color:#222;max-width:850px;margin:auto;">
