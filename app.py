@@ -13,7 +13,37 @@ IMG_SEKOLAH_B64 = """/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0
 
 # HEADER BERSIH - MINIMAL TANPA BIRU BESAR
 # st.markdown kecil je, takde background biru besar
-st.markdown("<h4 style='margin:0;'>📋 E-PEMANTAUAN SPM & AMALI SAINS 2026</h4><p style='font-size:11px;color:#666;margin:0;'>JPN Selangor | 35 Pemantau</p>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+.header-biru {
+    background: linear-gradient(135deg, #0D47A1 0%, #1976D2 50%, #42A5F5 100%);
+    padding: 18px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(13,71,161,0.25);
+    border-left: 6px solid #FFC107;
+}
+.header-biru h2 {
+    color: white;
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.header-biru p {
+    color: #E3F2FD;
+    margin: 6px 0 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+</style>
+<div class="header-biru">
+    <h2>📋 E-PEMANTAUAN SPM & AMALI SAINS 2026</h2>
+    <p>🏛️ JPN Selangor | 👥 35 Pemantau (11 JPN Penolong Pengarah SPP + 24 PPD Penolong PPD SPP) | 🎓 504 Pusat & 473 Makmal</p>
+</div>
+""", unsafe_allow_html=True)
 
 # Pilih jenis - bersih
 jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains"], horizontal=True, label_visibility="collapsed")
