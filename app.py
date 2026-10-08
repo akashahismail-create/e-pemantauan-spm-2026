@@ -217,7 +217,18 @@ st.divider()
 st.markdown("#### 📅 Tarikh & Masa")
 c1,c2 = st.columns(2)
 tarikh = c1.date_input("Tarikh Lawatan", value=date(2026,11,16) if MODE=="AMALI" else date(2026,11,23))
-masa = c2.time_input("Masa Lawatan", value=time(9,0))
+# Pilihan masa dari 6 pagi hingga 12 malam (6:00 - 00:00) - 15 minit interval
+jam_pilihan = []
+for h in range(6, 24):
+    for m in [0, 15, 30, 45]:
+        jam_pilihan.append(f"{h:02d}:{m:02d}")
+jam_pilihan.extend(["00:00", "00:15", "00:30"])
+masa_str = c2.selectbox("Masa Lawatan (6 Pagi - 12 Malam)", jam_pilihan, index=jam_pilihan.index("09:00") if "09:00" in jam_pilihan else 0)
+try:
+    hh, mm = masa_str.split(":")[:2]
+    masa = time(int(hh), int(mm))
+except:
+    masa = time(9, 0)
 tarikh_str = tarikh.strftime("%Y-%m-%d")
 if tarikh_str not in SENARAI_TARIKH:
     st.error("❌ Tarikh yang dipilih tidak sepadan dengan jadual waktu")
