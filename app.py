@@ -549,12 +549,8 @@ with st.container(border=True):
 IMG_D = IMG_DEWAN_B64
 IMG_S = IMG_SEKOLAH_B64
 
-# ===== BUAT CARTA PAI CALON =====
-import matplotlib.pyplot as plt
-import base64
-from io import BytesIO as BytesIOChart
-
-def buat_pie_base64(sel_data):
+# ===== BUAT CARTA PAI CSS - TAK PERLU MATPLOTLIB =====
+def buat_carta_pai_html(sel_data):
     try:
         hadir = int(sel_data.get('calon_hadir',0) or 0)
         th = int(sel_data.get('calon_tidak_hadir',0) or 0)
@@ -562,56 +558,50 @@ def buat_pie_base64(sel_data):
         bantah = int(sel_data.get('calon_bantah',0) or 0)
         berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
         
-        # Data untuk pie
-        labels = []
-        sizes = []
-        colors = []
+        total = hadir + th + cicir + bantah
+        if total == 0:
+            total = berdaftar if berdaftar>0 else 1
+            hadir = total
         
-        if hadir > 0:
-            labels.append(f'Hadir {hadir}')
-            sizes.append(hadir)
-            colors.append('#2E7D32')
-        if th > 0:
-            labels.append(f'TH {th}')
-            sizes.append(th)
-            colors.append('#E53935')
-        if cicir > 0:
-            labels.append(f'Cicir {cicir}')
-            sizes.append(cicir)
-            colors.append('#FF9800')
-        if bantah > 0:
-            labels.append(f'Bantah {bantah}')
-            sizes.append(bantah)
-            colors.append('#9C27B0')
+        # Kira peratus
+        segments = []
+        if hadir > 0: segments.append((hadir, '#2E7D32', f'Hadir {hadir}'))
+        if th > 0: segments.append((th, '#E53935', f'TH {th}'))
+        if cicir > 0: segments.append((cicir, '#FF9800', f'Cicir {cicir}'))
+        if bantah > 0: segments.append((bantah, '#9C27B0', f'Bantah {bantah}'))
         
-        # Jika hanya hadir sahaja (contoh 161 hadir, TH 0) - tunjuk Hadir 100%
-        if not sizes:
-            labels = [f'Berdaftar {berdaftar}']
-            sizes = [berdaftar if berdaftar>0 else 1]
-            colors = ['#1976D2']
-        elif len(sizes) == 1 and berdaftar > sizes[0]:
-            # Ada baki
-            pass
+        if not segments:
+            segments = [(berdaftar if berdaftar>0 else 1, '#1976D2', f'Berdaftar {berdaftar}')]
+            total = berdaftar if berdaftar>0 else 1
         
-        plt.figure(figsize=(3,3), dpi=120)
-        fig, ax = plt.subplots(figsize=(2.5,2.5), dpi=150)
-        wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.0f%%', startangle=90, colors=colors, 
-                                          textprops={'fontsize': 7}, pctdistance=0.7)
-        # Tajuk
-        ax.set_title(f"Calon: {berdaftar}", fontsize=10, fontweight='bold', color='#0D47A1', pad=10)
-        plt.tight_layout()
+        # Buat conic-gradient string
+        gradient_parts = []
+        legend_html = ""
+        curr_pct = 0
+        for val, color, label in segments:
+            pct = (val / total) * 100
+            next_pct = curr_pct + pct
+            gradient_parts.append(f"{color} {curr_pct:.1f}% {next_pct:.1f}%")
+            legend_html += f'<div style="display:flex; align-items:center; gap:4px; font-size:8px; margin:1px 0;"><div style="width:8px; height:8px; background:{color}; border-radius:2px;"></div>{label} ({pct:.0f}%)</div>'
+            curr_pct = next_pct
         
-        buf = BytesIOChart()
-        plt.savefig(buf, format='png', bbox_inches='tight', transparent=False, dpi=150)
-        plt.close()
-        buf.seek(0)
-        b64 = base64.b64encode(buf.read()).decode('utf-8')
-        return b64
+        gradient_str = ", ".join(gradient_parts)
+        
+        # HTML carta pai donut style
+        chart_html = f"""
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <div style="position:relative; width:110px; height:110px;">
+                <div style="width:110px; height:110px; border-radius:50%; background: conic-gradient({gradient_str}); box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:48px; height:48px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#0D47A1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">{berdaftar}</div>
+            </div>
+            <div style="margin-top:6px; width:100%;">{legend_html}</div>
+        </div>
+        """
+        return chart_html
     except Exception as e:
-        # Fallback: return empty
-        return ""
+        return f"<div style='font-size:10px; color:red;'>Error: {e}</div>"
 
-CHART_PAI_B64 = buat_pie_base64(sel)
+CHART_PAI_HTML = buat_carta_pai_html(sel)
 
 
 html_one = f"""
@@ -624,11 +614,11 @@ html_one = f"""
         <div style="display:flex; gap:8px; padding:12px;">
             <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:120px; object-fit:cover;"></div>
             <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:120px; object-fit:cover;"></div>
-            <div style="flex:1; background:white; border:1px solid #90CAF9; border-radius:8px; padding:6px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                <div style="font-size:11px; font-weight:bold; color:#0D47A1; margin-bottom:4px;">CARTA PAI CALON</div>
-                <img src="data:image/png;base64,{CHART_PAI_B64}" style="width:100%; max-width:140px; height:auto; display:block;">
-                <div style="font-size:9px; margin-top:4px; color:#333;">
-                    <b style="font-size:14px; color:#0D47A1;">{sel.get('calon_berdaftar',0)}</b> Berdaftar<br>
+            <div style="flex:1; background:white; border:1px solid #90CAF9; border-radius:8px; padding:8px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <div style="font-size:11px; font-weight:bold; color:#0D47A1; margin-bottom:6px;">📊 CARTA PAI CALON</div>
+                {CHART_PAI_HTML}
+                <div style="font-size:9px; margin-top:6px; color:#333; line-height:1.3;">
+                    <b style="font-size:12px; color:#0D47A1;">{sel.get('calon_berdaftar',0)}</b> Berdaftar<br>
                     Hadir: {sel['calon_hadir']} | TH: {sel.get('calon_tidak_hadir',0)}<br>
                     Keseluruhan: {sel.get('calon_keseluruhan',0)}
                 </div>
