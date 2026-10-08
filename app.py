@@ -243,15 +243,14 @@ KOD_DAERAH_MAP = {
     "BA": "KLANG",
     "BB": "KUALA LANGAT",
     "BC": "KUALA SELANGOR",
-    "BD": "SABAK BERNAM",
+    "BD": "HULU LANGAT",
     "BE": "HULU SELANGOR",
-    "BF": "GOMBAK",
-    "BG": "HULU LANGAT",
+    "BF": "SABAK BERNAM",
+    "BG": "GOMBAK",
     "BH": "PETALING PERDANA",
-    "BI": "PETALING UTAMA",
     "BJ": "SEPANG",
     "BK": "PETALING UTAMA",
-    "BL": "PETALING PERDANA",
+    "BL": "PETALING UTAMA",
     "BM": "KLANG",
     "BN": "GOMBAK",
     "A": "KLANG",
@@ -672,7 +671,6 @@ html_one = f"""
                     <b style="color:#0D47A1; font-size:14px;">{sel['no_pusat']}</b> 
                     {(' | <span style="background:#E3F2FD; padding:2px 8px; border-radius:12px; font-weight:600;">Makmal: '+sel.get('nama_makmal','')+'</span>') if sel.get('nama_makmal') else ''} 
                     <br><span style="margin-top:6px; display:inline-block; background: linear-gradient(135deg, #0D47A1, #1976D2); color:white; padding:4px 12px; border-radius:20px; font-weight:700; letter-spacing:0.8px; font-size:12px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span>
-                    <span style="margin-left:8px; color:#666; font-size:11px;">Daerah: {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))}</span>
                 </td></tr>
                 <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Tarikh & MP</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.3px; line-height:1.8; font-size:13px;">{sel['tarikh_lawatan']} | {sel['masa_lawatan']} | <b style="color:#0D47A1;">{sel['mata_pelajaran']}</b></td></tr>
                 <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Bilik</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">
