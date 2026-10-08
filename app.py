@@ -28,20 +28,80 @@ IMG_SEKOLAH_B64 = """/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0
 st.markdown("""
 <style>
 .header-biru {
-    background: linear-gradient(135deg, #0D47A1 0%, #1976D2 50%, #42A5F5 100%);
-    padding: 18px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(13,71,161,0.25);
-    border-left: 6px solid #FFC107;
+    background: linear-gradient(135deg, #0D47A1 0%, #1565C0 40%, #1E88E5 70%, #42A5F5 100%);
+    padding: 28px 24px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 24px rgba(13,71,161,0.35);
+    border-left: 8px solid #FFC107;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
-.header-biru h2 { color: white; margin: 0; font-size: 22px; font-weight: 800; }
-.header-biru p { color: #E3F2FD; margin: 6px 0 0 0; font-size: 13px; font-weight: 500; }
-.login-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.header-biru::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 200%;
+    background: rgba(255,255,255,0.05);
+    transform: rotate(25deg);
+}
+.header-biru h1 { 
+    color: white; 
+    margin: 0; 
+    font-size: 32px; 
+    font-weight: 900; 
+    letter-spacing: 1.5px; 
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    line-height: 1.2;
+}
+.header-biru h3 { 
+    color: #FFECB3; 
+    margin: 10px 0 0 0; 
+    font-size: 18px; 
+    font-weight: 700; 
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.header-biru h2 { 
+    color: #E3F2FD; 
+    margin: 14px 0 0 0; 
+    font-size: 22px; 
+    font-weight: 800;
+    background: rgba(255,255,255,0.15);
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
+}
+.header-biru p { color: #BBDEFB; margin: 12px 0 0 0; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; }
+
+.login-card { 
+    background: white; 
+    padding: 28px; 
+    border-radius: 16px; 
+    border: 1px solid #e0e0e0; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+.login-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+.login-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0D47A1;
+    margin-bottom: 20px;
+}
 </style>
 <div class="header-biru">
+    <h1>🏛️ JABATAN PENDIDIKAN NEGERI SELANGOR</h1>
+    <h3>SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</h3>
     <h2>📋 E-PEMANTAUAN SPM & AMALI SAINS 2026</h2>
-    <p>🏛️ JPN Selangor | 👥 35 Pemantau | 🎓 504 Pusat & 473 Makmal | 🔐 Sistem Login</p>
+    <p>👥 35 Pemantau | 🎓 504 Pusat Peperiksaan & 473 Makmal | 🔐 Sistem Login Selamat</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -75,15 +135,20 @@ if "logged_in" not in st.session_state:
 ADMIN_PASSWORD = "JPN2026"
 
 def login_screen():
-    st.markdown("### 🔐 Log Masuk Sistem Pemantauan")
-    st.info("Pemantau hanya nampak laporan sendiri. Admin JPN dapat lihat semua laporan & boleh padam.")
-    colL, colR = st.columns([1,1])
-    with colL:
+    # Muka depan cantik - tanpa peraturan serabut
+    _, col_center, _ = st.columns([1,2,1])
+    with col_center:
+        st.markdown('<div class="login-container">', unsafe_allow_html=True)
+        st.markdown('<div class="login-title">🔐 Log Masuk Sistem</div>', unsafe_allow_html=True)
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
-        role_pilih = st.radio("Log masuk sebagai:", ["👤 Pemantau (PPD/JPN)", "🔑 Admin JPN"], horizontal=False)
+        
+        role_pilih = st.radio("Log masuk sebagai:", ["👤 Pemantau (PPD/JPN)", "🔑 Admin JPN"], horizontal=True)
+        st.divider()
+        
         if "Pemantau" in role_pilih:
             nama_login = st.text_input("Nama Pemantau (penuh)", placeholder="Contoh: Akashah Bin Ismail")
-            st.caption("Guna nama penuh yang sama setiap kali login - sistem tapis ikut nama ini.")
+            st.caption("Gunakan nama penuh yang sama setiap kali login")
+            st.markdown("<br>", unsafe_allow_html=True)
             if st.button("➡️ Masuk sebagai Pemantau", type="primary", use_container_width=True):
                 if nama_login.strip() == "":
                     st.error("Sila isi nama pemantau!")
@@ -96,7 +161,8 @@ def login_screen():
                     st.rerun()
         else:
             pwd = st.text_input("Kata Laluan Admin", type="password", placeholder="Masukkan password admin")
-            st.caption("Password default: JPN2026")
+            st.caption("Hubungi Urus Setia JPN untuk kata laluan")
+            st.markdown("<br>", unsafe_allow_html=True)
             if st.button("🔓 Masuk sebagai Admin", type="primary", use_container_width=True):
                 if pwd == ADMIN_PASSWORD:
                     st.session_state.logged_in = True
@@ -107,14 +173,10 @@ def login_screen():
                     st.rerun()
                 else:
                     st.error("❌ Password salah!")
+        
         st.markdown('</div>', unsafe_allow_html=True)
-    with colR:
-        st.markdown("#### 📌 Peraturan:")
-        st.markdown("""
-        - **Pemantau:** Hanya nampak laporan sendiri, tidak boleh padam laporan orang lain
-        - **Admin JPN:** Nampak SEMUA, boleh padam mana-mana laporan (butang 🗑️)
-        """)
-        st.warning("Jika tertukar nama, log keluar & log masuk semula dengan nama betul.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
     return False
 
 if not st.session_state.logged_in:
