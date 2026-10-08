@@ -237,6 +237,47 @@ def save_all_laporan(list_data):
 def save_laporan(data):
     ex = load_laporan(); ex.append(data); save_all_laporan(ex)
 
+
+# ===== MAPPING KOD DAERAH SPM SELANGOR -> NAMA DAERAH =====
+KOD_DAERAH_MAP = {
+    "BA": "KLANG",
+    "BB": "KUALA LANGAT",
+    "BC": "KUALA SELANGOR",
+    "BD": "SABAK BERNAM",
+    "BE": "HULU SELANGOR",
+    "BF": "GOMBAK",
+    "BG": "HULU LANGAT",
+    "BH": "PETALING PERDANA",
+    "BI": "PETALING UTAMA",
+    "BJ": "SEPANG",
+    "BK": "PETALING UTAMA",
+    "BL": "PETALING PERDANA",
+    "BM": "KLANG",
+    "BN": "GOMBAK",
+    "A": "KLANG",
+    "J": "SEPANG",
+}
+def kod_to_daerah(kod):
+    if not kod:
+        return ""
+    kod = str(kod).strip().upper()
+    k2 = kod[:2]
+    if k2 in KOD_DAERAH_MAP:
+        return KOD_DAERAH_MAP[k2]
+    return kod
+def get_nama_daerah_from_pusat(no_pusat, kod_ppd=""):
+    if kod_ppd:
+        nama = kod_to_daerah(kod_ppd)
+        if nama != kod_ppd:
+            return nama
+    if no_pusat:
+        k = str(no_pusat).strip().upper()
+        huruf = ''.join([c for c in k if c.isalpha()])[:2]
+        if huruf:
+            nama = kod_to_daerah(huruf)
+            return nama
+    return kod_ppd or ""
+
 DAERAH_LIST = ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"]
 
 st.markdown("#### 🏫 Maklumat Pusat - Pilih Daerah Dulu")
@@ -626,17 +667,22 @@ html_one = f"""
         </div>
         <div style="padding:0 12px 12px 12px;">
             <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                <tr><td style="border:1px solid #ccc; padding:7px; width:28%; font-weight:bold; background:#f8f9fa;">Nama Sekolah</td><td style="border:1px solid #ccc; padding:7px;">{sel['nama_sekolah']}</td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">No Pusat / Makmal</td><td style="border:1px solid #ccc; padding:7px;"><b>{sel['no_pusat']}</b> {(' | '+sel.get('nama_makmal','')) if sel.get('nama_makmal') else ''} | {sel.get('kod_ppd','')}</td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">Tarikh & MP</td><td style="border:1px solid #ccc; padding:7px;">{sel['tarikh_lawatan']} | {sel['masa_lawatan']} | <b>{sel['mata_pelajaran']}</b></td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">Bilik</td><td style="border:1px solid #ccc; padding:7px;">
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; width:28%; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Nama Sekolah</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.3px; line-height:1.7; font-size:13px;">{sel['nama_sekolah']}</td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">No Pusat / Makmal</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">
+                    <b style="color:#0D47A1; font-size:14px;">{sel['no_pusat']}</b> 
+                    {(' | <span style="background:#E3F2FD; padding:2px 8px; border-radius:12px; font-weight:600;">Makmal: '+sel.get('nama_makmal','')+'</span>') if sel.get('nama_makmal') else ''} 
+                    <br><span style="margin-top:6px; display:inline-block; background: linear-gradient(135deg, #0D47A1, #1976D2); color:white; padding:4px 12px; border-radius:20px; font-weight:700; letter-spacing:0.8px; font-size:12px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span>
+                    <span style="margin-left:8px; color:#666; font-size:11px;">Daerah: {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))}</span>
+                </td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Tarikh & MP</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.3px; line-height:1.8; font-size:13px;">{sel['tarikh_lawatan']} | {sel['masa_lawatan']} | <b style="color:#0D47A1;">{sel['mata_pelajaran']}</b></td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Bilik</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">
                     {'Makmal: '+str(sel.get('bilik_makmal',''))+' | ' if sel.get('bilik_makmal') and str(sel.get('bilik_makmal',''))!='' and str(sel.get('bilik_makmal',''))!='0' else ''}
-                    Pep: {sel.get('bilik_peperiksaan',0)} | Kuarantin/Persediaan: {sel.get('bilik_kuarantin',0)} | Sakit: {sel.get('bilik_sakit',0)} | Dewan: {sel.get('dewan',0)} | <b>Total: {sel.get('total_bilik',0)}</b>
+                    Pep: {sel.get('bilik_peperiksaan',0)} | Kuarantin/Persediaan: {sel.get('bilik_kuarantin',0)} | Sakit: {sel.get('bilik_sakit',0)} | Dewan: {sel.get('dewan',0)} | <b style="background:#0D47A1; color:white; padding:2px 10px; border-radius:12px;">Total: {sel.get('total_bilik',0)}</b>
                     {' | Sidang: '+str(sel.get('sidang_no','')) if sel.get('sidang_no') else ''}
                 </td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">Calon</td><td style="border:1px solid #ccc; padding:7px;">Berdaftar: {sel.get('calon_berdaftar',0)} | Hadir: {sel['calon_hadir']} | TH: {sel.get('calon_tidak_hadir',0)} tidak hadir | Cicir: {sel['calon_cicir']} | Bantah: {sel['calon_bantah']} | <b>Keseluruhan: {sel.get('calon_keseluruhan',0)}</b></td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">Ulasan</td><td style="border:1px solid #ccc; padding:7px;">{sel['ulasan'] or '-'}</td></tr>
-                <tr><td style="border:1px solid #ccc; padding:7px; font-weight:bold; background:#f8f9fa;">Pemantau</td><td style="border:1px solid #ccc; padding:7px;">{sel['nama_pemantau']} | {sel['jawatan_pemantau']} | {sel['daerah_pemantau']}</td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Calon</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.9; font-size:13px;">Berdaftar: <b>{sel.get('calon_berdaftar',0)}</b> | Hadir: <b style="color:#2E7D32;">{sel['calon_hadir']}</b> | TH: {sel.get('calon_tidak_hadir',0)} tidak hadir | Cicir: {sel['calon_cicir']} | Bantah: {sel['calon_bantah']} | <b style="background:#0D47A1; color:white; padding:2px 10px; border-radius:12px;">Keseluruhan: {sel.get('calon_keseluruhan',0)}</b></td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Ulasan</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px; font-style:italic; background:#FFFEF7;">{sel['ulasan'] or '-'}</td></tr>
+                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Pemantau</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">{sel['nama_pemantau']} | {sel['jawatan_pemantau']} | <span style="background:#E3F2FD; padding:3px 10px; border-radius:12px; font-weight:600; color:#0D47A1;">{sel['daerah_pemantau']}</span></td></tr>
             </table>
         </div>
         <div style="display:flex; justify-content:space-around; padding:14px; background:#fafafa; border-top:2px solid #0D47A1; font-size:10px;">
