@@ -612,8 +612,8 @@ html_one = f"""
             <div style="font-size:12px; margin-top:3px;">LAPORAN PEMANTAUAN {'SPM 2026' if sel.get('jenis','SPM')=='SPM' else 'AMALI SAINS 2026'} - {sel['no_pusat']}</div>
         </div>
         <div style="display:flex; gap:8px; padding:12px;">
-            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:120px; object-fit:cover;"></div>
-            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:120px; object-fit:cover;"></div>
+            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden; height:160px;"><img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:100%; object-fit:cover; display:block;"></div>
+            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden; height:160px;"><img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:100%; object-fit:cover; display:block;"></div>
             <div style="flex:1; background:white; border:1px solid #90CAF9; border-radius:8px; padding:8px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                 <div style="font-size:11px; font-weight:bold; color:#0D47A1; margin-bottom:6px;">📊 CARTA PAI CALON</div>
                 {CHART_PAI_HTML}
