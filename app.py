@@ -484,18 +484,41 @@ if st.session_state.is_admin:
     st.warning("⚠️ Anda Admin - Boleh padam laporan. Pemantau biasa TIDAK ada butang padam.")
 
 # ===== PILIHAN LAPORAN - MACAM TADI, TIDAK PAPAR SEMUA =====
-if len(filtered_list) > 1:
-    pilihan_labels = []
-    for l in filtered_list:
-        mp_short = l.get('mata_pelajaran','')[:30]
-        pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:20]} | {l.get('tarikh_lawatan','')} | {mp_short}")
+# ===== PILIHAN IKUT TARIKH LAPORAN - BARU =====
+from collections import Counter
+tarikh_all = [l.get('tarikh_lawatan','') for l in filtered_list]
+counter_tarikh = Counter(tarikh_all)
+unique_tarikh = sorted(set(tarikh_all), reverse=True)
 
-    idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE} ({len(filtered_list)} laporan):", range(len(filtered_list)), format_func=lambda i: pilihan_labels[i])
-    sel = filtered_list[idx_pilih]
+# Pilihan tarikh
+tarikh_options = ["📅 Semua Tarikh"] + [f"{t} ({counter_tarikh[t]} laporan)" for t in unique_tarikh]
+pilih_tarikh_raw = st.selectbox(f"📅 Pilih Tarikh Laporan ({len(unique_tarikh)} tarikh, {len(filtered_list)} laporan):", tarikh_options)
+
+if pilih_tarikh_raw == "📅 Semua Tarikh":
+    filtered_by_tarikh = filtered_list
+    st.caption(f"📋 Menunjukkan semua {len(filtered_list)} laporan")
+else:
+    # Extract tarikh sebenar dari string "2026-11-24 (5 laporan)"
+    tarikh_selected = pilih_tarikh_raw.split(" (")[0]
+    filtered_by_tarikh = [l for l in filtered_list if l.get('tarikh_lawatan','') == tarikh_selected]
+    st.caption(f"📋 {len(filtered_by_tarikh)} laporan pada {tarikh_selected}")
+
+# Susun ikut masa dan nama sekolah
+filtered_by_tarikh = sorted(filtered_by_tarikh, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
+
+if len(filtered_by_tarikh) > 1:
+    pilihan_labels = []
+    for l in filtered_by_tarikh:
+        mp_short = l.get('mata_pelajaran','')[:35]
+        calon_info = f" H:{l.get('calon_hadir',0)}"
+        pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:22]} | {l.get('masa_lawatan','')} | {mp_short}{calon_info}")
+
+    idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE} - {pilih_tarikh_raw}:", range(len(filtered_by_tarikh)), format_func=lambda i: pilihan_labels[i])
+    sel = filtered_by_tarikh[idx_pilih]
 else:
     idx_pilih = 0
-    sel = filtered_list[0]
-    st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} | {sel['mata_pelajaran'][:40]}")
+    sel = filtered_by_tarikh[0]
+    st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} {sel.get('masa_lawatan','')} | {sel['mata_pelajaran'][:40]}")
 
 # Cari index sebenar untuk delete
 for i, orig in enumerate(lap_list):
