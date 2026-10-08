@@ -175,43 +175,122 @@ def save_all_laporan(list_data):
 def save_laporan(data):
     ex = load_laporan(); ex.append(data); save_all_laporan(ex)
 
-st.markdown("#### 🏫 Maklumat Pusat")
-col1, col2 = st.columns(2)
+DAERAH_LIST = ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"]
+
+st.markdown("#### 🏫 Maklumat Pusat - Pilih Daerah Dulu")
+st.caption("1️⃣ Pilih Daerah/PPD → 2️⃣ Pilih Sekolah (auto filter) → 3️⃣ Pilih No Pusat")
+
 if MODE=="SPM":
-    nama_list = ["-- Pilih --"] + sorted(df_pusat["Nama_Pusat"].dropna().unique().tolist())
-    pilih_nama = col1.selectbox("Nama Sekolah", nama_list)
-    if pilih_nama != "-- Pilih --":
-        df_f = df_pusat[df_pusat["Nama_Pusat"]==pilih_nama]
-        no_opts = df_f["No_Pusat"].tolist()
-        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty else ""
-        bil_calon = df_f.iloc[0]["Bil_Calon_Pusat"] if not df_f.empty else ""
+    # Step 1: Pilih Daerah
+    try:
+        kod_ppd_unique = sorted(df_pusat["Kod_PPD"].dropna().unique().tolist())
+    except:
+        kod_ppd_unique = DAERAH_LIST
+    daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
+    # Buang duplicate
+    daerah_options = list(dict.fromkeys(daerah_options))
+    
+    col_d, col_s, col_p = st.columns([1,2,1])
+    pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
+    
+    # Filter dataframe ikut daerah
+    if pilih_daerah != "-- Pilih Daerah --":
+        # Cuba filter ikut Kod_PPD dulu
+        if "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
+            df_by_daerah = df_pusat[df_pusat["Kod_PPD"]==pilih_daerah]
+        else:
+            # Kalau pilih nama daerah penuh, cuba cari Kod_PPD yang mapping atau filter semua
+            # Kita cuba filter dengan contains (fallback: tunjuk semua)
+            df_by_daerah = df_pusat
+            # Cuba cari mapping manual jika Kod_PPD ada hint daerah
+            # Contoh: jika Kod_PPD mengandungi nama daerah
+            try:
+                mask = df_pusat["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
+                if mask.any():
+                    df_by_daerah = df_pusat[mask]
+            except:
+                df_by_daerah = df_pusat
+        nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
+        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
     else:
-        no_opts = ["-- Pilih --"] + sorted(df_pusat["No_Pusat"].dropna().unique().tolist())
-        kod_ppd = ""; bil_calon=""
-    pilih_no = col2.selectbox("No Pusat", no_opts)
-    pilih_nama_final = pilih_nama if pilih_nama!="-- Pilih --" else (df_pusat[df_pusat["No_Pusat"]==pilih_no].iloc[0]["Nama_Pusat"] if pilih_no!="-- Pilih --" and not df_pusat[df_pusat["No_Pusat"]==pilih_no].empty else pilih_nama)
-    pilih_no_final = pilih_no
+        df_by_daerah = df_pusat
+        nama_list = ["-- Pilih Daerah Dulu --"]
+    
+    pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah", nama_list)
+    
+    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
+        df_f = df_by_daerah[df_by_daerah["Nama_Pusat"]==pilih_nama]
+        no_opts = df_f["No_Pusat"].tolist()
+        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
+        bil_calon = df_f.iloc[0]["Bil_Calon_Pusat"] if not df_f.empty and "Bil_Calon_Pusat" in df_f.columns else ""
+    else:
+        no_opts = ["-- Pilih Sekolah Dulu --"]
+        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
+        bil_calon = ""
+    
+    pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
+    
+    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
+        st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
+    
+    pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
+    pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
     nama_makmal_final = ""
-else:
-    nama_list = ["-- Pilih --"] + sorted(df_ringkas["Nama_Sekolah"].dropna().unique().tolist())
-    pilih_nama = col1.selectbox("Nama Sekolah", nama_list)
-    if pilih_nama != "-- Pilih --":
-        df_f = df_ringkas[df_ringkas["Nama_Sekolah"]==pilih_nama]
+
+else:  # AMALI
+    try:
+        kod_ppd_unique = sorted(df_ringkas["Kod_PPD"].dropna().unique().tolist())
+    except:
+        kod_ppd_unique = DAERAH_LIST
+    daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
+    daerah_options = list(dict.fromkeys(daerah_options))
+    
+    col_d, col_s = st.columns([1,2])
+    pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
+    
+    if pilih_daerah != "-- Pilih Daerah --":
+        if "Kod_PPD" in df_ringkas.columns and pilih_daerah in df_ringkas["Kod_PPD"].values:
+            df_by_daerah = df_ringkas[df_ringkas["Kod_PPD"]==pilih_daerah]
+        else:
+            df_by_daerah = df_ringkas
+            try:
+                mask = df_ringkas["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
+                if mask.any():
+                    df_by_daerah = df_ringkas[mask]
+            except:
+                pass
+        nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Sekolah"].dropna().unique().tolist())
+        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
+    else:
+        df_by_daerah = df_ringkas
+        nama_list = ["-- Pilih Daerah Dulu --"]
+    
+    pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah", nama_list)
+    
+    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
+        df_f = df_by_daerah[df_by_daerah["Nama_Sekolah"]==pilih_nama]
         no_opts = df_f["No_Pusat"].unique().tolist()
         makmal_opts = df_f["Nama_Makmal"].unique().tolist()
-        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty else ""
+        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
     else:
-        no_opts = ["-- Pilih --"] + sorted(df_ringkas["No_Pusat"].dropna().unique().tolist())
-        makmal_opts = ["-- Pilih --"]; kod_ppd=""
-    pilih_no = col2.selectbox("No Pusat", no_opts)
-    if pilih_nama != "-- Pilih --":
-        pilih_makmal = st.selectbox("Nama Makmal", makmal_opts)
-        df_f2 = df_ringkas[(df_ringkas["No_Pusat"]==pilih_no) & (df_ringkas["Nama_Makmal"]==pilih_makmal)] if pilih_no!="-- Pilih --" and pilih_makmal!="-- Pilih --" else pd.DataFrame()
+        no_opts = ["-- Pilih Sekolah Dulu --"]
+        makmal_opts = ["-- Pilih Sekolah Dulu --"]
+        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
+    
+    col_p, col_m = st.columns(2)
+    pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
+    pilih_makmal = col_m.selectbox("4️⃣ Nama Makmal", makmal_opts if 'makmal_opts' in locals() else ["-- Pilih --"])
+    
+    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"] and pilih_makmal not in ["-- Pilih Sekolah Dulu --"]:
+        df_f2 = df_by_daerah[(df_by_daerah["No_Pusat"]==pilih_no) & (df_by_daerah["Nama_Makmal"]==pilih_makmal)] if pilih_no!="-- Pilih Sekolah Dulu --" and pilih_makmal!="-- Pilih Sekolah Dulu --" else pd.DataFrame()
         bil_calon = df_f2.iloc[0]["Jumlah_Calon"] if not df_f2.empty and "Jumlah_Calon" in df_f2.columns else ""
+        st.success(f"✅ {pilih_nama} | No: {pilih_no} | Makmal: {pilih_makmal} | PPD: {kod_ppd}")
     else:
-        pilih_makmal = st.selectbox("Nama Makmal", ["-- Pilih --"]); bil_calon=""
-    pilih_nama_final = pilih_nama; pilih_no_final = pilih_no
-    nama_makmal_final = pilih_makmal if 'pilih_makmal' in locals() else ""
+        bil_calon = ""
+    
+    pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
+    pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
+    nama_makmal_final = pilih_makmal if 'pilih_makmal' in locals() and pilih_makmal not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
 
 st.divider()
 st.markdown("#### 📅 Tarikh & Masa")
