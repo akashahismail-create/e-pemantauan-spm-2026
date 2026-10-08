@@ -529,26 +529,91 @@ else:
     daerah_pemantau = p3.text_input("Daerah / JPN")
 
 if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=True):
-    if pilih_nama_final=="-- Pilih --" or pilih_no_final=="-- Pilih --":
-        st.error("Pilih Nama Sekolah & No Pusat!")
-    elif not nama_pemantau:
-        st.error("Isi Nama Pemantau!")
-    else:
-        data = {
-            "jenis": MODE, "tarikh_submit": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "nama_sekolah": pilih_nama_final, "no_pusat": pilih_no_final, "nama_makmal": nama_makmal_final,
-            "kod_ppd": kod_ppd, "tarikh_lawatan": str(tarikh), "masa_lawatan": str(masa),
-            "mata_pelajaran": pilih_mp, "bilik_peperiksaan": bilik_pep, "bilik_kuarantin": bilik_kuar,
-            "bilik_sakit": bilik_sakit, "dewan": bilik_dewan, "bilik_makmal": bilik_makmal, "sidang_no": sidang_no,
-            "total_bilik": total_bilik, "calon_hadir": calon_hadir, "calon_berdaftar": calon_berdaftar,
-            "calon_tidak_hadir": tidak_hadir, "calon_cicir": calon_cicir, "calon_bantah": calon_bantah,
-            "calon_keseluruhan": keseluruhan, "ulasan": ulasan, "nama_pemantau": nama_pemantau,
-            "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau
-        }
-        save_laporan(data)
-        st.session_state["last"] = data
-        st.success(f"Berjaya SIMPAN {MODE}! Laporan anda hanya anda yang nampak.")
-        st.balloons()
+    # ===== VALIDASI WAJIB LENGKAP - JIKA TIDAK LENGKAP TAK BOLEH HANTAR =====
+    errors = []
+    
+    # 1. Daerah / PPD
+    if 'pilih_daerah' in locals():
+        if pilih_daerah in ["-- Pilih Daerah --", "-- Pilih Daerah Dulu --", "", None]:
+            errors.append("❌ Sila pilih Daerah / PPD")
+    
+    # 2. Nama Sekolah
+    if not pilih_nama_final or pilih_nama_final in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --", ""]:
+        errors.append("❌ Sila pilih Nama Sekolah")
+    
+    # 3. No Pusat
+    if not pilih_no_final or pilih_no_final in ["-- Pilih Sekolah Dulu --", "-- Pilih --", ""]:
+        errors.append("❌ Sila pilih No Pusat")
+    
+    # 4. Untuk AMALI - Nama Makmal
+    if MODE=="AMALI":
+        if not nama_makmal_final or nama_makmal_final in ["-- Pilih Sekolah Dulu --", "-- Pilih --", ""]:
+            errors.append("❌ Sila pilih Nama Makmal (AMALI)")
+    
+    # 5. Tarikh
+    if not tarikh_str:
+        errors.append("❌ Sila pilih Tarikh Lawatan (Tahun, Bulan, Tarikh)")
+    
+    # 6. Masa - sudah ada default, tapi check
+    if not masa_str:
+        errors.append("❌ Sila pilih Masa Lawatan")
+    
+    # 7. Mata Pelajaran
+    if not pilih_mp or pilih_mp in ["Tiada MP", "", "-- Pilih --"]:
+        errors.append("❌ Sila pilih Mata Pelajaran")
+    
+    # 8. Bilik - Total mesti >0
+    if total_bilik == 0:
+        errors.append("❌ Sila isi Bilangan Bilik (Total tidak boleh 0)")
+    
+    # 9. Calon Berdaftar & Hadir
+    if calon_berdaftar == 0:
+        errors.append("❌ Sila isi Calon Berdaftar (tidak boleh 0)")
+    if calon_hadir < 0 or calon_berdaftar < 0:
+        errors.append("❌ Bilangan Calon tidak boleh negatif")
+    if calon_hadir > calon_berdaftar:
+        errors.append(f"❌ Calon Hadir ({calon_hadir}) tidak boleh lebih dari Berdaftar ({calon_berdaftar})")
+    
+    # 10. Ulasan WAJIB
+    if not ulasan or ulasan.strip() == "" or len(ulasan.strip()) < 5:
+        errors.append("❌ Sila isi Ulasan Pemantau (min 5 huruf) - WAJIB")
+    
+    # 11. Nama Pemantau
+    if not nama_pemantau or nama_pemantau.strip() == "":
+        errors.append("❌ Sila isi Nama Pemantau")
+    
+    # 12. Jawatan
+    if not jawatan_pemantau or jawatan_pemantau in ["-- Pilih --", ""]:
+        errors.append("❌ Sila pilih Jawatan Pemantau")
+    
+    # 13. Daerah / JPN Pemantau
+    if not daerah_pemantau or daerah_pemantau in ["-- Pilih --", ""] or str(daerah_pemantau).strip() == "":
+        errors.append("❌ Sila isi / pilih Daerah / JPN Pemantau")
+    
+    # Jika ada error, papar semua dan STOP
+    if errors:
+        st.error("⚠️ **SEMUA MAKLUMAT WAJIB DILENGKAPKAN!** Pemantau tidak boleh hantar jika tidak lengkap:")
+        for err in errors:
+            st.markdown(f"- {err}")
+        st.warning(f"🔴 {len(errors)} maklumat belum lengkap. Sila lengkapkan semua sebelum hantar.")
+        st.stop()
+    
+    # Jika lengkap, baru simpan
+    data = {
+        "jenis": MODE, "tarikh_submit": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "nama_sekolah": pilih_nama_final, "no_pusat": pilih_no_final, "nama_makmal": nama_makmal_final,
+        "kod_ppd": kod_ppd, "tarikh_lawatan": str(tarikh), "masa_lawatan": str(masa),
+        "mata_pelajaran": pilih_mp, "bilik_peperiksaan": bilik_pep, "bilik_kuarantin": bilik_kuar,
+        "bilik_sakit": bilik_sakit, "dewan": bilik_dewan, "bilik_makmal": bilik_makmal, "sidang_no": sidang_no,
+        "total_bilik": total_bilik, "calon_hadir": calon_hadir, "calon_berdaftar": calon_berdaftar,
+        "calon_tidak_hadir": tidak_hadir, "calon_cicir": calon_cicir, "calon_bantah": calon_bantah,
+        "calon_keseluruhan": keseluruhan, "ulasan": ulasan, "nama_pemantau": nama_pemantau,
+        "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau
+    }
+    save_laporan(data)
+    st.session_state["last"] = data
+    st.success(f"✅ Berjaya SIMPAN {MODE}! Semua maklumat lengkap. Laporan anda hanya anda yang nampak.")
+    st.balloons()
 
 st.divider()
 if st.session_state.is_admin:
