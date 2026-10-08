@@ -545,8 +545,74 @@ with st.container(border=True):
 
 # ===== SATU LAPORAN SAHAJA - TENGAH-TENGAH - TIDAK LARI =====
 # Extract b64 inside this scope
+
 IMG_D = IMG_DEWAN_B64
 IMG_S = IMG_SEKOLAH_B64
+
+# ===== BUAT CARTA PAI CALON =====
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO as BytesIOChart
+
+def buat_pie_base64(sel_data):
+    try:
+        hadir = int(sel_data.get('calon_hadir',0) or 0)
+        th = int(sel_data.get('calon_tidak_hadir',0) or 0)
+        cicir = int(sel_data.get('calon_cicir',0) or 0)
+        bantah = int(sel_data.get('calon_bantah',0) or 0)
+        berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
+        
+        # Data untuk pie
+        labels = []
+        sizes = []
+        colors = []
+        
+        if hadir > 0:
+            labels.append(f'Hadir {hadir}')
+            sizes.append(hadir)
+            colors.append('#2E7D32')
+        if th > 0:
+            labels.append(f'TH {th}')
+            sizes.append(th)
+            colors.append('#E53935')
+        if cicir > 0:
+            labels.append(f'Cicir {cicir}')
+            sizes.append(cicir)
+            colors.append('#FF9800')
+        if bantah > 0:
+            labels.append(f'Bantah {bantah}')
+            sizes.append(bantah)
+            colors.append('#9C27B0')
+        
+        # Jika hanya hadir sahaja (contoh 161 hadir, TH 0) - tunjuk Hadir 100%
+        if not sizes:
+            labels = [f'Berdaftar {berdaftar}']
+            sizes = [berdaftar if berdaftar>0 else 1]
+            colors = ['#1976D2']
+        elif len(sizes) == 1 and berdaftar > sizes[0]:
+            # Ada baki
+            pass
+        
+        plt.figure(figsize=(3,3), dpi=120)
+        fig, ax = plt.subplots(figsize=(2.5,2.5), dpi=150)
+        wedges, texts, autotexts = ax.pie(sizes, labels=labels, autopct='%1.0f%%', startangle=90, colors=colors, 
+                                          textprops={'fontsize': 7}, pctdistance=0.7)
+        # Tajuk
+        ax.set_title(f"Calon: {berdaftar}", fontsize=10, fontweight='bold', color='#0D47A1', pad=10)
+        plt.tight_layout()
+        
+        buf = BytesIOChart()
+        plt.savefig(buf, format='png', bbox_inches='tight', transparent=False, dpi=150)
+        plt.close()
+        buf.seek(0)
+        b64 = base64.b64encode(buf.read()).decode('utf-8')
+        return b64
+    except Exception as e:
+        # Fallback: return empty
+        return ""
+
+CHART_PAI_B64 = buat_pie_base64(sel)
+
 
 html_one = f"""
 <div style="width:100%; display:flex; justify-content:center; padding:10px 0;">
@@ -558,11 +624,14 @@ html_one = f"""
         <div style="display:flex; gap:8px; padding:12px;">
             <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:120px; object-fit:cover;"></div>
             <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden;"><img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:120px; object-fit:cover;"></div>
-            <div style="flex:1; background:#E3F2FD; border:1px solid #90CAF9; border-radius:8px; padding:10px; text-align:center; display:flex; flex-direction:column; justify-content:center;">
-                <div style="font-size:22px; font-weight:bold; color:#0D47A1;">{sel.get('calon_berdaftar',0)}</div>
-                <div style="font-size:11px; font-weight:bold;">Berdaftar</div>
-                <div style="font-size:10px; margin-top:6px;">Hadir: {sel['calon_hadir']} | TH: {sel.get('calon_tidak_hadir',0)}</div>
-                <div style="font-size:10px;">Keseluruhan: {sel.get('calon_keseluruhan',0)}</div>
+            <div style="flex:1; background:white; border:1px solid #90CAF9; border-radius:8px; padding:6px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <div style="font-size:11px; font-weight:bold; color:#0D47A1; margin-bottom:4px;">CARTA PAI CALON</div>
+                <img src="data:image/png;base64,{CHART_PAI_B64}" style="width:100%; max-width:140px; height:auto; display:block;">
+                <div style="font-size:9px; margin-top:4px; color:#333;">
+                    <b style="font-size:14px; color:#0D47A1;">{sel.get('calon_berdaftar',0)}</b> Berdaftar<br>
+                    Hadir: {sel['calon_hadir']} | TH: {sel.get('calon_tidak_hadir',0)}<br>
+                    Keseluruhan: {sel.get('calon_keseluruhan',0)}
+                </div>
             </div>
         </div>
         <div style="padding:0 12px 12px 12px;">
