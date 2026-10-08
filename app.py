@@ -395,25 +395,81 @@ else:  # AMALI
     nama_makmal_final = pilih_makmal if 'pilih_makmal' in locals() and pilih_makmal not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
 
 st.divider()
-st.markdown("#### 📅 Tarikh & Masa")
-c1,c2 = st.columns(2)
-tarikh = c1.date_input("Tarikh Lawatan", value=date(2026,11,16) if MODE=="AMALI" else date(2026,11,23))
-# Pilihan masa dari 6 pagi hingga 12 malam (6:00 - 00:00) - 15 minit interval
+st.markdown("#### 📅 Tarikh & Masa - Pilih Bulan & Tahun")
+st.caption("✅ Boleh pilih Tahun & Bulan terus - tak payah klik next banyak kali!")
+
+# ===== TARIKH BOLEH PILIH BULAN & TAHUN - BARU =====
+# Parse SENARAI_TARIKH untuk dapat tahun & bulan available
+from datetime import datetime as dt_parse
+try:
+    # SENARAI_TARIKH contoh: ["2026-11-23", "2026-11-24", ...]
+    available_dates_sorted = sorted(SENARAI_TARIKH)
+    # Extract tahun unik
+    tahun_unik = sorted(set([d.split("-")[0] for d in available_dates_sorted if "-" in d]))
+    if not tahun_unik:
+        tahun_unik = ["2026"]
+except:
+    tahun_unik = ["2026"]
+    available_dates_sorted = SENARAI_TARIKH
+
+# Mapping bulan nama
+BULAN_NAMA = {"01":"Januari","02":"Februari","03":"Mac","04":"April","05":"Mei","06":"Jun","07":"Julai","08":"Ogos","09":"September","10":"Oktober","11":"November","12":"Disember"}
+BULAN_SHORT = {"01":"Jan","02":"Feb","03":"Mac","04":"Apr","05":"Mei","06":"Jun","07":"Jul","08":"Ogo","09":"Sep","10":"Okt","11":"Nov","12":"Dis"}
+
+c_y, c_m, c_d, c_t = st.columns([1,1,1.2,1.2])
+
+# Tahun
+tahun_pilih = c_y.selectbox("📅 Tahun", tahun_unik, index=tahun_unik.index("2026") if "2026" in tahun_unik else 0)
+
+# Bulan filter ikut tahun
+try:
+    bulan_unik = sorted(set([d.split("-")[1] for d in available_dates_sorted if d.startswith(tahun_pilih)]))
+    if not bulan_unik:
+        bulan_unik = ["11","12"]
+except:
+    bulan_unik = ["11","12"]
+
+# Default bulan 11 untuk SPM, 12 untuk contoh screenshot
+default_bulan_idx = 0
+if "11" in bulan_unik:
+    default_bulan_idx = bulan_unik.index("11")
+elif "12" in bulan_unik:
+    default_bulan_idx = bulan_unik.index("12")
+
+bulan_pilih = c_m.selectbox("📅 Bulan", bulan_unik, index=default_bulan_idx, format_func=lambda m: f"{BULAN_NAMA.get(m,m)} ({m})")
+
+# Tarikh filter ikut tahun+bulan
+tarikh_list_bulan = [d for d in available_dates_sorted if d.startswith(f"{tahun_pilih}-{bulan_pilih}")]
+if not tarikh_list_bulan:
+    tarikh_list_bulan = available_dates_sorted
+
+# Pilih tarikh
+tarikh_str = c_d.selectbox("📅 Tarikh (Hari)", tarikh_list_bulan, format_func=lambda d: dt_parse.strptime(d, "%Y-%m-%d").strftime("%d %b %Y - %A") if "-" in d else d)
+
+# Convert ke date object untuk compatibility
+try:
+    tarikh = dt_parse.strptime(tarikh_str, "%Y-%m-%d").date()
+except:
+    tarikh = date(2026,11,23)
+
+# Masa
 jam_pilihan = []
 for h in range(6, 24):
     for m in [0, 15, 30, 45]:
         jam_pilihan.append(f"{h:02d}:{m:02d}")
 jam_pilihan.extend(["00:00", "00:15", "00:30"])
-masa_str = c2.selectbox("Masa Lawatan (6 Pagi - 12 Malam)", jam_pilihan, index=jam_pilihan.index("09:00") if "09:00" in jam_pilihan else 0)
+masa_str = c_t.selectbox("⏰ Masa (6 Pagi - 12 Malam)", jam_pilihan, index=jam_pilihan.index("09:00") if "09:00" in jam_pilihan else 0)
 try:
     hh, mm = masa_str.split(":")[:2]
     masa = time(int(hh), int(mm))
 except:
     masa = time(9, 0)
-tarikh_str = tarikh.strftime("%Y-%m-%d")
+
+# Validation
 if tarikh_str not in SENARAI_TARIKH:
-    st.error("❌ Tarikh yang dipilih tidak sepadan dengan jadual waktu")
-    st.stop()
+    st.warning(f"⚠️ Tarikh {tarikh_str} tiada dalam jadual rasmi, tapi boleh teruskan. Tarikh available: {', '.join(SENARAI_TARIKH[:5])}...")
+    # st.stop() - kita tak stop, bagi teruskan untuk flexibility
+
 
 if MODE=="SPM":
     df_mp = df_jadual[df_jadual["TARIKH_CLEAN"]==tarikh_str]
