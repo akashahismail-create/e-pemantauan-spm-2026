@@ -710,6 +710,8 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "bilik_sakit": bilik_sakit if 'bilik_sakit' in locals() else 0, 
         "dewan": bilik_dewan if 'bilik_dewan' in locals() else 0, 
         "bilik_makmal": bilik_makmal if 'bilik_makmal' in locals() else "",
+        "bilik_makmal_ujian": bilik_makmal_ujian if 'bilik_makmal_ujian' in locals() else 0,
+        "bilik_persediaan": bilik_persediaan if 'bilik_persediaan' in locals() else 0,
         "sidang_no": sidang_no if 'sidang_no' in locals() else "",
         "total_bilik": total_bilik,
         "bilik_ujian": bilik_ujian if 'bilik_ujian' in locals() else 0,
