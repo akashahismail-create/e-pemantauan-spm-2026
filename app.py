@@ -1326,7 +1326,50 @@ else:
     tarikh_selected = pilih_tarikh_raw.split(" (")[0]
     filtered_by_tarikh = [l for l in filtered_list if l.get('tarikh_lawatan','') == tarikh_selected]
 
-filtered_by_tarikh = sorted(filtered_by_tarikh, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
+# ===== TAMBAH PILIH DAERAH UNTUK KPPK/PENGARAH SELEPAS PILIH TARIKH =====
+# Kalau KPPK/Pengarah pilih SPM kemudian Tarikh Lawatan kemudian Daerah Gombak, hanya keluar laporan Daerah Gombak sahaja
+if st.session_state.get('is_kppk', False) or st.session_state.is_admin:
+    # Kumpul senarai daerah dari laporan yang dah filter tarikh
+    from collections import Counter as CounterDaerah
+    daerah_list_raw = []
+    for l in filtered_by_tarikh:
+        # Cuba dapatkan daerah dari fungsi get_nama_daerah_from_pusat atau dari daerah_pemantau
+        try:
+            d = get_nama_daerah_from_pusat(l.get('no_pusat',''), l.get('kod_ppd',''))
+        except:
+            d = l.get('daerah_pemantau','') or l.get('kod_ppd','') or 'Tidak Diketahui'
+        if not d or str(d).strip() == '':
+            d = l.get('daerah_pemantau','Tidak Diketahui')
+        daerah_list_raw.append(str(d).strip())
+
+    counter_daerah = CounterDaerah(daerah_list_raw)
+    unique_daerah = sorted(set(daerah_list_raw))
+
+    if len(unique_daerah) > 1:
+        daerah_options = ["🌍 Semua Daerah"] + [f"{d} ({counter_daerah[d]} laporan)" for d in unique_daerah]
+        pilih_daerah_raw = st.selectbox(f"📍 Pilih Daerah (Selepas Tarikh) - {len(unique_daerah)} daerah:", daerah_options, key=f"pilih_daerah_kppk_{MODE}_{pilih_tarikh_raw}")
+
+        if pilih_daerah_raw == "🌍 Semua Daerah":
+            filtered_by_daerah = filtered_by_tarikh
+        else:
+            daerah_selected = pilih_daerah_raw.split(" (")[0]
+            filtered_by_daerah = []
+            for l in filtered_by_tarikh:
+                try:
+                    d = get_nama_daerah_from_pusat(l.get('no_pusat',''), l.get('kod_ppd',''))
+                except:
+                    d = l.get('daerah_pemantau','') or l.get('kod_ppd','') or 'Tidak Diketahui'
+                if str(d).strip() == daerah_selected:
+                    filtered_by_daerah.append(l)
+        st.info(f"📍 Filter: {pilih_tarikh_raw} + {pilih_daerah_raw} = {len(filtered_by_daerah)} laporan")
+    else:
+        filtered_by_daerah = filtered_by_tarikh
+        if unique_daerah:
+            st.caption(f"📍 Daerah: {unique_daerah[0]} - {len(filtered_by_daerah)} laporan")
+else:
+    filtered_by_daerah = filtered_by_tarikh
+
+filtered_by_tarikh = sorted(filtered_by_daerah, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
 
 if len(filtered_by_tarikh) > 1:
     pilihan_labels = []
