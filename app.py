@@ -486,26 +486,42 @@ else:
             df_by_daerah = pd.DataFrame(columns=df_pusat.columns)
             nama_list = ["-- Tiada Sekolah Dalam Daerah Ini --"]
         else:
-            nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
+            nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist()) + ["LAIN-LAIN (Taip Sendiri) ✍️"]
             kod_display = ", ".join(kod_list)
-            st.success(f"✅ {len(nama_list)-1} sekolah dalam {pilih_daerah} (Kod: {kod_display}) - Filter Tepat!")
+            st.success(f"✅ {len(nama_list)-2} sekolah dalam {pilih_daerah} (Kod: {kod_display}) - Filter Tepat! + Lain-lain")
     else:
         df_by_daerah = df_pusat
         nama_list = ["-- Pilih Daerah Dulu --"]
 
     pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah / Pusat", nama_list)
 
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
+    # Jika pilih LAIN-LAIN, keluar column isi manual untuk SPM, AMALI, UBBM, UBBI
+    if pilih_nama == "LAIN-LAIN (Taip Sendiri) ✍️":
+        st.warning("⚠️ Sekolah tiada dalam senarai? Sila taip manual di bawah (SPM / Amali / UBBM / UBBI)")
+        lain_c1, lain_c2 = st.columns(2)
+        manual_nama_lain = lain_c1.text_input("✍️ Nama Sekolah/Pusat (Lain-lain) - Taip Sendiri", placeholder="Contoh: SMK CONTOH BARU / PUSAT BARU", key="manual_nama_lain")
+        manual_no_lain = lain_c2.text_input("✍️ No Pusat (Lain-lain) - Taip Sendiri", placeholder="Contoh: BA999 / BH001 / BK999", key="manual_no_lain")
+        no_opts = [manual_no_lain] if manual_no_lain else ["-- Taip No Pusat Dulu --"]
+        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
+        bil_calon = ""
+        pilih_no = col_p.selectbox("3️⃣ No Pusat (Lain-lain)", no_opts)
+        # Simpan untuk final - auto uppercase seperti STAM/MUET juga
+        st.info(f"📝 Manual: {manual_nama_lain} | No: {manual_no_lain}")
+    elif pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
         df_f = df_by_daerah[df_by_daerah["Nama_Pusat"]==pilih_nama]
         no_opts = df_f["No_Pusat"].tolist()
         kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
         bil_calon = df_f.iloc[0]["Bil_Calon_Pusat"] if not df_f.empty and "Bil_Calon_Pusat" in df_f.columns else ""
+        manual_nama_lain = ""
+        manual_no_lain = ""
+        pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
     else:
         no_opts = ["-- Pilih Sekolah Dulu --"]
         kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
         bil_calon = ""
-
-    pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
+        manual_nama_lain = ""
+        manual_no_lain = ""
+        pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
 
 if MODE=="AMALI":
     # NAMA MAKMAL - ISI SENDIRI, BUKAN PILIHAN
@@ -532,7 +548,9 @@ if MODE in ["STAM","MUET"]:
     if pilih_nama and pilih_no:
         st.success(f"✅ {MODE} | {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | {pilih_daerah}")
 else:
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
+    if pilih_nama == "LAIN-LAIN (Taip Sendiri) ✍️" and manual_nama_lain and manual_no_lain:
+        st.success(f"✅ {manual_nama_lain.upper()} | No: {manual_no_lain.upper()} | PPD: {kod_ppd} | Calon: {bil_calon} (Lain-lain)")
+    elif pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
         st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
 
 if MODE in ["STAM","MUET"]:
@@ -540,8 +558,13 @@ if MODE in ["STAM","MUET"]:
     pilih_nama_final = pilih_nama.strip().upper() if pilih_nama and pilih_nama.strip()!="" else ""
     pilih_no_final = pilih_no.strip().upper() if pilih_no and pilih_no.strip()!="" else ""
 else:
-    pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
-    pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
+    # Jika LAIN-LAIN dipilih untuk SPM, AMALI, UBBM, UBBI - auto uppercase sama seperti STAM/MUET
+    if pilih_nama == "LAIN-LAIN (Taip Sendiri) ✍️":
+        pilih_nama_final = manual_nama_lain.strip().upper() if manual_nama_lain and manual_nama_lain.strip()!="" else ""
+        pilih_no_final = manual_no_lain.strip().upper() if manual_no_lain and manual_no_lain.strip()!="" else ""
+    else:
+        pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --", "LAIN-LAIN (Taip Sendiri) ✍️"] else ""
+        pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
 
 st.divider()
 st.markdown("#### 📅 Tarikh & Masa - Pilih Bulan & Tahun")
