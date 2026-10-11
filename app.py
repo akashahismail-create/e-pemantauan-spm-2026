@@ -396,7 +396,7 @@ if st.session_state.get('is_kppk', False):
         calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
     else:
         bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
         petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
 
     jenis_label = sel.get('jenis','SPM')
@@ -1013,16 +1013,21 @@ elif MODE in ["UBBM","UBBI"]:
     keseluruhan = calon_berdaftar
     st.caption(f"Sidang Dipantau: {sidang_no} | Petugas: {petugas} | Bilik: Menunggu={bilik_menunggu}, Ujian={bilik_ujian}, Kuarantin={bilik_kuar}")
 elif MODE=="STAM":
-    st.markdown("#### 👥 Bilangan Calon (STAM)")
-    st1,st2,st3,st4 = st.columns(4)
-    calon_berdaftar = st1.number_input("Calon Berdaftar", 0,500, 30)
-    calon_menumpang = st2.number_input("Calon Menumpang", 0,100, 0)
-    calon_cicir = st3.number_input("Calon Cicir", 0,50,0)
-    calon_bantah = st4.number_input("Calon Bantah", 0,50,0)
-    calon_hadir = calon_berdaftar
-    tidak_hadir = 0
-    keseluruhan = calon_berdaftar + calon_menumpang
-    st.caption(f"Berdaftar: {calon_berdaftar} + Menumpang: {calon_menumpang} = Keseluruhan: {keseluruhan} | Petugas: {petugas}")
+    st.markdown("#### 👥 Bilangan Calon (STAM) - WAJIB ISI HADIR")
+    st1,st2,st3,st4,st5 = st.columns(5)
+    calon_berdaftar = st1.number_input("Calon Berdaftar (STAM)", 0,500, 30, key=f"stam_berdaftar_{MODE}")
+    calon_hadir = st2.number_input("✅ Calon Hadir (STAM) - WAJIB ISI", 0,500, 28, key=f"stam_hadir_{MODE}", help="Pemantau WAJIB isi bilangan calon yang hadir peperiksaan STAM")
+    calon_menumpang = st3.number_input("Calon Menumpang", 0,100, 0, key=f"stam_menumpang_{MODE}")
+    calon_cicir = st4.number_input("Calon Cicir", 0,50,0, key=f"stam_cicir_{MODE}")
+    calon_bantah = st5.number_input("Calon Bantah", 0,50,0, key=f"stam_bantah_{MODE}")
+    tidak_hadir = calon_berdaftar - calon_hadir
+    if tidak_hadir < 0:
+        tidak_hadir = 0
+    keseluruhan = calon_berdaftar + calon_menumpang + calon_cicir + calon_bantah
+    st.caption(f"STAM | Berdaftar: {calon_berdaftar} | Hadir: {calon_hadir} | TH: {tidak_hadir} | Menumpang: {calon_menumpang} | Cicir: {calon_cicir} | Bantah: {calon_bantah} | Keseluruhan: {keseluruhan} | Petugas: {petugas}")
+    if calon_hadir == 0:
+        st.warning("⚠️ Sila isi Calon Hadir STAM (wajib)")
+
 else: # MUET
     st.markdown("#### 👥 Bilangan Calon (MUET)")
     st1,st2,st3,st4 = st.columns(4)
