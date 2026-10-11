@@ -1150,6 +1150,34 @@ elif MODE in ["UBBM","UBBI"]:
     keseluruhan = calon_berdaftar
     st.caption(f"Sidang Dipantau: {sidang_no} | Petugas: {petugas} | Bilik: Menunggu={bilik_menunggu}, Ujian={bilik_ujian}, Kuarantin={bilik_kuar}")
 elif MODE=="STAM":
+    # ===== FIX KHAS STAM SAHAJA - JANGAN KACAU MODE LAIN =====
+    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%);">🕌</div><div><div class="borang-header-title">Maklumat STAM 2026 - Skrip Contoh Selangor</div><div class="borang-header-subtitle">Kod Kertas + Pusat (BQ) + Bilik Kebal + Mata Pelajaran STAM</div></div></div>', unsafe_allow_html=True)
+    
+    # Data dari SKRIP_CONTOH_SELANGOR_2026.xlsx - contoh
+    # BQ21 SAMT TENGKU AMPUAN RAHIMAH, KV SULTAN ABDUL SAMAD, etc.
+    st.info("📖 Data STAM dari Skrip Contoh Selangor 2026 - 12 OKT - 2 NOV 2026 | BQ11, BQ12, BQ21, BQ31, BQ41")
+
+    s_kod1, s_kod2, s_kod3 = st.columns(3)
+    kod_kertas_stam = s_kod1.selectbox("📄 Kod Kertas STAM", 
+        ["S101/21 HIFZ AL-QURAN DAN TAJWID", "S102/21 FIQH (KERTAS 2)", "S103/21 TAUHID DAN MANTIQ (KERTAS 2)", 
+         "S104/21 TAFSIR DAN ULUMUHU (KERTAS 2)", "S106/21 NAHU DAN SARF (KERTAS 2)", "S107/21 INSYA' DAN MUTALAAH", 
+         "S108/21 ADAB DAN NUSUS", "S109/21 ARUDH DAN QAFIYAH (KERTAS 2)", "S110/21 BALAGHAH", "Lain-lain"],
+        help="Kod Kertas dari Skrip Contoh - contoh S103/21")
+    
+    pusat_bq_stam = s_kod2.selectbox("🏫 Pusat BQ (Kod Pusat STAM)", 
+        ["BQ11 SAMT SULTAN HISAMUDDIN", "BQ12 KOLEJ ISLAM SULTAN ALAM SHAH / SMK DATO HAMZAH", 
+         "BQ21 SAMT TENGKU AMPUAN RAHIMAH / KV SULTAN ABDUL SAMAD", "BQ31 SAM JERAM / SMK RAJA MUDA MUSA", 
+         "BQ41 SAMT KUALA KUBU BHARU / SMK KUALA KUBU BHARU", "Lain-lain"],
+        help="Pusat BQ dari Skrip Contoh Selangor")
+    
+    bilik_kebal_stam = s_kod3.text_input("🏦 Bilik Kebal STAM", placeholder="Contoh: Bilik Kebal BQ11 / Bilik Kebal PPD Klang", help="Bilik Kebal untuk STAM - dari Skrip Contoh")
+    
+    # Simpan untuk laporan
+    st.session_state['stam_kod_kertas'] = kod_kertas_stam
+    st.session_state['stam_pusat_bq'] = pusat_bq_stam
+    st.session_state['stam_bilik_kebal'] = bilik_kebal_stam
+
+    st.divider()
     st.markdown("#### 👥 Bilangan Calon (STAM) - WAJIB ISI HADIR")
     st1,st2,st3,st4,st5 = st.columns(5)
     calon_berdaftar = st1.number_input("Calon Berdaftar (STAM)", 0,500, 30, key=f"stam_berdaftar_{MODE}")
@@ -1161,7 +1189,7 @@ elif MODE=="STAM":
     if tidak_hadir < 0:
         tidak_hadir = 0
     keseluruhan = calon_berdaftar + calon_menumpang + calon_cicir + calon_bantah
-    st.caption(f"STAM | Berdaftar: {calon_berdaftar} | Hadir: {calon_hadir} | TH: {tidak_hadir} | Menumpang: {calon_menumpang} | Cicir: {calon_cicir} | Bantah: {calon_bantah} | Keseluruhan: {keseluruhan} | Petugas: {petugas}")
+    st.caption(f"STAM | {kod_kertas_stam} | {pusat_bq_stam} | Berdaftar: {calon_berdaftar} | Hadir: {calon_hadir} | TH: {tidak_hadir} | Menumpang: {calon_menumpang} | Cicir: {calon_cicir} | Bantah: {calon_bantah} | Keseluruhan: {keseluruhan} | Petugas: {petugas}")
     if calon_hadir == 0:
         st.warning("⚠️ Sila isi Calon Hadir STAM (wajib)")
 
@@ -1254,8 +1282,16 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         st.warning(f"🔴 {len(errors)} maklumat belum lengkap.")
         st.stop()
     
-    # Simpan extra info untuk AMALI
+    # Simpan extra info untuk AMALI dan STAM sahaja - JANGAN KACAU LAIN
     extra_amali = {}
+    extra_stam = {}
+    if MODE=="STAM":
+        extra_stam = {
+            "kod_kertas_stam": st.session_state.get('stam_kod_kertas', ''),
+            "pusat_bq_stam": st.session_state.get('stam_pusat_bq', ''),
+            "bilik_kebal_stam": st.session_state.get('stam_bilik_kebal', ''),
+            "tarikh_stam_skrip": str(tarikh),
+        }
     if MODE=="AMALI":
         extra_amali = {
             "makmal_diperlukan": st.session_state.get('amali_makmal_diperlukan', 1),
@@ -1300,7 +1336,8 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "calon_keseluruhan": keseluruhan,
         "ulasan": ulasan, "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
-        **extra_amali
+        **extra_amali,
+        **extra_stam
     }
     save_laporan(data)
     st.session_state["last"] = data
@@ -1608,8 +1645,15 @@ elif MODE in ["UBBM","UBBI"]:
     bilik_html = f"{badge(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+elif MODE=="STAM":
+    # ===== FIX KHAS STAM SAHAJA - TEMPLATE KHAS STAM DENGAN KOD KERTAS, PUSAT BQ, BILIK KEBAL =====
+    # JANGAN KACAU MUET, SPM, AMALI, UBBM, UBBI
+    bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+    petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
 else:
-    # FIX: Petugas jangan dalam bilik untuk STAM/MUET juga - letak atas Kehadiran Calon
+    # MUET sahaja - JANGAN KACAU STAM
+    # FIX: Petugas jangan dalam bilik untuk MUET juga - letak atas Kehadiran Calon
     bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
     petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
@@ -1777,16 +1821,28 @@ elif MODE in ["UBBM","UBBI"]:
                         <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
                     </tr>
     '''
-# STAM - Template tiada Makmal, tiada Sidang, tiada Station
+# STAM - Template KHAS dengan Kod Kertas, Pusat BQ, Bilik Kebal dari Skrip Contoh Selangor 2026 - FIX STAM SAHAJA
 elif MODE=="STAM":
     table_rows = f'''
                     <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
-                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🕌 NAMA PUSAT STAM (Isi Sendiri)</td>
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🕌 NAMA PUSAT STAM (Skrip Contoh)</td>
                         <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
                     </tr>
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT STAM / DAERAH</td>
-                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span> <span style="margin-left:6px; background:#FFF3E0; color:#EF6C00; padding:2px 8px; border-radius:10px; font-size:9px;">Isi Sendiri - Pusat Tak Sama SPM</span></td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span> <span style="margin-left:6px; background:#F3E5F5; color:#6A1B9A; padding:2px 8px; border-radius:10px; font-size:9px;">Skrip Contoh 2026</span></td>
+                    </tr>
+                    <tr style="background:#F3E5F5; border-bottom:2px solid #E1BEE7;">
+                        <td style="padding:12px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">📄 KOD KERTAS STAM (Skrip Contoh)</td>
+                        <td style="padding:10px 14px;"><span style="background:#6A1B9A; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('kod_kertas_stam', sel.get('mata_pelajaran','-'))}</span> <span style="margin-left:8px; background:#F3E5F5; color:#6A1B9A; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">Contoh: S103/21 TAUHID DAN MANTIQ</span></td>
+                    </tr>
+                    <tr style="background:#EDE7F6; border-bottom:2px solid #D1C4E9;">
+                        <td style="padding:12px 14px; font-weight:800; color:#4527A0; font-size:11px; border-right:1px solid #D1C4E9;">🏫 PUSAT BQ STAM (Skrip Contoh)</td>
+                        <td style="padding:10px 14px;"><span style="background:#4527A0; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('pusat_bq_stam', '-')}</span> <span style="margin-left:8px; background:#EDE7F6; color:#4527A0; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">BQ11, BQ12, BQ21, BQ31, BQ41</span></td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:2px solid #FFE0B2;">
+                        <td style="padding:12px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">🏦 BILIK KEBAL STAM (Skrip Contoh)</td>
+                        <td style="padding:10px 14px;"><span style="background:#EF6C00; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700;">{sel.get('bilik_kebal_stam', sel.get('bilik_kebal_penyelia','-'))}</span></td>
                     </tr>
                                                                                                                                                                                                                             <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH & HARI LAWATAN STAM</td>
