@@ -247,7 +247,6 @@ if st.session_state.get('is_kppk', False):
     
     lap_list_kppk = load_laporan_kppk()
     st.divider()
-    st.markdown(f"#### Laporan {MODE_KPPK} - KPPK/Pengarah (Format Sama 100% Admin)")
     
     if not lap_list_kppk:
         st.info(f"Belum ada laporan {MODE_KPPK} dalam sistem.")
@@ -463,8 +462,6 @@ if st.session_state.get('is_kppk', False):
         out = BytesIO()
         with pd.ExcelWriter(out, engine='openpyxl') as writer: df_one.to_excel(writer, index=False)
         st.download_button("Download Excel (KPPK)", out.getvalue(), file_name=f"{MODE}_{sel['no_pusat']}_KPPK.xlsx", use_container_width=True)
-    st.success("Format laporan KPPK/Pengarah SAMA 100% dengan format Admin & Pemantau!")
-    st.info("KPPK/Pengarah - Mod Lihat Sahaja - Tiada borang Maklumat Pusat, tiada akses padam - Hanya pilih peperiksaan & tarikh - Format SAMA 100%")
     st.stop()
 
 jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True, label_visibility="collapsed")
@@ -1140,9 +1137,6 @@ if st.session_state.is_admin:
                 st.rerun()
             else:
                 st.error("❌ Sila taip tepat: PADAM SEMUA")
-elif st.session_state.get('is_kppk', False):
-    st.info("👔 Anda KPPK/Pengarah - Boleh lihat SEMUA laporan, TIDAK boleh padam laporan.")
-
 from collections import Counter
 tarikh_all = [l.get('tarikh_lawatan','') for l in filtered_list]
 counter_tarikh = Counter(tarikh_all)
