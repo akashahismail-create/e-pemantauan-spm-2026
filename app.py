@@ -132,7 +132,8 @@ st.markdown("""
     <h1>🏛️ JABATAN PENDIDIKAN NEGERI SELANGOR</h1>
     <h3>SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</h3>
     <h2>📋 e-Pemantauan Sektor Pentaksiran dan Peperiksaan JPN Selangor Tahun 2026</h2>
-    <p>👥 35 Pemantau | 🎓 SPM, Amali Sains, Ujian Bertutur BM/BI & STAM | 🔐 Sistem Login Selamat</p>
+    <p>👥 35 Pemantau | 🎓 SPM, Amali Sains, Ujian Bertutur BM/BI, STAM & MUET | 🔐 Sistem Login Selamat</p>
+    <p style="margin-top:8px; font-size:11px; background: rgba(255,255,255,0.15); display:inline-block; padding:4px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.2);">✨ Created by Akashah Ismail | JPN Selangor 2026</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -205,6 +206,9 @@ def login_screen():
                 else:
                     st.error("❌ Password salah!")
         
+        st.markdown('<div style="text-align:center; margin-top:20px; padding:12px; background:#F8FAFC; border-radius:10px; border:1px solid #E8EEF6;">', unsafe_allow_html=True)
+        st.markdown('<span style="color:#64748B; font-size:11px;">✨ Created by <b style="color:#0D47A1;">Akashah Ismail</b> | JPN Selangor 2026</span>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
     
@@ -234,6 +238,7 @@ st.markdown("""
     <div style="display:flex; align-items:center; gap:12px;">
         <div style="background: rgba(255,193,7,0.2); border:1px solid rgba(255,193,7,0.4); color:#FFECB3; font-size:11px; font-weight:800; letter-spacing:1.5px; padding:4px 12px; border-radius:20px;">🏛️ JPN SELANGOR 2026</div>
         <div style="color:#FFC107; font-size:10px; font-weight:700;">● SISTEM RASMI</div>
+        <div style="background: rgba(255,255,255,0.15); color:#FFECB3; font-size:9px; font-weight:700; padding:3px 10px; border-radius:20px; border:1px solid rgba(255,193,7,0.3); margin-left:8px;">✨ Created by Akashah Ismail</div>
     </div>
     <div style="color:white; font-size:22px; font-weight:900; margin-top:8px; letter-spacing:0.5px; text-shadow:0 2px 8px rgba(0,0,0,0.3);">e-Pemantauan Sektor Pentaksiran dan Peperiksaan</div>
     <div style="color:#90CAF9; font-size:13px; font-weight:600; margin-top:4px; letter-spacing:0.3px;">Jabatan Pendidikan Negeri Selangor Tahun 2026 | SPM • Amali Sains • Ujian Bertutur BM/BI • STAM • MUET</div>
@@ -979,15 +984,18 @@ html_one = f"""
             </div>
         </div>
         <div style="background: linear-gradient(90deg, #0D47A1 0%, #1565C0 100%); padding:10px 26px; display:flex; justify-content:space-between;">
-            <div style="color:rgba(255,255,255,0.8); font-size:9px;">© 2026 JPN Selangor | E-Pemantauan SPM, Amali, Ujian Bertutur & STAM</div>
+            <div style="color:rgba(255,255,255,0.8); font-size:9px;">© 2026 JPN Selangor | e-Pemantauan • SPM, Amali, Ujian Bertutur, STAM & MUET | ✨ Created by Akashah Ismail</div>
             <div style="color:#A5D6A7; font-size:9px;">● SAH & DIREKODKAN</div>
         </div>
         <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
+        <div style="background:#0A1931; padding:8px; text-align:center;">
+            <span style="color:#FFECB3; font-size:10px; letter-spacing:0.5px;">✨ Created by <b style="color:white;">Akashah Ismail</b> | Sektor Pentaksiran & Peperiksaan JPN Selangor | 2026</span>
+        </div>
     </div>
 </div>
 """
 
-components.html(html_one, height=720, scrolling=True)
+components.html(html_one, height=740, scrolling=True)
 
 st.divider()
 c1, c2 = st.columns(2)
