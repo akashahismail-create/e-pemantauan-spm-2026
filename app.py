@@ -764,17 +764,29 @@ else:
     nama_pemantau = p1.text_input("Nama Pemantau", value=st.session_state.user_name, disabled=True)
 
     jawatan_pemantau = p2.selectbox("Jawatan", ["-- Pilih --", "Penolong Pengarah SPP", "Penolong PPD SPP", "Penyelia Kawasan"])
-if "PPD SPP" in jawatan_pemantau and "Penolong PPD" in jawatan_pemantau:
+
+# Jika Penyelia Kawasan - Daerah auto ikut pilihan daerah sebelum pilihan sekolah (tak boleh keluar daerah)
+if "Penyelia Kawasan" in jawatan_pemantau:
+    if pilih_daerah and pilih_daerah != "-- Pilih Daerah --" and pilih_daerah != "-- Pilih Daerah Dulu --":
+        daerah_pemantau = pilih_daerah
+        p3.text_input("Daerah (Auto - Penyelia Kawasan ikut daerah atas)", value=daerah_pemantau, disabled=True)
+        st.caption(f"🔒 Penyelia Kawasan terkunci di daerah: {daerah_pemantau} - tak boleh keluar daerah yang dipilih di atas ({pilih_daerah})")
+    else:
+        # Jika belum pilih daerah di atas, suruh pilih dulu
+        daerah_pemantau = p3.selectbox("Daerah (Penyelia Kawasan - Wajib pilih daerah atas dulu)", ["-- Pilih Daerah --", "Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"])
+        if daerah_pemantau == "-- Pilih Daerah --":
+            st.warning("⚠️ Sila pilih Daerah di bahagian atas (1️⃣ Daerah / PPD) dulu - Penyelia Kawasan tak boleh keluar dari daerah yang dipilih")
+        else:
+            st.info(f"✅ Penyelia Kawasan akan terkunci di daerah: {daerah_pemantau}")
+    bilik_kebal_penyelia = st.text_input("🏦 Nama Bilik Kebal Penyelia Kawasan (Wajib untuk Penyelia Kawasan)", placeholder="Contoh: Bilik Kebal PPD Klang / Bilik Kebal PPD Petaling Perdana / Bilik Kebal SMK Meru")
+elif "PPD SPP" in jawatan_pemantau and "Penolong PPD" in jawatan_pemantau:
     daerah_pemantau = p3.selectbox("Daerah", ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"])
+    bilik_kebal_penyelia = ""
 elif "Penolong Pengarah SPP" in jawatan_pemantau:
     daerah_pemantau = p3.selectbox("JPN", ["Sektor Pentaksiran & Peperiksaan","Sektor Pengurusan Sekolah","Lain-lain"])
+    bilik_kebal_penyelia = ""
 else:
     daerah_pemantau = p3.text_input("Daerah / JPN")
-
-# Bila pilih Penyelia Kawasan - kena isi Nama Bilik Kebal Penyelia Kawasan
-if "Penyelia Kawasan" in jawatan_pemantau:
-    bilik_kebal_penyelia = st.text_input("🏦 Nama Bilik Kebal Penyelia Kawasan (Wajib untuk Penyelia Kawasan)", placeholder="Contoh: Bilik Kebal PPD Klang / Bilik Kebal PPD Petaling Perdana / Bilik Kebal SMK Meru")
-else:
     bilik_kebal_penyelia = ""
 
 if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=True):
