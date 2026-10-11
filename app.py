@@ -267,6 +267,201 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.divider()
+
+# ===== KPPK/PENGARAH - TANPA BORANG, HANYA PILIH PEPERIKSAAN & TARIKH (FIX TERBARU - Kashah) =====
+if st.session_state.get('is_kppk', False):
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%); padding:18px 22px; border-radius:14px; margin-bottom:16px; box-shadow: 0 8px 24px rgba(123,31,162,0.25);">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background: rgba(255,255,255,0.2); padding:8px 14px; border-radius:20px; font-size:12px; font-weight:800; color:white;">👔 KPPK / PENGARAH</div>
+            <div style="color:#E1BEE7; font-size:11px; font-weight:700;">MOD LIHAT SAHAJA - Tiada Borang Pemantauan</div>
+        </div>
+        <div style="color:white; font-size:18px; font-weight:800; margin-top:10px;">📊 Papan Pemuka Laporan Pemantauan - Pilih Peperiksaan</div>
+        <div style="color:#CE93D8; font-size:12px; margin-top:4px;">Pilih jenis peperiksaan (SPM, Amali Sains, UBBM, UBBI, STAM, MUET) → Pilih tarikh → Lihat semua laporan (Tak perlu isi Maklumat Pusat)</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Pilihan peperiksaan sahaja (tanpa borang Maklumat Pusat)
+    jenis_kppk = st.radio("📌 Pilih Peperiksaan untuk Lihat Laporan:", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True)
+    
+    # Tentukan fail laporan ikut pilihan
+    if "1. Pemantauan SPM" in jenis_kppk:
+        FILE_LAP_KPPK = "laporan_spm_504.json"
+        MODE_KPPK = "SPM"
+    elif "2. Pemantauan Amali" in jenis_kppk:
+        FILE_LAP_KPPK = "laporan_amali_473.json"
+        MODE_KPPK = "AMALI"
+    elif "3. Ujian Bertutur BM" in jenis_kppk:
+        FILE_LAP_KPPK = "laporan_ubbm.json"
+        MODE_KPPK = "UBBM"
+    elif "4. Ujian Bertutur BI" in jenis_kppk:
+        FILE_LAP_KPPK = "laporan_ubbi.json"
+        MODE_KPPK = "UBBI"
+    elif "5. STAM" in jenis_kppk:
+        FILE_LAP_KPPK = "laporan_stam.json"
+        MODE_KPPK = "STAM"
+    else:
+        FILE_LAP_KPPK = "laporan_muet.json"
+        MODE_KPPK = "MUET"
+    
+    def load_laporan_kppk():
+        if os.path.exists(FILE_LAP_KPPK):
+            try:
+                with open(FILE_LAP_KPPK, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except:
+                return []
+        return []
+    
+    lap_list_kppk = load_laporan_kppk()
+    
+    st.divider()
+    st.markdown(f"#### 📊 Laporan {MODE_KPPK} - KPPK/Pengarah (Lihat Sahaja - Semua Tarikh Pemantauan)")
+    
+    if not lap_list_kppk:
+        st.info(f"Belum ada laporan {MODE_KPPK} dalam sistem.")
+        st.stop()
+    
+    # Ringkasan
+    c1,c2,c3 = st.columns(3)
+    with c1: st.metric(f"Jumlah Laporan {MODE_KPPK}", len(lap_list_kppk))
+    with c2: 
+        tarikh_unique = len(set([l.get('tarikh_lawatan','') for l in lap_list_kppk]))
+        st.metric("Bilangan Tarikh", tarikh_unique)
+    with c3:
+        pemantau_unique = len(set([l.get('nama_pemantau','') for l in lap_list_kppk]))
+        st.metric("Bilangan Pemantau", pemantau_unique)
+    
+    # Filter ikut tarikh pemantauan (pilih tarikh → keluar semua laporan ikut tarikh)
+    from collections import Counter
+    tarikh_all = [l.get('tarikh_lawatan','') for l in lap_list_kppk]
+    counter_tarikh = Counter(tarikh_all)
+    unique_tarikh = sorted(set(tarikh_all), reverse=True)
+    
+    tarikh_options = ["📅 Semua Tarikh"] + [f"{t} ({counter_tarikh[t]} laporan)" for t in unique_tarikh if t]
+    pilih_tarikh_raw = st.selectbox(f"📅 Pilih Tarikh Pemantauan {MODE_KPPK} ({len(unique_tarikh)} tarikh, {len(lap_list_kppk)} laporan):", tarikh_options)
+    
+    if pilih_tarikh_raw == "📅 Semua Tarikh":
+        filtered_kppk = lap_list_kppk
+    else:
+        tarikh_selected = pilih_tarikh_raw.split(" (")[0]
+        filtered_kppk = [l for l in lap_list_kppk if l.get('tarikh_lawatan','') == tarikh_selected]
+    
+    filtered_kppk = sorted(filtered_kppk, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
+    
+    st.write(f"Menunjukkan {len(filtered_kppk)} laporan untuk {pilih_tarikh_raw}")
+    
+    if len(filtered_kppk) > 1:
+        pilihan_labels = []
+        for l in filtered_kppk:
+            mp_short = l.get('mata_pelajaran','')[:35]
+            pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:25]} | {l.get('masa_lawatan','')} | {mp_short} | 👤 {l.get('nama_pemantau','')[:15]}")
+        idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE_KPPK} - {pilih_tarikh_raw}:", range(len(filtered_kppk)), format_func=lambda i: pilihan_labels[i])
+        sel = filtered_kppk[idx_pilih]
+    else:
+        sel = filtered_kppk[0]
+        st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} {sel.get('masa_lawatan','')} | {sel['mata_pelajaran'][:40]}")
+    
+    MODE = MODE_KPPK
+    lap_list = lap_list_kppk
+    
+    # Badge helper untuk KPPK
+    def badge(text, bg="#E3F2FD", color="#0D47A1"):
+        return f'<span style="display:inline-block; background:{bg}; color:{color}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin:1px;">{text}</span>'
+    
+    b_kebal = sel.get('bilik_kebal_penyelia','')
+    if b_kebal and "Penyelia Kawasan" in str(sel.get('jawatan_pemantau','')):
+        pemantau_html = f"👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')} {badge(f'🏦 Bilik Kebal: {b_kebal}', '#FFF3E0', '#EF6C00')}"
+    else:
+        pemantau_html = f"👤 {sel.get('nama_pemantau','')} | {badge(sel.get('jawatan_pemantau',''), '#0D47A1', 'white')} {badge(sel.get('daerah_pemantau',''), '#E0E7FF', '#4338CA')}"
+    
+    b_pep = sel.get('bilik_peperiksaan',0)
+    b_kuar = sel.get('bilik_kuarantin',0)
+    b_sakit = sel.get('bilik_sakit',0)
+    b_dewan = sel.get('dewan',0)
+    b_total = sel.get('total_bilik',0)
+    b_makmal = sel.get('bilik_makmal',0)
+    b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan',0))
+    b_persediaan = sel.get('bilik_persediaan',0)
+    b_sidang = sel.get('sidang_no','')
+    b_ujian = sel.get('bilik_ujian',0)
+    b_menunggu = sel.get('bilik_menunggu', sel.get('bilik_lapor',0))
+    b_lapor = sel.get('bilik_lapor',0)
+    b_station = sel.get('station',0)
+    b_petugas = sel.get('petugas',0)
+    b_kelas = sel.get('bilik_kelas',0)
+    c_berdaftar = sel.get('calon_berdaftar',0)
+    c_hadir = sel.get('calon_hadir',0)
+    c_th = sel.get('calon_tidak_hadir',0)
+    c_cicir = sel.get('calon_cicir',0)
+    c_bantah = sel.get('calon_bantah',0)
+    c_menumpang = sel.get('calon_menumpang',0)
+    c_keseluruhan = sel.get('calon_keseluruhan',0)
+    c_hari = sel.get('hari','')
+    
+    if MODE in ["SPM"]:
+        bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+    elif MODE=="AMALI":
+        b_kuar_amali = sel.get('bilik_kuarantin', 0)
+        b_bilangan_sidang = sel.get('bilangan_sidang', sel.get('total_bilik', 0))
+        b_sidang_lawatan = sel.get('sidang_lawatan', sel.get('sidang_no',''))
+        bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
+        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
+    elif MODE in ["UBBM","UBBI"]:
+        bilik_html = f"{badge(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+    else:
+        bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+    
+    jenis_label = sel.get('jenis','SPM')
+    if jenis_label=="UBBM":
+        jenis_label_full = "UJIAN BERTUTUR BAHASA MELAYU"
+        jenis_icon = "🗣️"
+    elif jenis_label=="UBBI":
+        jenis_label_full = "UJIAN BERTUTUR BAHASA INGGERIS"
+        jenis_icon = "🗣️"
+    elif jenis_label=="STAM":
+        jenis_label_full = "SIJIL TINGGI AGAMA MALAYSIA (STAM)"
+        jenis_icon = "🕌"
+    elif jenis_label=="MUET":
+        jenis_label_full = "MALAYSIAN UNIVERSITY ENGLISH TEST (MUET)"
+        jenis_icon = "🎓"
+    elif jenis_label=="AMALI":
+        jenis_label_full = "AMALI SAINS SPM 2026"
+        jenis_icon = "🧪"
+    else:
+        jenis_label_full = "SPM 2026"
+        jenis_icon = "📝"
+    
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #0D2A54 0%, #0D47A1 100%); border-radius:14px; padding:16px; color:white; margin:12px 0;">
+        <div style="font-size:16px; font-weight:800;">{jenis_icon} {jenis_label_full} - {sel.get('no_pusat','')}</div>
+        <div style="font-size:12px; color:#90CAF9;">{sel.get('nama_sekolah','')} | {sel.get('tarikh_lawatan','')} {sel.get('masa_lawatan','')} | {sel.get('mata_pelajaran','')[:50]}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <table style="width:100%; border-collapse:collapse; font-size:12px; border:1px solid #E0E0E0; border-radius:10px; overflow:hidden;">
+        <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;"><td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1;">🏫 NAMA PUSAT / SEKOLAH ({MODE})</td><td style="padding:11px 14px; font-weight:700;">{sel.get('nama_sekolah','')}</td></tr>
+        <tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;">📍 NO PUSAT / DAERAH</td><td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel.get('no_pusat','')}</b> <span style="background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px; margin-left:8px;">📍 {sel.get('kod_ppd','')} ({sel.get('daerah_pemantau','')})</span></td></tr>
+        <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:700; color:#475569;">📅 TARIKH, HARI & MP</td><td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel.get('tarikh_lawatan','')}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel.get('masa_lawatan','')}</span> <b style="color:#0D47A1; margin-left:8px;">{sel.get('mata_pelajaran','')}</b></td></tr>
+        <tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;">🚪 BILIK ({MODE})</td><td style="padding:10px 14px;">{bilik_html}</td></tr>
+        <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:800; color:#EF6C00;">👮 KEHADIRAN PETUGAS {MODE}</td><td style="padding:10px 14px;">{petugas_html}</td></tr>
+        <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:700; color:#475569;">👥 KEHADIRAN CALON UNTUK SIDANG DIPANTAU</td><td style="padding:10px 14px;">{calon_html}</td></tr>
+        <tr style="border-bottom:1px solid #F1F5F9;"><td style="padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;">📝 ULASAN</td><td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel.get('ulasan','Tiada ulasan')} ❞</td></tr>
+        <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);"><td style="padding:11px 14px; font-weight:800; color:#0D47A1;">👮 PEMANTAU</td><td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td></tr>
+    </table>
+    """, unsafe_allow_html=True)
+    
+    st.info("👔 KPPK/Pengarah - Mod Lihat Sahaja - Tiada borang Maklumat Pusat, tiada akses padam - Hanya pilih peperiksaan & tarikh")
+    st.stop()
+
 jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True, label_visibility="collapsed")
 
 if "1. Pemantauan SPM" in jenis:
