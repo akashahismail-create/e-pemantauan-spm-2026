@@ -435,19 +435,22 @@ else:
     pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
 
 if MODE=="AMALI":
+    # NAMA MAKMAL - ISI SENDIRI, BUKAN PILIHAN
+    pilih_makmal = st.text_input("4️⃣ Nama Makmal (AMALI) - Isi Sendiri ✍️", placeholder="Contoh: Makmal Sains 1 / Makmal Kimia / Makmal Fizik / Makmal Biologi")
+    nama_makmal_final = pilih_makmal.strip() if pilih_makmal else ""
+    # Papar hint makmal yang ada dalam data (jika ada) sebagai rujukan sahaja
     try:
         df_ringkas_amali, _ = load_amali()
-        if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"]:
+        if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and not df_ringkas_amali.empty:
             df_mak = df_ringkas_amali[df_ringkas_amali["Nama_Pusat"]==pilih_nama] if "Nama_Pusat" in df_ringkas_amali.columns else pd.DataFrame()
-            if not df_mak.empty and pilih_no != "-- Pilih Sekolah Dulu --":
-                df_mak = df_mak[df_mak["No_Pusat"]==pilih_no] if "No_Pusat" in df_mak.columns else df_mak
-            makmal_opts = ["-- Pilih Makmal --"] + df_mak["Nama_Makmal"].dropna().unique().tolist() if not df_mak.empty and "Nama_Makmal" in df_mak.columns else ["-- Tiada Makmal --"]
-        else:
-            makmal_opts = ["-- Pilih Sekolah Dulu --"]
+            if not df_mak.empty and "Nama_Makmal" in df_mak.columns:
+                hint_makmal = df_mak["Nama_Makmal"].dropna().unique().tolist()[:5]
+                if hint_makmal:
+                    st.caption(f"💡 Rujukan makmal di pusat ini: {', '.join(hint_makmal)} (boleh taip sendiri)")
     except:
-        makmal_opts = ["-- Tiada Makmal --"]
-    pilih_makmal = st.selectbox("4️⃣ Nama Makmal (AMALI)", makmal_opts)
-    nama_makmal_final = pilih_makmal if pilih_makmal not in ["-- Pilih Makmal --", "-- Pilih Sekolah Dulu --", "-- Tiada Makmal --"] else ""
+        pass
+    if not nama_makmal_final:
+        st.info("📝 Nama Makmal diisi manual oleh pemantau - Contoh: Makmal Sains 1")
 else:
     nama_makmal_final = ""
     pilih_makmal = ""
