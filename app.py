@@ -335,6 +335,7 @@ def save_all_laporan(list_data):
 def save_laporan(data):
     ex = load_laporan(); ex.append(data); save_all_laporan(ex)
 
+# KOD DAERAH RASMI - BA hingga BK (10 daerah utama Selangor)
 KOD_DAERAH_MAP = {
     "BA": "KLANG",
     "BB": "KUALA LANGAT",
@@ -346,32 +347,67 @@ KOD_DAERAH_MAP = {
     "BH": "PETALING PERDANA",
     "BJ": "SEPANG",
     "BK": "PETALING UTAMA",
+    # Kod tambahan / alias (untuk filter data lama)
     "BL": "PETALING UTAMA",
     "BM": "KLANG",
     "BN": "GOMBAK",
     "A": "KLANG",
     "J": "SEPANG",
 }
+
+# Reverse map: Nama Daerah -> List Kod (untuk filter tepat)
+NAMA_KE_KOD_MAP = {
+    "KLANG": ["BA", "BM", "A"],
+    "KUALA LANGAT": ["BB"],
+    "KUALA SELANGOR": ["BC"],
+    "HULU LANGAT": ["BD"],
+    "HULU SELANGOR": ["BE"],
+    "SABAK BERNAM": ["BF"],
+    "GOMBAK": ["BG", "BN"],
+    "PETALING PERDANA": ["BH"],
+    "SEPANG": ["BJ", "J"],
+    "PETALING UTAMA": ["BK", "BL"],
+}
+
+# Senarai 10 daerah sahaja - papar nama sahaja, tak payah kod (BA, BJ etc)
+DAERAH_LIST = ["KLANG", "KUALA LANGAT", "KUALA SELANGOR", "HULU LANGAT", "HULU SELANGOR", "SABAK BERNAM", "GOMBAK", "PETALING PERDANA", "SEPANG", "PETALING UTAMA"]
 def kod_to_daerah(kod):
     if not kod:
         return ""
     kod = str(kod).strip().upper()
+    # Kod penuh (BA, BB etc)
+    if kod in KOD_DAERAH_MAP:
+        return KOD_DAERAH_MAP[kod]
+    # Ambil 2 huruf pertama
     k2 = kod[:2]
     if k2 in KOD_DAERAH_MAP:
         return KOD_DAERAH_MAP[k2]
+    # Jika dah nama daerah terus
+    if kod in DAERAH_LIST:
+        return kod
     return kod
+
 def get_nama_daerah_from_pusat(no_pusat, kod_ppd=""):
     if kod_ppd:
         nama = kod_to_daerah(kod_ppd)
         if nama != kod_ppd:
             return nama
+        # Jika kod_ppd sudah nama daerah
+        if kod_ppd.upper() in DAERAH_LIST:
+            return kod_ppd.upper()
     if no_pusat:
         k = str(no_pusat).strip().upper()
         huruf = "".join([c for c in k if c.isalpha()])[:2]
         if huruf:
             nama = kod_to_daerah(huruf)
+            if nama in DAERAH_LIST:
+                return nama
             return nama
     return kod_ppd or ""
+
+def daerah_to_kod_list(nama_daerah):
+    nama_daerah = str(nama_daerah).strip().upper()
+    return NAMA_KE_KOD_MAP.get(nama_daerah, [])
 
 DAERAH_LIST = ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"]
 
@@ -381,41 +417,50 @@ if MODE in ["STAM","MUET"]:
 else:
     st.caption("1️⃣ Pilih Daerah/PPD → 2️⃣ Pilih Sekolah (auto filter) → 3️⃣ Pilih No Pusat")
 
-try:
-    kod_ppd_unique = sorted(df_pusat["Kod_PPD"].dropna().unique().tolist())
-except:
-    kod_ppd_unique = DAERAH_LIST
-daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
-daerah_options = list(dict.fromkeys(daerah_options))
+# Pilihan Daerah - hanya 10 nama daerah, tak payah kod (BA, BJ etc) - ikut arahan Kashah
+daerah_options = ["-- Pilih Daerah --"] + DAERAH_LIST
 
 col_d, col_s, col_p = st.columns([1,2,1])
-pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD (Kekal)", daerah_options)
+pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
 
 # ===== UNTUK STAM - ISI SENDIRI, TAK PERLU PILIHAN =====
 if MODE in ["STAM","MUET"]:
     pilih_nama = col_s.text_input(f"2️⃣ Nama Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: SMKA ... / Pusat STAM ...")
     pilih_no = col_p.text_input(f"3️⃣ No Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: BC001 / ST001")
-    kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
+    # Kod PPD ambil dari pilihan daerah - map nama ke kod pertama
+    if pilih_daerah != "-- Pilih Daerah --" and pilih_daerah in NAMA_KE_KOD_MAP:
+        kod_ppd = NAMA_KE_KOD_MAP[pilih_daerah][0]
+    else:
+        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
     bil_calon = ""
     df_by_daerah = df_pusat
     nama_list = []
     no_opts = []
     st.info(f"📝 {MODE} - Pusat & No Pusat diisi manual oleh pemantau (tak sama dengan SPM)")
 else:
-    # SPM, AMALI, UBBM, UBBI - pakai dropdown
+    # SPM, AMALI, UBBM, UBBI - pakai dropdown dengan filter tepat ikut kod
     if pilih_daerah != "-- Pilih Daerah --":
-        if "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
+        if pilih_daerah in NAMA_KE_KOD_MAP:
+            # Filter tepat ikut senarai kod untuk daerah tersebut
+            kod_list = NAMA_KE_KOD_MAP[pilih_daerah]
+            if "Kod_PPD" in df_pusat.columns:
+                df_by_daerah = df_pusat[df_pusat["Kod_PPD"].astype(str).str.strip().str.upper().isin(kod_list)]
+            else:
+                df_by_daerah = df_pusat
+        elif "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
+            # Jika masih pilih kod lama (BA, BJ etc)
             df_by_daerah = df_pusat[df_pusat["Kod_PPD"]==pilih_daerah]
         else:
             df_by_daerah = df_pusat
-            try:
-                mask = df_pusat["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
-                if mask.any():
-                    df_by_daerah = df_pusat[mask]
-            except:
-                df_by_daerah = df_pusat
+        
+        if df_by_daerah.empty:
+            # Fallback: cuba filter ikut nama daerah dalam data jika ada
+            df_by_daerah = df_pusat
+            st.warning(f"⚠️ Tiada data Kod_PPD untuk {pilih_daerah}, papar semua sekolah")
+        
         nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
-        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
+        kod_display = ", ".join(NAMA_KE_KOD_MAP.get(pilih_daerah, [pilih_daerah]))
+        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah} (Kod: {kod_display})")
     else:
         df_by_daerah = df_pusat
         nama_list = ["-- Pilih Daerah Dulu --"]
