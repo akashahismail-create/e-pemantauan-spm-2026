@@ -100,8 +100,8 @@ st.markdown("""
 <div class="header-biru">
     <h1>🏛️ JABATAN PENDIDIKAN NEGERI SELANGOR</h1>
     <h3>SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</h3>
-    <h2>📋 E-PEMANTAUAN SPM & AMALI SAINS 2026</h2>
-    <p>👥 35 Pemantau | 🎓 504 Pusat Peperiksaan & 473 Makmal | 🔐 Sistem Login Selamat</p>
+    <h2>📋 e-Pemantauan Sektor Pentaksiran dan Peperiksaan JPN Selangor Tahun 2026</h2>
+    <p>👥 35 Pemantau | 🎓 SPM, Amali Sains, Ujian Bertutur BM/BI & STAM | 🔐 Sistem Login Selamat</p>
 </div>
 """, unsafe_allow_html=True)
 
