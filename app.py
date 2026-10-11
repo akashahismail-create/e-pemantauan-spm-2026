@@ -948,8 +948,132 @@ else: # MUET
     total_bilik = bilik_kelas+bilik_kuar
 
 st.divider()
-if MODE in ["SPM","AMALI"]:
-    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #C2185B 0%, #EC407A 100%);">👥</div><div><div class="borang-header-title">Bilangan Calon SPM/Amali</div><div class="borang-header-subtitle">Hadir + Berdaftar + Cicir + Bantah</div></div></div>', unsafe_allow_html=True)
+if MODE=="AMALI":
+    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #C2185B 0%, #EC407A 100%);">👥</div><div><div class="borang-header-title">Bilangan Calon Amali - Auto Kira Makmal & Sidang</div><div class="borang-header-subtitle">1 Makmal = 4 Sidang x 20 = 80 calon | Sains Tambahan = 3 Sidang x 20 = 60 calon</div></div></div>', unsafe_allow_html=True)
+    
+    # Auto detect Sains Tambahan
+    is_sains_tambahan = "Tambahan" in str(pilih_mp) or "4561" in str(pilih_mp)
+    sidang_per_makmal = 3 if is_sains_tambahan else 4
+    kapasiti_per_makmal = sidang_per_makmal * 20
+    
+    ca_top1, ca_top2 = st.columns([2,1])
+    calon_berdaftar_total = ca_top1.number_input("📊 Jumlah Calon Berdaftar Keseluruhan (Semua Makmal)", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 103, help="Jumlah sebenar calon keseluruhan untuk mata pelajaran ini di pusat ini, contoh 103")
+    
+    # Auto kira makmal diperlukan
+    import math
+    makmal_diperlukan = math.ceil(calon_berdaftar_total / kapasiti_per_makmal) if calon_berdaftar_total > 0 else 1
+    baki_calon = calon_berdaftar_total % kapasiti_per_makmal
+    if baki_calon == 0 and calon_berdaftar_total > 0:
+        baki_calon = kapasiti_per_makmal
+    
+    # Info kapasiti
+    if is_sains_tambahan:
+        ca_top2.info(f"🔬 Sains Tambahan\n{sidang_per_makmal} Sidang x 20 = {kapasiti_per_makmal} calon/makmal\n{makmal_diperlukan} Makmal Diperlukan")
+    else:
+        ca_top2.info(f"🧪 Fizik/Kimia/Bio\n{sidang_per_makmal} Sidang x 20 = {kapasiti_per_makmal} calon/makmal\n{makmal_diperlukan} Makmal Diperlukan")
+    
+    # Detail agihan makmal
+    with st.expander(f"📋 Agihan {calon_berdaftar_total} Calon ke {makmal_diperlukan} Makmal (Auto Kira)", expanded=True):
+        agihan_text = ""
+        baki = calon_berdaftar_total
+        for m in range(1, makmal_diperlukan+1):
+            if baki >= kapasiti_per_makmal:
+                calon_makmal = kapasiti_per_makmal
+                baki -= kapasiti_per_makmal
+            else:
+                calon_makmal = baki
+                baki = 0
+            agihan_text += f"**Makmal {m}:** {calon_makmal} calon ("
+            # Sidang breakdown
+            sidang_baki = calon_makmal
+            sidang_list = []
+            for s in range(1, sidang_per_makmal+1):
+                if sidang_baki >= 20:
+                    sidang_list.append(f"Sidang {s}: 20")
+                    sidang_baki -= 20
+                elif sidang_baki > 0:
+                    sidang_list.append(f"Sidang {s}: {sidang_baki}")
+                    sidang_baki = 0
+                else:
+                    break
+            agihan_text += ", ".join(sidang_list) + ")\n"
+        st.markdown(agihan_text)
+        st.caption(f"Contoh: 103 calon Fizik = Makmal 1: 80 calon (S1:20, S2:20, S3:20, S4:20) + Makmal 2: 23 calon (S1:20, S2:3)")
+    
+    st.divider()
+    st.markdown("#### 🎯 Sidang Yang Dilawati Pemantau (Fokus Laporan)")
+    cs1, cs2, cs3, cs4 = st.columns(4)
+    makmal_lawatan = cs1.selectbox("🏫 Makmal Lawatan", [f"Makmal {i}" for i in range(1, makmal_diperlukan+1)], help="Makmal mana yang pemantau lawat")
+    sidang_lawatan_detail = cs2.selectbox("⏰ Sidang Lawatan (Dilawat)", [f"Sidang {i}" for i in range(1, sidang_per_makmal+1)], help="Sidang ke berapa yang dilawati")
+    
+    # Kira jumlah sebenar calon untuk sidang yang dilawati ini
+    # Logik: jika makmal lawatan bukan makmal terakhir, semua sidang penuh 20
+    # Jika makmal terakhir, sidang-sidang awal penuh 20, sidang terakhir mungkin baki
+    makmal_num = int(makmal_lawatan.split()[-1])
+    sidang_num = int(sidang_lawatan_detail.split()[-1])
+    
+    # Kira calon dalam makmal ini
+    calon_dalam_makmal_ini = 0
+    temp_baki = calon_berdaftar_total
+    for m in range(1, makmal_diperlukan+1):
+        if temp_baki >= kapasiti_per_makmal:
+            calon_m = kapasiti_per_makmal
+            temp_baki -= kapasiti_per_makmal
+        else:
+            calon_m = temp_baki
+            temp_baki = 0
+        if m == makmal_num:
+            calon_dalam_makmal_ini = calon_m
+            break
+    
+    # Kira jumlah sebenar untuk sidang ini
+    sidang_baki2 = calon_dalam_makmal_ini
+    jumlah_sebenar_sidang = 20
+    for s in range(1, sidang_per_makmal+1):
+        if s < sidang_num:
+            if sidang_baki2 >= 20:
+                sidang_baki2 -= 20
+            else:
+                sidang_baki2 = 0
+        elif s == sidang_num:
+            if sidang_baki2 >= 20:
+                jumlah_sebenar_sidang = 20
+            elif sidang_baki2 > 0:
+                jumlah_sebenar_sidang = sidang_baki2
+            else:
+                jumlah_sebenar_sidang = 0
+            break
+    
+    cs3.metric("📊 Jumlah Sebenar Sidang Dilawati", f"{jumlah_sebenar_sidang} calon", help="Jumlah sebenar calon yang sepatutnya hadir sidang ini (max 20)")
+    
+    # Input hadir untuk sidang ini sahaja
+    calon_hadir_sidang = cs4.number_input(f"✅ Hadir {sidang_lawatan_detail} {makmal_lawatan}", 0, 20, min(jumlah_sebenar_sidang, 20) if jumlah_sebenar_sidang>0 else 20, help=f"Hadir untuk {sidang_lawatan_detail} di {makmal_lawatan} sahaja, max {jumlah_sebenar_sidang}")
+    
+    calon_berdaftar = calon_berdaftar_total  # Simpan total keseluruhan
+    calon_hadir = calon_hadir_sidang  # Untuk graf, hadir sidang ini
+    jumlah_sebenar_sidang_var = jumlah_sebenar_sidang
+    tidak_hadir_sidang = jumlah_sebenar_sidang - calon_hadir_sidang
+    tidak_hadir = tidak_hadir_sidang  # Untuk graf
+    keseluruhan = calon_berdaftar_total
+    
+    # Simpan extra data untuk laporan
+    st.session_state['amali_makmal_diperlukan'] = makmal_diperlukan
+    st.session_state['amali_makmal_lawatan'] = makmal_lawatan
+    st.session_state['amali_sidang_lawatan_detail'] = sidang_lawatan_detail
+    st.session_state['amali_jumlah_sebenar_sidang'] = jumlah_sebenar_sidang
+    st.session_state['amali_sidang_per_makmal'] = sidang_per_makmal
+    st.session_state['amali_kapasiti_per_makmal'] = kapasiti_per_makmal
+    
+    ca_bot1, ca_bot2 = st.columns(2)
+    calon_cicir = ca_bot1.number_input("Calon Cicir (Keseluruhan Pusat)", 0,50,0)
+    calon_bantah = ca_bot2.number_input("Calon Bantah (Keseluruhan Pusat)", 0,50,0)
+    calon_menumpang=0
+    
+    st.success(f"✅ Makmal: {makmal_diperlukan} diperlukan | {makmal_lawatan} {sidang_lawatan_detail}: Jumlah Sebenar {jumlah_sebenar_sidang} calon, Hadir {calon_hadir_sidang}, TH {tidak_hadir_sidang} (Sebenar - Hadir)")
+    st.caption(f"Formula: Jumlah Sebenar Sidang = min(20, baki calon makmal) | TH Sidang = Sebenar - Hadir | Contoh 103 calon = Makmal1: 80 (4x20) + Makmal2: 23 (20+3)")
+
+if MODE=="SPM":
+    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #C2185B 0%, #EC407A 100%);">👥</div><div><div class="borang-header-title">Bilangan Calon SPM</div><div class="borang-header-subtitle">Hadir + Berdaftar + Cicir + Bantah</div></div></div>', unsafe_allow_html=True)
     ca1,ca2,ca3,ca4 = st.columns(4)
     calon_hadir = ca1.number_input("Calon Hadir", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 20)
     calon_berdaftar = ca2.number_input("Calon Berdaftar", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 22)
@@ -1074,6 +1198,21 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         st.warning(f"🔴 {len(errors)} maklumat belum lengkap.")
         st.stop()
     
+    # Simpan extra info untuk AMALI
+    extra_amali = {}
+    if MODE=="AMALI":
+        extra_amali = {
+            "makmal_diperlukan": st.session_state.get('amali_makmal_diperlukan', 1),
+            "makmal_lawatan": st.session_state.get('amali_makmal_lawatan', 'Makmal 1'),
+            "sidang_lawatan_detail": st.session_state.get('amali_sidang_lawatan_detail', 'Sidang 1'),
+            "jumlah_sebenar_sidang": st.session_state.get('amali_jumlah_sebenar_sidang', 20),
+            "sidang_per_makmal": st.session_state.get('amali_sidang_per_makmal', 4),
+            "kapasiti_per_makmal": st.session_state.get('amali_kapasiti_per_makmal', 80),
+            "calon_berdaftar_total": calon_berdaftar if 'calon_berdaftar' in locals() else 0,
+            "calon_hadir_sidang": calon_hadir if 'calon_hadir' in locals() else 0,
+            "tidak_hadir_sidang": tidak_hadir if 'tidak_hadir' in locals() else 0,
+        }
+    
     data = {
         "jenis": MODE, "tarikh_submit": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "nama_sekolah": pilih_nama_final, "no_pusat": pilih_no_final, "nama_makmal": nama_makmal_final,
@@ -1104,7 +1243,8 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "calon_menumpang": calon_menumpang if 'calon_menumpang' in locals() else 0,
         "calon_keseluruhan": keseluruhan,
         "ulasan": ulasan, "nama_pemantau": nama_pemantau,
-        "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau
+        "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
+        **extra_amali
     }
     save_laporan(data)
     st.session_state["last"] = data
