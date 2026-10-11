@@ -991,7 +991,9 @@ elif MODE=="AMALI":
     bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 elif MODE in ["UBBM","UBBI"]:
-    bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    # FIX: Petugas jangan letak di Bilik - nanti keliru, letak di Kehadiran Petugas asing di atas Kehadiran Calon
+    bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 else:
     bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Petugas: {b_petugas}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
@@ -1112,6 +1114,10 @@ elif MODE in ["UBBM","UBBI"]:
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🗣️ BILIK UJIAN BERTUTUR {MODE} (Ada Station & Sidang)</td>
                         <td style="padding:10px 14px;">{bilik_html}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS {MODE}</td>
+                        <td style="padding:10px 14px;">{petugas_html}</td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON {MODE}</td>
