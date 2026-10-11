@@ -179,6 +179,7 @@ def login_screen():
     
     return False
 
+
 if not st.session_state.logged_in:
     login_screen()
     st.stop()
@@ -198,15 +199,16 @@ with c_logout:
         st.rerun()
 
 st.divider()
-jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains"], horizontal=True, label_visibility="collapsed")
+jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM"], horizontal=True, label_visibility="collapsed")
 
-if "SPM" in jenis:
+if "1. Pemantauan SPM" in jenis:
     df_pusat, df_jadual = load_spm()
     df_jadual["TARIKH_CLEAN"] = df_jadual["TARIKH"].astype(str).str.extract(r"(\d{4}-\d{2}-\d{2})")
     df_jadual["MP_CLEAN"] = df_jadual["MATA PELAJARAN"].astype(str).str.replace("\n", " ").str.strip()
     SENARAI_TARIKH = sorted(df_jadual["TARIKH_CLEAN"].dropna().unique().tolist())
     MODE = "SPM"
-else:
+    df_ringkas = df_pusat
+elif "2. Pemantauan Amali" in jenis:
     df_ringkas, df_jadual_amali = load_amali()
     df_jadual_amali["tarikh_clean"] = df_jadual_amali["tarikh"].astype(str).str.replace(",", ".").str.strip()
     def parse_t(t):
@@ -221,8 +223,36 @@ else:
     df_jadual_amali["mp_clean"] = df_jadual_amali["mata_pelajaran"].astype(str).str.title() + " (" + df_jadual_amali["kod_mata_pelajaran"].astype(str) + "/" + df_jadual_amali["kertas"].astype(str) + ")"
     SENARAI_TARIKH = sorted(df_jadual_amali["tarikh_iso"].dropna().unique().tolist())
     MODE = "AMALI"
+    df_pusat, _ = load_spm()
+elif "3. Ujian Bertutur BM" in jenis:
+    df_pusat, _ = load_spm()
+    SENARAI_TARIKH = ["2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27"]
+    MODE = "UBBM"
+    df_ringkas = df_pusat
+    df_jadual_amali = pd.DataFrame()
+elif "4. Ujian Bertutur BI" in jenis:
+    df_pusat, _ = load_spm()
+    SENARAI_TARIKH = ["2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27"]
+    MODE = "UBBI"
+    df_ringkas = df_pusat
+    df_jadual_amali = pd.DataFrame()
+else:
+    df_pusat, _ = load_spm()
+    SENARAI_TARIKH = ["2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-11-02","2026-11-03","2026-11-04","2026-11-05","2026-11-06"]
+    MODE = "STAM"
+    df_ringkas = df_pusat
+    df_jadual_amali = pd.DataFrame()
 
-FILE_LAP = "laporan_spm_504.json" if MODE=="SPM" else "laporan_amali_473.json"
+if MODE=="SPM":
+    FILE_LAP = "laporan_spm_504.json"
+elif MODE=="AMALI":
+    FILE_LAP = "laporan_amali_473.json"
+elif MODE=="UBBM":
+    FILE_LAP = "laporan_ubbm.json"
+elif MODE=="UBBI":
+    FILE_LAP = "laporan_ubbi.json"
+else:
+    FILE_LAP = "laporan_stam.json"
 
 def load_laporan():
     if os.path.exists(FILE_LAP):
@@ -237,8 +267,6 @@ def save_all_laporan(list_data):
 def save_laporan(data):
     ex = load_laporan(); ex.append(data); save_all_laporan(ex)
 
-
-# ===== MAPPING KOD DAERAH SPM SELANGOR -> NAMA DAERAH =====
 KOD_DAERAH_MAP = {
     "BA": "KLANG",
     "BB": "KUALA LANGAT",
@@ -271,7 +299,7 @@ def get_nama_daerah_from_pusat(no_pusat, kod_ppd=""):
             return nama
     if no_pusat:
         k = str(no_pusat).strip().upper()
-        huruf = ''.join([c for c in k if c.isalpha()])[:2]
+        huruf = "".join([c for c in k if c.isalpha()])[:2]
         if huruf:
             nama = kod_to_daerah(huruf)
             return nama
@@ -282,129 +310,78 @@ DAERAH_LIST = ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang
 st.markdown("#### 🏫 Maklumat Pusat - Pilih Daerah Dulu")
 st.caption("1️⃣ Pilih Daerah/PPD → 2️⃣ Pilih Sekolah (auto filter) → 3️⃣ Pilih No Pusat")
 
-if MODE=="SPM":
-    # Step 1: Pilih Daerah
-    try:
-        kod_ppd_unique = sorted(df_pusat["Kod_PPD"].dropna().unique().tolist())
-    except:
-        kod_ppd_unique = DAERAH_LIST
-    daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
-    # Buang duplicate
-    daerah_options = list(dict.fromkeys(daerah_options))
-    
-    col_d, col_s, col_p = st.columns([1,2,1])
-    pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
-    
-    # Filter dataframe ikut daerah
-    if pilih_daerah != "-- Pilih Daerah --":
-        # Cuba filter ikut Kod_PPD dulu
-        if "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
-            df_by_daerah = df_pusat[df_pusat["Kod_PPD"]==pilih_daerah]
-        else:
-            # Kalau pilih nama daerah penuh, cuba cari Kod_PPD yang mapping atau filter semua
-            # Kita cuba filter dengan contains (fallback: tunjuk semua)
-            df_by_daerah = df_pusat
-            # Cuba cari mapping manual jika Kod_PPD ada hint daerah
-            # Contoh: jika Kod_PPD mengandungi nama daerah
-            try:
-                mask = df_pusat["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
-                if mask.any():
-                    df_by_daerah = df_pusat[mask]
-            except:
-                df_by_daerah = df_pusat
-        nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
-        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
+try:
+    kod_ppd_unique = sorted(df_pusat["Kod_PPD"].dropna().unique().tolist())
+except:
+    kod_ppd_unique = DAERAH_LIST
+daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
+daerah_options = list(dict.fromkeys(daerah_options))
+
+col_d, col_s, col_p = st.columns([1,2,1])
+pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
+
+if pilih_daerah != "-- Pilih Daerah --":
+    if "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
+        df_by_daerah = df_pusat[df_pusat["Kod_PPD"]==pilih_daerah]
     else:
         df_by_daerah = df_pusat
-        nama_list = ["-- Pilih Daerah Dulu --"]
-    
-    pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah", nama_list)
-    
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
-        df_f = df_by_daerah[df_by_daerah["Nama_Pusat"]==pilih_nama]
-        no_opts = df_f["No_Pusat"].tolist()
-        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
-        bil_calon = df_f.iloc[0]["Bil_Calon_Pusat"] if not df_f.empty and "Bil_Calon_Pusat" in df_f.columns else ""
-    else:
-        no_opts = ["-- Pilih Sekolah Dulu --"]
-        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
-        bil_calon = ""
-    
-    pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
-    
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
-        st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
-    
-    pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
-    pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
-    nama_makmal_final = ""
+        try:
+            mask = df_pusat["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
+            if mask.any():
+                df_by_daerah = df_pusat[mask]
+        except:
+            df_by_daerah = df_pusat
+    nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
+    st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
+else:
+    df_by_daerah = df_pusat
+    nama_list = ["-- Pilih Daerah Dulu --"]
 
-else:  # AMALI
+pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah / Pusat", nama_list)
+
+if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
+    df_f = df_by_daerah[df_by_daerah["Nama_Pusat"]==pilih_nama]
+    no_opts = df_f["No_Pusat"].tolist()
+    kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
+    bil_calon = df_f.iloc[0]["Bil_Calon_Pusat"] if not df_f.empty and "Bil_Calon_Pusat" in df_f.columns else ""
+else:
+    no_opts = ["-- Pilih Sekolah Dulu --"]
+    kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
+    bil_calon = ""
+
+pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
+
+if MODE=="AMALI":
     try:
-        kod_ppd_unique = sorted(df_ringkas["Kod_PPD"].dropna().unique().tolist())
-    except:
-        kod_ppd_unique = DAERAH_LIST
-    daerah_options = ["-- Pilih Daerah --"] + kod_ppd_unique + DAERAH_LIST
-    daerah_options = list(dict.fromkeys(daerah_options))
-    
-    col_d, col_s = st.columns([1,2])
-    pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
-    
-    if pilih_daerah != "-- Pilih Daerah --":
-        if "Kod_PPD" in df_ringkas.columns and pilih_daerah in df_ringkas["Kod_PPD"].values:
-            df_by_daerah = df_ringkas[df_ringkas["Kod_PPD"]==pilih_daerah]
+        df_ringkas_amali, _ = load_amali()
+        if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"]:
+            df_mak = df_ringkas_amali[df_ringkas_amali["Nama_Pusat"]==pilih_nama] if "Nama_Pusat" in df_ringkas_amali.columns else pd.DataFrame()
+            if not df_mak.empty and pilih_no != "-- Pilih Sekolah Dulu --":
+                df_mak = df_mak[df_mak["No_Pusat"]==pilih_no] if "No_Pusat" in df_mak.columns else df_mak
+            makmal_opts = ["-- Pilih Makmal --"] + df_mak["Nama_Makmal"].dropna().unique().tolist() if not df_mak.empty and "Nama_Makmal" in df_mak.columns else ["-- Tiada Makmal --"]
         else:
-            df_by_daerah = df_ringkas
-            try:
-                mask = df_ringkas["Kod_PPD"].astype(str).str.contains(pilih_daerah[:4], case=False, na=False)
-                if mask.any():
-                    df_by_daerah = df_ringkas[mask]
-            except:
-                pass
-        nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Sekolah"].dropna().unique().tolist())
-        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah}")
-    else:
-        df_by_daerah = df_ringkas
-        nama_list = ["-- Pilih Daerah Dulu --"]
-    
-    pilih_nama = col_s.selectbox("2️⃣ Nama Sekolah", nama_list)
-    
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_nama != "-- Pilih --":
-        df_f = df_by_daerah[df_by_daerah["Nama_Sekolah"]==pilih_nama]
-        no_opts = df_f["No_Pusat"].unique().tolist()
-        makmal_opts = df_f["Nama_Makmal"].unique().tolist()
-        kod_ppd = df_f.iloc[0]["Kod_PPD"] if not df_f.empty and "Kod_PPD" in df_f.columns else pilih_daerah
-    else:
-        no_opts = ["-- Pilih Sekolah Dulu --"]
-        makmal_opts = ["-- Pilih Sekolah Dulu --"]
-        kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
-    
-    col_p, col_m = st.columns(2)
-    pilih_no = col_p.selectbox("3️⃣ No Pusat", no_opts)
-    pilih_makmal = col_m.selectbox("4️⃣ Nama Makmal", makmal_opts if 'makmal_opts' in locals() else ["-- Pilih --"])
-    
-    if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"] and pilih_makmal not in ["-- Pilih Sekolah Dulu --"]:
-        df_f2 = df_by_daerah[(df_by_daerah["No_Pusat"]==pilih_no) & (df_by_daerah["Nama_Makmal"]==pilih_makmal)] if pilih_no!="-- Pilih Sekolah Dulu --" and pilih_makmal!="-- Pilih Sekolah Dulu --" else pd.DataFrame()
-        bil_calon = df_f2.iloc[0]["Jumlah_Calon"] if not df_f2.empty and "Jumlah_Calon" in df_f2.columns else ""
-        st.success(f"✅ {pilih_nama} | No: {pilih_no} | Makmal: {pilih_makmal} | PPD: {kod_ppd}")
-    else:
-        bil_calon = ""
-    
-    pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
-    pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
-    nama_makmal_final = pilih_makmal if 'pilih_makmal' in locals() and pilih_makmal not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
+            makmal_opts = ["-- Pilih Sekolah Dulu --"]
+    except:
+        makmal_opts = ["-- Tiada Makmal --"]
+    pilih_makmal = st.selectbox("4️⃣ Nama Makmal (AMALI)", makmal_opts)
+    nama_makmal_final = pilih_makmal if pilih_makmal not in ["-- Pilih Makmal --", "-- Pilih Sekolah Dulu --", "-- Tiada Makmal --"] else ""
+else:
+    nama_makmal_final = ""
+    pilih_makmal = ""
+
+if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
+    st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
+
+pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
+pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
 
 st.divider()
 st.markdown("#### 📅 Tarikh & Masa - Pilih Bulan & Tahun")
-st.caption("✅ Boleh pilih Tahun & Bulan terus - tak payah klik next banyak kali!")
+st.caption("✅ Boleh pilih Tahun & Bulan terus")
 
-# ===== TARIKH BOLEH PILIH BULAN & TAHUN - BARU =====
-# Parse SENARAI_TARIKH untuk dapat tahun & bulan available
 from datetime import datetime as dt_parse
 try:
-    # SENARAI_TARIKH contoh: ["2026-11-23", "2026-11-24", ...]
     available_dates_sorted = sorted(SENARAI_TARIKH)
-    # Extract tahun unik
     tahun_unik = sorted(set([d.split("-")[0] for d in available_dates_sorted if "-" in d]))
     if not tahun_unik:
         tahun_unik = ["2026"]
@@ -412,47 +389,38 @@ except:
     tahun_unik = ["2026"]
     available_dates_sorted = SENARAI_TARIKH
 
-# Mapping bulan nama
 BULAN_NAMA = {"01":"Januari","02":"Februari","03":"Mac","04":"April","05":"Mei","06":"Jun","07":"Julai","08":"Ogos","09":"September","10":"Oktober","11":"November","12":"Disember"}
-BULAN_SHORT = {"01":"Jan","02":"Feb","03":"Mac","04":"Apr","05":"Mei","06":"Jun","07":"Jul","08":"Ogo","09":"Sep","10":"Okt","11":"Nov","12":"Dis"}
 
 c_y, c_m, c_d, c_t = st.columns([1,1,1.2,1.2])
-
-# Tahun
 tahun_pilih = c_y.selectbox("📅 Tahun", tahun_unik, index=tahun_unik.index("2026") if "2026" in tahun_unik else 0)
-
-# Bulan filter ikut tahun
 try:
     bulan_unik = sorted(set([d.split("-")[1] for d in available_dates_sorted if d.startswith(tahun_pilih)]))
     if not bulan_unik:
-        bulan_unik = ["11","12"]
+        bulan_unik = ["02","10","11"]
 except:
     bulan_unik = ["11","12"]
-
-# Default bulan 11 untuk SPM, 12 untuk contoh screenshot
 default_bulan_idx = 0
-if "11" in bulan_unik:
+if MODE in ["UBBM","UBBI"] and "02" in bulan_unik:
+    default_bulan_idx = bulan_unik.index("02")
+elif "10" in bulan_unik:
+    default_bulan_idx = bulan_unik.index("10")
+elif "11" in bulan_unik:
     default_bulan_idx = bulan_unik.index("11")
-elif "12" in bulan_unik:
-    default_bulan_idx = bulan_unik.index("12")
 
 bulan_pilih = c_m.selectbox("📅 Bulan", bulan_unik, index=default_bulan_idx, format_func=lambda m: f"{BULAN_NAMA.get(m,m)} ({m})")
-
-# Tarikh filter ikut tahun+bulan
 tarikh_list_bulan = [d for d in available_dates_sorted if d.startswith(f"{tahun_pilih}-{bulan_pilih}")]
 if not tarikh_list_bulan:
     tarikh_list_bulan = available_dates_sorted
-
-# Pilih tarikh
 tarikh_str = c_d.selectbox("📅 Tarikh (Hari)", tarikh_list_bulan, format_func=lambda d: dt_parse.strptime(d, "%Y-%m-%d").strftime("%d %b %Y - %A") if "-" in d else d)
-
-# Convert ke date object untuk compatibility
 try:
     tarikh = dt_parse.strptime(tarikh_str, "%Y-%m-%d").date()
 except:
     tarikh = date(2026,11,23)
 
-# Masa
+hari_minggu = tarikh.strftime("%A")
+hari_melayu = {"Monday":"Isnin","Tuesday":"Selasa","Wednesday":"Rabu","Thursday":"Khamis","Friday":"Jumaat","Saturday":"Sabtu","Sunday":"Ahad"}.get(hari_minggu, hari_minggu)
+st.caption(f"🗓️ Hari: {hari_melayu} ({hari_minggu})")
+
 jam_pilihan = []
 for h in range(6, 24):
     for m in [0, 15, 30, 45]:
@@ -465,52 +433,100 @@ try:
 except:
     masa = time(9, 0)
 
-# Validation
-if tarikh_str not in SENARAI_TARIKH:
-    st.warning(f"⚠️ Tarikh {tarikh_str} tiada dalam jadual rasmi, tapi boleh teruskan. Tarikh available: {', '.join(SENARAI_TARIKH[:5])}...")
-    # st.stop() - kita tak stop, bagi teruskan untuk flexibility
-
-
+st.divider()
 if MODE=="SPM":
     df_mp = df_jadual[df_jadual["TARIKH_CLEAN"]==tarikh_str]
-    mp_options = df_mp["MP_CLEAN"].tolist() if not df_mp.empty else ["Tiada MP"]
+    mp_options = df_mp["MP_CLEAN"].tolist() if not df_mp.empty else ["Tiada MP - Pilih Tarikh Lain"]
+    pilih_mp = st.selectbox("📚 Mata Pelajaran SPM", mp_options)
+elif MODE=="AMALI":
+    df_mp = df_jadual_amali[df_jadual_amali["tarikh_iso"]==tarikh_str] if not df_jadual_amali.empty else pd.DataFrame()
+    mp_options = df_mp["mp_clean"].tolist() if not df_mp.empty else ["Tiada MP - Pilih Tarikh Lain"]
+    pilih_mp = st.selectbox("🔬 Mata Pelajaran Amali Sains", mp_options)
+elif MODE=="UBBM":
+    pilih_mp = st.selectbox("🗣️ Mata Pelajaran", ["Bahasa Melayu - Ujian Bertutur (1103/3)", "Bahasa Melayu - Ujian Bertutur - Menumpang"])
+elif MODE=="UBBI":
+    pilih_mp = st.selectbox("🗣️ Mata Pelajaran", ["Bahasa Inggeris - Ujian Bertutur (1119/3)", "Bahasa Inggeris - Ujian Bertutur - Menumpang"])
 else:
-    df_mp = df_jadual_amali[df_jadual_amali["tarikh_iso"]==tarikh_str]
-    mp_options = df_mp["mp_clean"].tolist()
-
-pilih_mp = st.selectbox("Mata Pelajaran", mp_options)
+    stam_options = ["Hifz Al-Quran (9301)", "Hadith & Mustolah (9302)", "Tauhid & Mantiq (9303)", "Fiqh & Usul Fiqh (9304)", "Tafsir (9305)", "Nahu & Sorof (9306)", "Insya & Mutolaah (9307)", "Arudh & Qafiyah (9308)", "Balaghah (9309)", "Adab & Nusus (9310)", "Semua Kertas STAM"]
+    pilih_mp = st.selectbox("📖 Kertas Peperiksaan STAM", stam_options)
 
 st.divider()
-st.markdown("#### 🏫 Bilangan Bilik")
+
 if MODE=="SPM":
+    st.markdown("#### 🏫 Bilangan Bilik (SPM)")
     b1,b2,b3,b4 = st.columns(4)
     bilik_pep = b1.number_input("Bilik Peperiksaan", 0,50,5)
     bilik_kuar = b2.number_input("Bilik Kuarantin", 0,10,1)
     bilik_sakit = b3.number_input("Bilik Sakit", 0,10,1)
     bilik_dewan = b4.number_input("Dewan", 0,10,0)
-    bilik_makmal=""; sidang_no=""
+    bilik_makmal=""; sidang_no=""; bilik_lapor=0; bilik_ujian=0; station=0; petugas=0; bilik_kelas=0
     total_bilik = bilik_pep+bilik_kuar+bilik_sakit+bilik_dewan
-else:
+elif MODE=="AMALI":
+    st.markdown("#### 🔬 Bilangan Bilik (Amali Sains)")
     m1,m2,m3,m4 = st.columns(4)
     bilik_makmal = m1.number_input("Bil Makmal", 0,10,2)
     bilik_pep = m2.number_input("Bilik Teori", 0,10,1)
     sidang_no = m3.selectbox("Sidang", ["1","2","3","4","Semua"])
     bilik_kuar = m4.number_input("Bilik Persediaan", 0,5,1)
-    bilik_sakit=bilik_dewan=0
+    bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=petugas=bilik_kelas=0
     total_bilik = bilik_makmal+bilik_pep+bilik_kuar
+elif MODE in ["UBBM","UBBI"]:
+    st.markdown(f"#### 🗣️ Bilangan Bilik & Sesi (Ujian Bertutur {MODE})")
+    u1,u2,u3,u4 = st.columns(4)
+    bilik_ujian = u1.number_input("Bilik Ujian", 0,20,3)
+    bilik_kuar = u2.number_input("Bilik Kuarantin", 0,10,1)
+    bilik_lapor = u3.number_input("Bilik Lapor Diri", 0,10,1)
+    station = u4.number_input("Bilangan Station", 0,20,4)
+    s1,s2,s3 = st.columns(3)
+    sidang_no = s1.selectbox("Sidang", ["1","2","3","4","Semua"])
+    petugas = s2.number_input("Bilangan Petugas", 0,30,5)
+    hari_text = s3.text_input("Hari", value=hari_melayu)
+    bilik_pep=bilik_ujian; bilik_sakit=0; bilik_dewan=0; bilik_makmal=""; bilik_kelas=0
+    total_bilik = bilik_ujian+bilik_kuar+bilik_lapor
+else:
+    st.markdown("#### 🕌 Bilangan Bilik & Kelas (STAM)")
+    st1,st2,st3 = st.columns(3)
+    bilik_kelas = st1.number_input("Bil Kelas / Dewan", 0,30,5)
+    bilik_kuar = st2.number_input("Bilik Kuarantin", 0,10,1)
+    petugas = st3.number_input("Bil Petugas (termasuk Ketua Pengawas)", 0,30,5)
+    bilik_pep=bilik_kelas; bilik_ujian=0; bilik_lapor=0; station=0; bilik_sakit=0; bilik_dewan=0; bilik_makmal=""; sidang_no=""; hari_text=""
+    total_bilik = bilik_kelas+bilik_kuar
 
 st.divider()
-st.markdown("#### 👥 Bilangan Calon")
-ca1,ca2,ca3,ca4 = st.columns(4)
-calon_hadir = ca1.number_input("Calon Hadir", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 20)
-calon_berdaftar = ca2.number_input("Calon Berdaftar", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 22)
-calon_cicir = ca3.number_input("Calon Cicir", 0,50,0)
-calon_bantah = ca4.number_input("Calon Bantah", 0,50,0)
-tidak_hadir = calon_berdaftar - calon_hadir
-keseluruhan = calon_berdaftar + calon_cicir + calon_bantah
-st.caption(f"Tidak Hadir: {tidak_hadir} tidak hadir | Keseluruhan: {keseluruhan}")
+if MODE in ["SPM","AMALI"]:
+    st.markdown("#### 👥 Bilangan Calon")
+    ca1,ca2,ca3,ca4 = st.columns(4)
+    calon_hadir = ca1.number_input("Calon Hadir", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 20)
+    calon_berdaftar = ca2.number_input("Calon Berdaftar", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 22)
+    calon_cicir = ca3.number_input("Calon Cicir", 0,50,0)
+    calon_bantah = ca4.number_input("Calon Bantah", 0,50,0)
+    calon_menumpang=0
+    tidak_hadir = calon_berdaftar - calon_hadir
+    keseluruhan = calon_berdaftar + calon_cicir + calon_bantah
+    st.caption(f"Tidak Hadir: {tidak_hadir} | Keseluruhan: {keseluruhan}")
+elif MODE in ["UBBM","UBBI"]:
+    st.markdown("#### 👥 Bilangan Calon (Ujian Bertutur)")
+    ub1,ub2,ub3 = st.columns(3)
+    calon_berdaftar = ub1.number_input("Calon Berdaftar", 0,500, 30)
+    calon_hadir = ub2.number_input("Calon Hadir", 0,500, 28)
+    calon_tidak_hadir = ub3.number_input("Calon Tidak Hadir", 0,100, 2)
+    calon_cicir=0; calon_bantah=0; calon_menumpang=0
+    tidak_hadir = calon_tidak_hadir
+    keseluruhan = calon_berdaftar
+    st.caption(f"Sidang: {sidang_no} | Station: {station} | Petugas: {petugas}")
+else:
+    st.markdown("#### 👥 Bilangan Calon (STAM)")
+    st1,st2,st3,st4 = st.columns(4)
+    calon_berdaftar = st1.number_input("Calon Berdaftar", 0,500, 30)
+    calon_menumpang = st2.number_input("Calon Menumpang", 0,100, 0)
+    calon_cicir = st3.number_input("Calon Cicir", 0,50,0)
+    calon_bantah = st4.number_input("Calon Bantah", 0,50,0)
+    calon_hadir = calon_berdaftar
+    tidak_hadir = 0
+    keseluruhan = calon_berdaftar + calon_menumpang
+    st.caption(f"Berdaftar: {calon_berdaftar} + Menumpang: {calon_menumpang} = Keseluruhan: {keseluruhan} | Petugas: {petugas}")
 
-ulasan = st.text_area("Ulasan Pemantau", height=80)
+ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
 
 st.divider()
 st.markdown("#### 👮 Maklumat Pemantau")
@@ -529,90 +545,74 @@ else:
     daerah_pemantau = p3.text_input("Daerah / JPN")
 
 if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=True):
-    # ===== VALIDASI WAJIB LENGKAP - JIKA TIDAK LENGKAP TAK BOLEH HANTAR =====
     errors = []
-    
-    # 1. Daerah / PPD
-    if 'pilih_daerah' in locals():
-        if pilih_daerah in ["-- Pilih Daerah --", "-- Pilih Daerah Dulu --", "", None]:
-            errors.append("❌ Sila pilih Daerah / PPD")
-    
-    # 2. Nama Sekolah
+    if pilih_daerah in ["-- Pilih Daerah --", "-- Pilih Daerah Dulu --", "", None]:
+        errors.append("❌ Sila pilih Daerah / PPD")
     if not pilih_nama_final or pilih_nama_final in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --", ""]:
-        errors.append("❌ Sila pilih Nama Sekolah")
-    
-    # 3. No Pusat
+        errors.append("❌ Sila pilih Nama Sekolah / Pusat")
     if not pilih_no_final or pilih_no_final in ["-- Pilih Sekolah Dulu --", "-- Pilih --", ""]:
         errors.append("❌ Sila pilih No Pusat")
-    
-    # 4. Untuk AMALI - Nama Makmal
-    if MODE=="AMALI":
-        if not nama_makmal_final or nama_makmal_final in ["-- Pilih Sekolah Dulu --", "-- Pilih --", ""]:
-            errors.append("❌ Sila pilih Nama Makmal (AMALI)")
-    
-    # 5. Tarikh
+    if MODE=="AMALI" and (not nama_makmal_final or nama_makmal_final in ["-- Pilih Makmal --", "-- Pilih Sekolah Dulu --", "-- Tiada Makmal --"]):
+        errors.append("❌ Sila pilih Nama Makmal (AMALI)")
     if not tarikh_str:
-        errors.append("❌ Sila pilih Tarikh Lawatan (Tahun, Bulan, Tarikh)")
-    
-    # 6. Masa - sudah ada default, tapi check
-    if not masa_str:
-        errors.append("❌ Sila pilih Masa Lawatan")
-    
-    # 7. Mata Pelajaran
-    if not pilih_mp or pilih_mp in ["Tiada MP", "", "-- Pilih --"]:
-        errors.append("❌ Sila pilih Mata Pelajaran")
-    
-    # 8. Bilik - Total mesti >0
+        errors.append("❌ Sila pilih Tarikh Lawatan")
+    if not pilih_mp or pilih_mp in ["Tiada MP", "Tiada MP - Pilih Tarikh Lain", "", "-- Pilih --"]:
+        errors.append("❌ Sila pilih Mata Pelajaran / Kertas")
     if total_bilik == 0:
         errors.append("❌ Sila isi Bilangan Bilik (Total tidak boleh 0)")
-    
-    # 9. Calon Berdaftar & Hadir
-    if calon_berdaftar == 0:
+    if MODE in ["SPM","AMALI","UBBM","UBBI"] and calon_berdaftar == 0:
         errors.append("❌ Sila isi Calon Berdaftar (tidak boleh 0)")
-    if calon_hadir < 0 or calon_berdaftar < 0:
-        errors.append("❌ Bilangan Calon tidak boleh negatif")
-    if calon_hadir > calon_berdaftar:
-        errors.append(f"❌ Calon Hadir ({calon_hadir}) tidak boleh lebih dari Berdaftar ({calon_berdaftar})")
-    
-    # 10. Ulasan WAJIB
+    if MODE=="STAM" and calon_berdaftar==0 and calon_menumpang==0:
+        errors.append("❌ Sila isi Calon Berdaftar atau Menumpang (STAM)")
+    if MODE in ["UBBM","UBBI"] and station==0:
+        errors.append("❌ Sila isi Bilangan Station (Ujian Bertutur)")
+    if MODE in ["UBBM","UBBI","STAM"] and petugas==0:
+        errors.append("❌ Sila isi Bilangan Petugas")
     if not ulasan or ulasan.strip() == "" or len(ulasan.strip()) < 5:
         errors.append("❌ Sila isi Ulasan Pemantau (min 5 huruf) - WAJIB")
-    
-    # 11. Nama Pemantau
     if not nama_pemantau or nama_pemantau.strip() == "":
         errors.append("❌ Sila isi Nama Pemantau")
-    
-    # 12. Jawatan
     if not jawatan_pemantau or jawatan_pemantau in ["-- Pilih --", ""]:
         errors.append("❌ Sila pilih Jawatan Pemantau")
-    
-    # 13. Daerah / JPN Pemantau
-    if not daerah_pemantau or daerah_pemantau in ["-- Pilih --", ""] or str(daerah_pemantau).strip() == "":
+    if not daerah_pemantau or str(daerah_pemantau).strip() == "":
         errors.append("❌ Sila isi / pilih Daerah / JPN Pemantau")
     
-    # Jika ada error, papar semua dan STOP
     if errors:
-        st.error("⚠️ **SEMUA MAKLUMAT WAJIB DILENGKAPKAN!** Pemantau tidak boleh hantar jika tidak lengkap:")
+        st.error("⚠️ **SEMUA MAKLUMAT WAJIB DILENGKAPKAN!**")
         for err in errors:
             st.markdown(f"- {err}")
-        st.warning(f"🔴 {len(errors)} maklumat belum lengkap. Sila lengkapkan semua sebelum hantar.")
+        st.warning(f"🔴 {len(errors)} maklumat belum lengkap.")
         st.stop()
     
-    # Jika lengkap, baru simpan
     data = {
         "jenis": MODE, "tarikh_submit": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "nama_sekolah": pilih_nama_final, "no_pusat": pilih_no_final, "nama_makmal": nama_makmal_final,
         "kod_ppd": kod_ppd, "tarikh_lawatan": str(tarikh), "masa_lawatan": str(masa),
-        "mata_pelajaran": pilih_mp, "bilik_peperiksaan": bilik_pep, "bilik_kuarantin": bilik_kuar,
-        "bilik_sakit": bilik_sakit, "dewan": bilik_dewan, "bilik_makmal": bilik_makmal, "sidang_no": sidang_no,
-        "total_bilik": total_bilik, "calon_hadir": calon_hadir, "calon_berdaftar": calon_berdaftar,
-        "calon_tidak_hadir": tidak_hadir, "calon_cicir": calon_cicir, "calon_bantah": calon_bantah,
-        "calon_keseluruhan": keseluruhan, "ulasan": ulasan, "nama_pemantau": nama_pemantau,
+        "mata_pelajaran": pilih_mp, 
+        "bilik_peperiksaan": bilik_pep if 'bilik_pep' in locals() else 0, 
+        "bilik_kuarantin": bilik_kuar if 'bilik_kuar' in locals() else 0,
+        "bilik_sakit": bilik_sakit if 'bilik_sakit' in locals() else 0, 
+        "dewan": bilik_dewan if 'bilik_dewan' in locals() else 0, 
+        "bilik_makmal": bilik_makmal if 'bilik_makmal' in locals() else "",
+        "sidang_no": sidang_no if 'sidang_no' in locals() else "",
+        "total_bilik": total_bilik,
+        "bilik_ujian": bilik_ujian if 'bilik_ujian' in locals() else 0,
+        "bilik_lapor": bilik_lapor if 'bilik_lapor' in locals() else 0,
+        "station": station if 'station' in locals() else 0,
+        "petugas": petugas if 'petugas' in locals() else 0,
+        "bilik_kelas": bilik_kelas if 'bilik_kelas' in locals() else 0,
+        "hari": hari_text if 'hari_text' in locals() else hari_melayu,
+        "calon_hadir": calon_hadir, "calon_berdaftar": calon_berdaftar,
+        "calon_tidak_hadir": tidak_hadir, "calon_cicir": calon_cicir if 'calon_cicir' in locals() else 0, 
+        "calon_bantah": calon_bantah if 'calon_bantah' in locals() else 0,
+        "calon_menumpang": calon_menumpang if 'calon_menumpang' in locals() else 0,
+        "calon_keseluruhan": keseluruhan,
+        "ulasan": ulasan, "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau
     }
     save_laporan(data)
     st.session_state["last"] = data
-    st.success(f"✅ Berjaya SIMPAN {MODE}! Semua maklumat lengkap. Laporan anda hanya anda yang nampak.")
+    st.success(f"✅ Berjaya SIMPAN {MODE}! Semua maklumat lengkap.")
     st.balloons()
 
 st.divider()
@@ -644,27 +644,20 @@ st.write(f"Jumlah: {len(filtered_list)} laporan")
 if st.session_state.is_admin:
     st.warning("⚠️ Anda Admin - Boleh padam laporan. Pemantau biasa TIDAK ada butang padam.")
 
-# ===== PILIHAN LAPORAN - MACAM TADI, TIDAK PAPAR SEMUA =====
-# ===== PILIHAN IKUT TARIKH LAPORAN - BARU =====
 from collections import Counter
 tarikh_all = [l.get('tarikh_lawatan','') for l in filtered_list]
 counter_tarikh = Counter(tarikh_all)
 unique_tarikh = sorted(set(tarikh_all), reverse=True)
 
-# Pilihan tarikh
 tarikh_options = ["📅 Semua Tarikh"] + [f"{t} ({counter_tarikh[t]} laporan)" for t in unique_tarikh]
 pilih_tarikh_raw = st.selectbox(f"📅 Pilih Tarikh Laporan ({len(unique_tarikh)} tarikh, {len(filtered_list)} laporan):", tarikh_options)
 
 if pilih_tarikh_raw == "📅 Semua Tarikh":
     filtered_by_tarikh = filtered_list
-    st.caption(f"📋 Menunjukkan semua {len(filtered_list)} laporan")
 else:
-    # Extract tarikh sebenar dari string "2026-11-24 (5 laporan)"
     tarikh_selected = pilih_tarikh_raw.split(" (")[0]
     filtered_by_tarikh = [l for l in filtered_list if l.get('tarikh_lawatan','') == tarikh_selected]
-    st.caption(f"📋 {len(filtered_by_tarikh)} laporan pada {tarikh_selected}")
 
-# Susun ikut masa dan nama sekolah
 filtered_by_tarikh = sorted(filtered_by_tarikh, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
 
 if len(filtered_by_tarikh) > 1:
@@ -673,21 +666,19 @@ if len(filtered_by_tarikh) > 1:
         mp_short = l.get('mata_pelajaran','')[:35]
         calon_info = f" H:{l.get('calon_hadir',0)}"
         pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:22]} | {l.get('masa_lawatan','')} | {mp_short}{calon_info}")
-
     idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE} - {pilih_tarikh_raw}:", range(len(filtered_by_tarikh)), format_func=lambda i: pilihan_labels[i])
     sel = filtered_by_tarikh[idx_pilih]
 else:
-    idx_pilih = 0
     sel = filtered_by_tarikh[0]
     st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} {sel.get('masa_lawatan','')} | {sel['mata_pelajaran'][:40]}")
 
-# Cari index sebenar untuk delete
 for i, orig in enumerate(lap_list):
     if orig == sel:
         idx_in_main = i
         break
+else:
+    idx_in_main = -1
 
-# Bar info ringkas
 with st.container(border=True):
     colA, colB, colC = st.columns([3,2,1])
     with colA:
@@ -704,118 +695,203 @@ with st.container(border=True):
         else:
             st.caption("🔒 Tiada akses padam")
 
-# ===== SATU LAPORAN SAHAJA - TENGAH-TENGAH - TIDAK LARI =====
-# Extract b64 inside this scope
-
 IMG_D = IMG_DEWAN_B64
 IMG_S = IMG_SEKOLAH_B64
 
-# ===== BUAT CARTA PAI CSS - TAK PERLU MATPLOTLIB =====
 def buat_carta_pai_html(sel_data):
     try:
         hadir = int(sel_data.get('calon_hadir',0) or 0)
         th = int(sel_data.get('calon_tidak_hadir',0) or 0)
         cicir = int(sel_data.get('calon_cicir',0) or 0)
         bantah = int(sel_data.get('calon_bantah',0) or 0)
+        menumpang = int(sel_data.get('calon_menumpang',0) or 0)
         berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
-        
-        total = hadir + th + cicir + bantah
+        total = hadir + th + cicir + bantah + menumpang
         if total == 0:
             total = berdaftar if berdaftar>0 else 1
             hadir = total
-        
-        # Kira peratus
         segments = []
-        if hadir > 0: segments.append((hadir, '#2E7D32', f'Hadir {hadir}'))
-        if th > 0: segments.append((th, '#E53935', f'TH {th}'))
-        if cicir > 0: segments.append((cicir, '#FF9800', f'Cicir {cicir}'))
-        if bantah > 0: segments.append((bantah, '#9C27B0', f'Bantah {bantah}'))
-        
+        if hadir > 0: segments.append((hadir, '#4CAF50', 'Hadir'))
+        if th > 0: segments.append((th, '#EF5350', 'TH'))
+        if menumpang > 0: segments.append((menumpang, '#42A5F5', 'Menumpang'))
+        if cicir > 0: segments.append((cicir, '#FFA726', 'Cicir'))
+        if bantah > 0: segments.append((bantah, '#AB47BC', 'Bantah'))
         if not segments:
-            segments = [(berdaftar if berdaftar>0 else 1, '#1976D2', f'Berdaftar {berdaftar}')]
+            segments = [(berdaftar if berdaftar>0 else 1, '#42A5F5', 'Berdaftar')]
             total = berdaftar if berdaftar>0 else 1
-        
-        # Buat conic-gradient string
         gradient_parts = []
         legend_html = ""
         curr_pct = 0
-        for val, color, label in segments:
-            pct = (val / total) * 100
+        for val, col2, label in segments:
+            pct = (val / total) * 100 if total>0 else 0
             next_pct = curr_pct + pct
-            gradient_parts.append(f"{color} {curr_pct:.1f}% {next_pct:.1f}%")
-            legend_html += f'<div style="display:flex; align-items:center; gap:4px; font-size:8px; margin:1px 0;"><div style="width:8px; height:8px; background:{color}; border-radius:2px;"></div>{label} ({pct:.0f}%)</div>'
+            gradient_parts.append(f"{col2} {curr_pct:.1f}% {next_pct:.1f}%")
+            legend_html += f'<div style="display:flex; align-items:center; gap:5px; font-size:9px; margin:2px 0;"><div style="width:10px; height:10px; background:{col2}; border-radius:50%;"></div><span style="font-weight:600;">{label}</span> <span style="color:#666;">{val} ({pct:.0f}%)</span></div>'
             curr_pct = next_pct
-        
         gradient_str = ", ".join(gradient_parts)
-        
-        # HTML carta pai donut style
         chart_html = f"""
-        <div style="display:flex; flex-direction:column; align-items:center;">
-            <div style="position:relative; width:110px; height:110px;">
-                <div style="width:110px; height:110px; border-radius:50%; background: conic-gradient({gradient_str}); box-shadow: 0 2px 6px rgba(0,0,0,0.15);"></div>
-                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:48px; height:48px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#0D47A1; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">{berdaftar}</div>
+        <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+            <div style="font-size:10px; font-weight:800; color:#0D47A1; margin-bottom:8px; background:#E3F2FD; padding:4px 10px; border-radius:20px;">📊 STATUS CALON</div>
+            <div style="position:relative; width:120px; height:120px;">
+                <div style="width:120px; height:120px; border-radius:50%; background: conic-gradient({gradient_str}); box-shadow: 0 4px 15px rgba(0,0,0,0.15);"></div>
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:white; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size:18px; font-weight:900; color:#0D47A1;">{berdaftar}</div>
+                    <div style="font-size:7px; font-weight:700; color:#78909C;">BERDAFTAR</div>
+                </div>
             </div>
-            <div style="margin-top:6px; width:100%;">{legend_html}</div>
+            <div style="margin-top:10px; width:100%; background:#F8FAFC; border-radius:8px; padding:6px 8px; border:1px solid #F1F5F9;">{legend_html}</div>
         </div>
         """
         return chart_html
     except Exception as e:
-        return f"<div style='font-size:10px; color:red;'>Error: {e}</div>"
+        return f"<div>Error: {e}</div>"
 
 CHART_PAI_HTML = buat_carta_pai_html(sel)
 
+def badge(text, bg="#E3F2FD", color="#0D47A1"):
+    return f'<span style="display:inline-block; background:{bg}; color:{color}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin:1px;">{text}</span>'
+
+# Prepare values for html to avoid nested f-string issue
+b_pep = sel.get('bilik_peperiksaan',0)
+b_kuar = sel.get('bilik_kuarantin',0)
+b_sakit = sel.get('bilik_sakit',0)
+b_dewan = sel.get('dewan',0)
+b_total = sel.get('total_bilik',0)
+b_makmal = sel.get('bilik_makmal',0)
+b_sidang = sel.get('sidang_no','')
+b_ujian = sel.get('bilik_ujian',0)
+b_lapor = sel.get('bilik_lapor',0)
+b_station = sel.get('station',0)
+b_petugas = sel.get('petugas',0)
+b_kelas = sel.get('bilik_kelas',0)
+c_berdaftar = sel.get('calon_berdaftar',0)
+c_hadir = sel.get('calon_hadir',0)
+c_th = sel.get('calon_tidak_hadir',0)
+c_cicir = sel.get('calon_cicir',0)
+c_bantah = sel.get('calon_bantah',0)
+c_menumpang = sel.get('calon_menumpang',0)
+c_keseluruhan = sel.get('calon_keseluruhan',0)
+c_hari = sel.get('hari','')
+
+if MODE in ["SPM"]:
+    bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+elif MODE=="AMALI":
+    bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Teori: {b_pep}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang: {b_sidang}', '#F3E5F5', '#6A1B9A')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+elif MODE in ["UBBM","UBBI"]:
+    bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+else:
+    bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Petugas: {b_petugas}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+
+jenis_label = sel.get('jenis','SPM')
+if jenis_label=="UBBM":
+    jenis_label_full = "UJIAN BERTUTUR BAHASA MELAYU"
+elif jenis_label=="UBBI":
+    jenis_label_full = "UJIAN BERTUTUR BAHASA INGGERIS"
+elif jenis_label=="STAM":
+    jenis_label_full = "SIJIL TINGGI AGAMA MALAYSIA (STAM)"
+elif jenis_label=="AMALI":
+    jenis_label_full = "AMALI SAINS SPM 2026"
+else:
+    jenis_label_full = "SPM 2026"
 
 html_one = f"""
-<div style="width:100%; display:flex; justify-content:center; padding:10px 0;">
-    <div style="border:2px solid #0D47A1; border-radius:12px; overflow:hidden; background:white; width:100%; max-width:800px; box-shadow:0 4px 16px rgba(0,0,0,0.15);">
-        <div style="background:linear-gradient(135deg, #0D47A1, #1976D2); color:white; padding:14px; text-align:center;">
-            <div style="font-size:15px; font-weight:800;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
-            <div style="font-size:12px; margin-top:3px;">LAPORAN PEMANTAUAN {'SPM 2026' if sel.get('jenis','SPM')=='SPM' else 'AMALI SAINS 2026'} - {sel['no_pusat']}</div>
+<div style="width:100%; display:flex; justify-content:center; padding:12px 8px; background: linear-gradient(135deg, #EEF2F7 0%, #E3EAF3 100%);">
+    <div style="width:100%; max-width:860px; background:white; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(13,71,161,0.18); border:1px solid white; position:relative;">
+        <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
+        <div style="background: linear-gradient(135deg, #0A1931 0%, #0D47A1 45%, #1565C0 100%); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1;">
+                <div style="background: rgba(255,193,7,0.2); color:#FFECB3; font-size:10px; font-weight:800; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:6px;">🏛️ SEKTOR PENTAKSIRAN & PEPERIKSAAN</div>
+                <div style="color:white; font-size:20px; font-weight:900;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
+                <div style="color:#90CAF9; font-size:11px; font-weight:700; margin-top:6px;">LAPORAN PEMANTAUAN {jenis_label_full} • {sel['tarikh_lawatan']} • {sel['masa_lawatan']}</div>
+            </div>
+            <div style="text-align:right; margin-left:20px;">
+                <div style="background:white; color:#0D2A54; font-size:20px; font-weight:900; padding:10px 18px; border-radius:12px;">{sel['no_pusat']}</div>
+                <div style="color:#FFECB3; font-size:9px; font-weight:700; margin-top:7px; text-align:center;">NO. PUSAT</div>
+            </div>
         </div>
-        <div style="display:flex; gap:8px; padding:12px;">
-            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden; height:160px;"><img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:100%; object-fit:cover; display:block;"></div>
-            <div style="flex:1; border:1px solid #ddd; border-radius:8px; overflow:hidden; height:160px;"><img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:100%; object-fit:cover; display:block;"></div>
-            <div style="flex:1; background:white; border:1px solid #90CAF9; border-radius:8px; padding:8px; text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                <div style="font-size:11px; font-weight:bold; color:#0D47A1; margin-bottom:6px;">📊 CARTA PAI CALON</div>
-                {CHART_PAI_HTML}
-                <div style="font-size:9px; margin-top:6px; color:#333; line-height:1.3;">
-                    <b style="font-size:12px; color:#0D47A1;">{sel.get('calon_berdaftar',0)}</b> Berdaftar<br>
-                    Hadir: {sel['calon_hadir']} | TH: {sel.get('calon_tidak_hadir',0)}<br>
-                    Keseluruhan: {sel.get('calon_keseluruhan',0)}
+        <div style="padding:18px; background:#F8FAFC;">
+            <div style="display:flex; gap:14px;">
+                <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
+                    <img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:100%; object-fit:cover;">
+                    <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                        <div style="color:white; font-size:11px; font-weight:800;">📸 DEWAN / BILIK PEPERIKSAAN</div>
+                    </div>
+                </div>
+                <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
+                    <img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:100%; object-fit:cover;">
+                    <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                        <div style="color:white; font-size:11px; font-weight:800;">🏫 BANGUNAN SEKOLAH / PUSAT</div>
+                    </div>
+                </div>
+                <div style="flex:0.95; background:white; border-radius:14px; padding:14px 12px; box-shadow: 0 8px 24px rgba(13,71,161,0.1); border:1px solid #E8EEF6; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                    {CHART_PAI_HTML}
                 </div>
             </div>
         </div>
-        <div style="padding:0 12px 12px 12px;">
-            <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; width:28%; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Nama Sekolah</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.3px; line-height:1.7; font-size:13px;">{sel['nama_sekolah']}</td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">No Pusat / Makmal</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">
-                    <b style="color:#0D47A1; font-size:14px;">{sel['no_pusat']}</b> 
-                    {(' | <span style="background:#E3F2FD; padding:2px 8px; border-radius:12px; font-weight:600;">Makmal: '+sel.get('nama_makmal','')+'</span>') if sel.get('nama_makmal') else ''} 
-                    <br><span style="margin-top:6px; display:inline-block; background: linear-gradient(135deg, #0D47A1, #1976D2); color:white; padding:4px 12px; border-radius:20px; font-weight:700; letter-spacing:0.8px; font-size:12px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span>
-                </td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Tarikh & MP</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.3px; line-height:1.8; font-size:13px;">{sel['tarikh_lawatan']} | {sel['masa_lawatan']} | <b style="color:#0D47A1;">{sel['mata_pelajaran']}</b></td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Bilik</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">
-                    {'Makmal: '+str(sel.get('bilik_makmal',''))+' | ' if sel.get('bilik_makmal') and str(sel.get('bilik_makmal',''))!='' and str(sel.get('bilik_makmal',''))!='0' else ''}
-                    Pep: {sel.get('bilik_peperiksaan',0)} | Kuarantin/Persediaan: {sel.get('bilik_kuarantin',0)} | Sakit: {sel.get('bilik_sakit',0)} | Dewan: {sel.get('dewan',0)} | <b style="background:#0D47A1; color:white; padding:2px 10px; border-radius:12px;">Total: {sel.get('total_bilik',0)}</b>
-                    {' | Sidang: '+str(sel.get('sidang_no','')) if sel.get('sidang_no') else ''}
-                </td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Calon</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.9; font-size:13px;">Berdaftar: <b>{sel.get('calon_berdaftar',0)}</b> | Hadir: <b style="color:#2E7D32;">{sel['calon_hadir']}</b> | TH: {sel.get('calon_tidak_hadir',0)} tidak hadir | Cicir: {sel['calon_cicir']} | Bantah: {sel['calon_bantah']} | <b style="background:#0D47A1; color:white; padding:2px 10px; border-radius:12px;">Keseluruhan: {sel.get('calon_keseluruhan',0)}</b></td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Ulasan</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px; font-style:italic; background:#FFFEF7;">{sel['ulasan'] or '-'}</td></tr>
-                <tr><td style="border:1px solid #ccc; padding:12px 14px; font-weight:bold; background:#f8f9fa; letter-spacing:0.5px; line-height:1.6;">Pemantau</td><td style="border:1px solid #ccc; padding:12px 14px; letter-spacing:0.4px; line-height:1.8; font-size:13px;">{sel['nama_pemantau']} | {sel['jawatan_pemantau']} | <span style="background:#E3F2FD; padding:3px 10px; border-radius:12px; font-weight:600; color:#0D47A1;">{sel['daerah_pemantau']}</span></td></tr>
-            </table>
+        <div style="padding:0 18px 18px;">
+            <div style="background:white; border-radius:14px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border:1px solid #E8EEF6;">
+                <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🏫 NAMA PUSAT / SEKOLAH</td>
+                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT / DAERAH</td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span></td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
+                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel['tarikh_lawatan']}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel['masa_lawatan']}</span> <span style="background:#E8F5E9; color:#2E7D32; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">📅 {sel.get('hari','')}</span> <b style="color:#0D47A1; margin-left:8px;">{sel['mata_pelajaran']}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🚪 BILIK / DEWAN / STATION</td>
+                        <td style="padding:10px 14px;">{bilik_html}</td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON</td>
+                        <td style="padding:10px 14px;">{calon_html}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN</td>
+                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel['ulasan'] or 'Tiada ulasan'} ❞</td>
+                    </tr>
+                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
+                    </tr>
+                </table>
+            </div>
         </div>
-        <div style="display:flex; justify-content:space-around; padding:14px; background:#fafafa; border-top:2px solid #0D47A1; font-size:10px;">
-            <div style="text-align:center; border-top:1px solid #333; padding-top:5px; width:30%;">Pemantau<br><b>{sel['nama_pemantau']}</b></div>
-            <div style="text-align:center; border-top:1px solid #333; padding-top:5px; width:30%;">Cop Sekolah<br><b>{sel['no_pusat']}</b></div>
-            <div style="text-align:center; border-top:1px solid #333; padding-top:5px; width:30%;">Pengesahan JPN/PPD</div>
+        <div style="padding:20px 26px; background:#F1F5F9; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; gap:24px;">
+            <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
+                <div style="font-size:11px; font-weight:800; color:#0D47A1;">PEMANTAU</div>
+                <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['nama_pemantau']}</div>
+                <div style="font-size:9px; color:#64748B;">{sel['tarikh_submit']}</div>
+            </div>
+            <div style="text-align:center; flex:1; border-top:2px dashed #94A3B8; padding-top:10px; margin-top:30px;">
+                <div style="font-size:11px; font-weight:800; color:#475569;">COP SEKOLAH / PUSAT</div>
+                <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['no_pusat']}</div>
+            </div>
+            <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
+                <div style="font-size:11px; font-weight:800; color:#0D47A1;">PENGESAHAN JPN / PPD</div>
+                <div style="font-size:9px; color:#64748B; margin-top:12px;">Tandatangan & Cop Rasmi</div>
+            </div>
         </div>
+        <div style="background: linear-gradient(90deg, #0D47A1 0%, #1565C0 100%); padding:10px 26px; display:flex; justify-content:space-between;">
+            <div style="color:rgba(255,255,255,0.8); font-size:9px;">© 2026 JPN Selangor | E-Pemantauan SPM, Amali, Ujian Bertutur & STAM</div>
+            <div style="color:#A5D6A7; font-size:9px;">● SAH & DIREKODKAN</div>
+        </div>
+        <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
     </div>
 </div>
 """
 
-components.html(html_one, height=680, scrolling=True)
+components.html(html_one, height=720, scrolling=True)
 
-# ===== FUNGSI CETAK DOWNLOAD PDF & EXCEL - KEKAL =====
 st.divider()
 c1, c2 = st.columns(2)
 with c1:
