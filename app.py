@@ -8,7 +8,7 @@ from io import BytesIO
 
 st.set_page_config(page_title="e-Pemantauan Sektor Pentaksiran dan Peperiksaan JPN Selangor Tahun 2026", layout="wide", page_icon="📋")
 
-# SOROK TOOLBAR STREAMLIT
+# SOROK TOOLBAR STREAMLIT + BESARKAN PEMILIHAN PEPERIKSAAN
 st.markdown("""
 <style>
 #MainMenu {visibility: hidden !important;}
@@ -19,6 +19,37 @@ footer {visibility: hidden !important;}
 [data-testid="stDecoration"] {display: none !important;}
 div[data-testid="stStatusWidget"] {display: none !important;}
 .stAppToolbar {display: none !important;}
+
+/* BESARKAN & BOLDKAN PEMILIHAN PEPERIKSAAN - JELAS */
+div[data-testid="stRadio"] label {
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.3px !important;
+    color: #0D47A1 !important;
+}
+div[data-testid="stRadio"] div[role="radiogroup"] label p {
+    font-size: 19px !important;
+    font-weight: 800 !important;
+    color: #0D47A1 !important;
+}
+/* Hover effect */
+div[data-testid="stRadio"] label:hover {
+    color: #1565C0 !important;
+    background: #E3F2FD !important;
+    border-radius: 8px !important;
+    padding: 4px 8px !important;
+}
+/* Selected radio more prominent */
+div[data-testid="stRadio"] div[data-testid="stWidgetLabel"] + div div[aria-checked="true"] label {
+    background: linear-gradient(135deg, #0D47A1, #1976D2) !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(13,71,161,0.3) !important;
+}
+div[data-testid="stRadio"] div[data-testid="stWidgetLabel"] + div div[aria-checked="true"] label p {
+    color: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
