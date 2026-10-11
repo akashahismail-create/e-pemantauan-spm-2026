@@ -1633,10 +1633,7 @@ elif MODE=="AMALI":
                         <td style="padding:12px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">⏰ SIDANG LAWATAN (DIPANTAU)</td>
                         <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:6px 18px; border-radius:20px; font-size:13px; box-shadow:0 2px 8px rgba(106,27,154,0.3);">📌 Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'} DIPANTAU</b> <span style="margin-left:8px; background:#E0F7FA; color:#006064; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">Bilangan Sidang: {sel.get('bilangan_sidang','-')} | Lawatan Sidang {sel.get('sidang_lawatan','-')}</span></td>
                     </tr>
-                    <tr style="background:#E3F2FD; border-bottom:2px solid #90CAF9;">
-                        <td style="padding:12px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #90CAF9;">📊 JUMLAH SEBENAR CALON {sel.get('sidang_lawatan_detail', sel.get('sidang_lawatan','-')) or '-'} {sel.get('makmal_lawatan','')}</td>
-                        <td style="padding:10px 14px; background:#E3F2FD;"><span style="background:#0D47A1; color:white; padding:6px 18px; border-radius:20px; font-size:14px; font-weight:800; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📊 Jumlah Sebenar Sidang {sel.get('sidang_lawatan_detail','Sidang 1')} {sel.get('makmal_lawatan','')}: {sel.get('jumlah_sebenar_sidang', 20)} CALON</span> <span style="margin-left:10px; background:white; color:#0D47A1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #90CAF9;">Max 20 per sidang</span></td>
-                    </tr> adalah jumlah sebenar calon yang sepatutnya hadir Sidang {sel.get('sidang_lawatan','-')}</span></td>
+                    adalah jumlah sebenar calon yang sepatutnya hadir Sidang {sel.get('sidang_lawatan','-')}</span></td>
                     </tr>
                     <tr style="background:#E8F5E9; border-bottom:2px solid #A5D6A7;">
                         <td style="padding:12px 14px; font-weight:800; color:#2E7D32; font-size:11px; border-right:1px solid #A5D6A7;">👥 JUMLAH CALON HADIR SIDANG {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'} </td>
