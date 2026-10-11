@@ -771,12 +771,6 @@ elif "Penolong Pengarah SPP" in jawatan_pemantau:
 else:
     daerah_pemantau = p3.text_input("Daerah / JPN")
 
-# Bila pilih Penyelia Kawasan - kena isi Nama Bilik Kebal Penyelia Kawasan
-if "Penyelia Kawasan" in jawatan_pemantau:
-    bilik_kebal_penyelia = st.text_input("🏦 Nama Bilik Kebal Penyelia Kawasan (Wajib untuk Penyelia Kawasan)", placeholder="Contoh: Bilik Kebal PPD Klang / Bilik Kebal PPD Petaling Perdana / Bilik Kebal SMK Meru")
-else:
-    bilik_kebal_penyelia = ""
-
 if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=True):
     errors = []
     if pilih_daerah in ["-- Pilih Daerah --", "-- Pilih Daerah Dulu --", "", None]:
@@ -807,8 +801,6 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         errors.append("❌ Sila isi Nama Pemantau")
     if not jawatan_pemantau or jawatan_pemantau in ["-- Pilih --", ""]:
         errors.append("❌ Sila pilih Jawatan Pemantau")
-    if "Penyelia Kawasan" in jawatan_pemantau and (not bilik_kebal_penyelia or bilik_kebal_penyelia.strip()==""):
-        errors.append("❌ Sila isi Nama Bilik Kebal Penyelia Kawasan (wajib untuk Penyelia Kawasan)")
     if not daerah_pemantau or str(daerah_pemantau).strip() == "":
         errors.append("❌ Sila isi / pilih Daerah / JPN Pemantau")
     
@@ -823,8 +815,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "jenis": MODE, "tarikh_submit": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "nama_sekolah": pilih_nama_final, "no_pusat": pilih_no_final, "nama_makmal": nama_makmal_final,
         "kod_ppd": kod_ppd, "tarikh_lawatan": str(tarikh), "masa_lawatan": str(masa),
-        "mata_pelajaran": pilih_mp,
-        "bilik_kebal_penyelia": bilik_kebal_penyelia if 'bilik_kebal_penyelia' in locals() else "", 
+        "mata_pelajaran": pilih_mp, 
         "bilik_peperiksaan": bilik_pep if 'bilik_pep' in locals() else 0, 
         "bilik_kuarantin": bilik_kuar if 'bilik_kuar' in locals() else 0,
         "bilik_sakit": bilik_sakit if 'bilik_sakit' in locals() else 0, 
@@ -1093,7 +1084,7 @@ if MODE=="SPM":
                     </tr>
                     <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU SPM</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
                     </tr>
     '''
 # AMALI - Template khas dengan Nama Makmal, Bilangan Sidang, Sidang Lawatan
@@ -1141,7 +1132,7 @@ elif MODE=="AMALI":
                     </tr>
                     <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU AMALI</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
                     </tr>
     '''
 # UBBM / UBBI - Template Ujian Bertutur ada Station & Sidang
@@ -1177,7 +1168,7 @@ elif MODE in ["UBBM","UBBI"]:
                     </tr>
                     <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU {MODE}</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
                     </tr>
     '''
 # STAM - Template tiada Makmal, tiada Sidang, tiada Station
@@ -1213,7 +1204,7 @@ elif MODE=="STAM":
                     </tr>
                     <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU STAM</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
                     </tr>
     '''
 # MUET - Template tiada Sidang, tiada Station
@@ -1249,7 +1240,7 @@ else:  # MUET
                     </tr>
                     <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU MUET</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
+                        <td style="padding:11px 14px; font-weight:600;">👤 {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')}</td>
                     </tr>
     '''
 
