@@ -326,7 +326,7 @@ if st.session_state.get('is_kppk', False):
         c_jumlah_sebenar_sidang = 15
     # Jika jumlah sebenar >20, cap max 20 (1 sidang max 20)
     if c_jumlah_sebenar_sidang > 20:
-        c_jumlah_sebenar_sidang = sel.get('jumlah_sebenar_sidang', 15) if sel.get('jumlah_sebenar_sidang', 0) <= 20 else 20
+        c_jumlah_sebenar_sidang = sel.get('jumlah_sebenar_sidang', sel.get('jumlah_sebenar', 20)) if sel.get('jumlah_sebenar_sidang', 0) <= 20 else 20
 
     if MODE in ["SPM"]:
         bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
@@ -1634,8 +1634,9 @@ elif MODE=="AMALI":
                         <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:6px 18px; border-radius:20px; font-size:13px; box-shadow:0 2px 8px rgba(106,27,154,0.3);">📌 Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'} DIPANTAU</b> <span style="margin-left:8px; background:#E0F7FA; color:#006064; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">Bilangan Sidang: {sel.get('bilangan_sidang','-')} | Lawatan Sidang {sel.get('sidang_lawatan','-')}</span></td>
                     </tr>
                     <tr style="background:#E3F2FD; border-bottom:2px solid #90CAF9;">
-                        <td style="padding:12px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #90CAF9;">📊 JUMLAH SEBENAR CALON SIDANG {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'} </td>
-                        <td style="padding:10px 14px; background:#E3F2FD;"><span style="background:#0D47A1; color:white; padding:6px 18px; border-radius:20px; font-size:14px; font-weight:800; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📊 Jumlah Sebenar Sidang {sel.get('sidang_lawatan','-')}: {sel.get('calon_berdaftar',0)} CALON</span> <span style="margin-left:10px; background:white; color:#0D47A1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #90CAF9;">Ini adalah jumlah sebenar calon yang sepatutnya hadir Sidang {sel.get('sidang_lawatan','-')}</span></td>
+                        <td style="padding:12px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #90CAF9;">📊 JUMLAH SEBENAR CALON {sel.get('sidang_lawatan_detail', sel.get('sidang_lawatan','-')) or '-'} {sel.get('makmal_lawatan','')}</td>
+                        <td style="padding:10px 14px; background:#E3F2FD;"><span style="background:#0D47A1; color:white; padding:6px 18px; border-radius:20px; font-size:14px; font-weight:800; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📊 Jumlah Sebenar Sidang {sel.get('sidang_lawatan_detail','Sidang 1')} {sel.get('makmal_lawatan','')}: {sel.get('jumlah_sebenar_sidang', 20)} CALON (ikut pemantau isi, bukan 146 keseluruhan)</span> <span style="margin-left:10px; background:white; color:#0D47A1; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; border:1px solid #90CAF9;">Max 20 per sidang</span></td>
+                    </tr> adalah jumlah sebenar calon yang sepatutnya hadir Sidang {sel.get('sidang_lawatan','-')}</span></td>
                     </tr>
                     <tr style="background:#E8F5E9; border-bottom:2px solid #A5D6A7;">
                         <td style="padding:12px 14px; font-weight:800; color:#2E7D32; font-size:11px; border-right:1px solid #A5D6A7;">👥 JUMLAH CALON HADIR SIDANG {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'} </td>
