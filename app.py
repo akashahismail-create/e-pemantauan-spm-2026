@@ -163,6 +163,7 @@ if "logged_in" not in st.session_state:
     st.session_state.role = ""
     st.session_state.user_name = ""
     st.session_state.is_admin = False
+    st.session_state.is_kppk = False
 
 ADMIN_PASSWORD = "JPN2026"
 
@@ -174,7 +175,7 @@ def login_screen():
         st.markdown('<div class="login-title">🔐 e-Pemantauan Sektor Pentaksiran dan Peperiksaan<br>JPN Selangor Tahun 2026</div>', unsafe_allow_html=True)
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
         
-        role_pilih = st.radio("Log masuk sebagai:", ["👤 Pemantau (PPD/JPN)", "🔑 Admin JPN"], horizontal=True)
+        role_pilih = st.radio("Log masuk sebagai:", ["👤 Pemantau (PPD/JPN)", "🔑 Admin JPN", "👔 KPPK/Pengarah"], horizontal=True)
         st.divider()
         
         if "Pemantau" in role_pilih:
@@ -189,9 +190,10 @@ def login_screen():
                     st.session_state.role = "pemantau"
                     st.session_state.user_name = nama_login.strip()
                     st.session_state.is_admin = False
+                    st.session_state.is_kppk = False
                     st.success(f"Selamat datang, {nama_login}!")
                     st.rerun()
-        else:
+        elif "Admin" in role_pilih:
             pwd = st.text_input("Kata Laluan Admin", type="password", placeholder="Masukkan password admin")
             st.caption("Hubungi Urus Setia JPN untuk kata laluan")
             st.markdown("<br>", unsafe_allow_html=True)
@@ -201,7 +203,23 @@ def login_screen():
                     st.session_state.role = "admin"
                     st.session_state.user_name = "ADMIN JPN"
                     st.session_state.is_admin = True
+                    st.session_state.is_kppk = False
                     st.success("Login Admin berjaya!")
+                    st.rerun()
+                else:
+                    st.error("❌ Password salah!")
+        else:  # KPPK/Pengarah
+            pwd_kppk = st.text_input("Kata Laluan KPPK/Pengarah", type="password", placeholder="Masukkan password KPPK/Pengarah")
+            st.caption("Password sama: JPN2026 | Hanya lihat semua laporan, tidak boleh padam")
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("👔 Masuk sebagai KPPK/Pengarah", type="primary", use_container_width=True):
+                if pwd_kppk == ADMIN_PASSWORD:
+                    st.session_state.logged_in = True
+                    st.session_state.role = "kppk"
+                    st.session_state.user_name = "KPPK/PENGARAH"
+                    st.session_state.is_admin = False
+                    st.session_state.is_kppk = True
+                    st.success("Login KPPK/Pengarah berjaya! (Lihat semua, tak boleh padam)")
                     st.rerun()
                 else:
                     st.error("❌ Password salah!")
@@ -222,7 +240,9 @@ if not st.session_state.logged_in:
 c_user, c_logout = st.columns([4,1])
 with c_user:
     if st.session_state.is_admin:
-        st.markdown(f"✅ Login sebagai: **🔑 ADMIN** | **{st.session_state.user_name}** | Boleh PADAM", unsafe_allow_html=True)
+        st.markdown(f"✅ Login sebagai: **🔑 ADMIN** | **{st.session_state.user_name}** | Boleh PADAM & PADAM SEMUA", unsafe_allow_html=True)
+    elif st.session_state.get('is_kppk', False):
+        st.markdown(f"✅ Login sebagai: **👔 KPPK/PENGARAH** | **{st.session_state.user_name}** | Lihat SEMUA laporan (Tak boleh padam)", unsafe_allow_html=True)
     else:
         st.markdown(f"✅ Login sebagai: **👤 PEMANTAU** | **{st.session_state.user_name}** | Hanya laporan anda", unsafe_allow_html=True)
 with c_logout:
@@ -231,6 +251,7 @@ with c_logout:
         st.session_state.role = ""
         st.session_state.user_name = ""
         st.session_state.is_admin = False
+        st.session_state.is_kppk = False
         st.rerun()
 
 st.markdown("""
@@ -871,13 +892,15 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
 
 st.divider()
 if st.session_state.is_admin:
-    st.markdown(f"#### 📊 Laporan {MODE} - ADMIN (Semua + Boleh Padam)")
+    st.markdown(f"#### 📊 Laporan {MODE} - ADMIN (Semua + Boleh Padam + Padam Semua)")
+elif st.session_state.get('is_kppk', False):
+    st.markdown(f"#### 📊 Laporan {MODE} - KPPK/PENGARAH (Semua - Lihat Sahaja)")
 else:
     st.markdown(f"#### 📊 Laporan {MODE} - Saya ({st.session_state.user_name})")
 
 lap_list = load_laporan()
 
-if st.session_state.is_admin:
+if st.session_state.is_admin or st.session_state.get('is_kppk', False):
     filtered_list = lap_list
 else:
     filtered_list = [l for l in lap_list if l.get("nama_pemantau","").lower().strip() == st.session_state.user_name.lower().strip()]
@@ -887,7 +910,7 @@ else:
                 filtered_list = [st.session_state["last"]] + filtered_list
 
 if not filtered_list:
-    if st.session_state.is_admin:
+    if st.session_state.is_admin or st.session_state.get('is_kppk', False):
         st.info(f"Belum ada laporan {MODE} dalam sistem.")
     else:
         st.info(f"Belum ada laporan anda untuk {MODE}. Laporan orang lain tidak dipaparkan.")
@@ -896,7 +919,22 @@ if not filtered_list:
 st.write(f"Jumlah: {len(filtered_list)} laporan")
 
 if st.session_state.is_admin:
-    st.warning("⚠️ Anda Admin - Boleh padam laporan. Pemantau biasa TIDAK ada butang padam.")
+    st.warning("⚠️ Anda Admin - Boleh padam laporan & padam SEMUA laporan. Pemantau biasa TIDAK ada butang padam.")
+    # Admin - Padam Semua Report function
+    with st.expander("🗑️ FUNGSI ADMIN - Padam Semua Laporan", expanded=False):
+        st.error("⚠️ AMARAN: Ini akan padam SEMUA laporan dalam sistem! Tindakan tidak boleh undur!")
+        col_del1, col_del2 = st.columns(2)
+        confirm_text = col_del1.text_input("Taip PADAM SEMUA untuk sahkan", placeholder="PADAM SEMUA")
+        if col_del2.button("🗑️ PADAM SEMUA LAPORAN", type="primary", use_container_width=True):
+            if confirm_text == "PADAM SEMUA":
+                save_all_laporan([])
+                st.success("✅ SEMUA laporan telah dipadam oleh ADMIN!")
+                st.balloons()
+                st.rerun()
+            else:
+                st.error("❌ Sila taip tepat: PADAM SEMUA")
+elif st.session_state.get('is_kppk', False):
+    st.info("👔 Anda KPPK/Pengarah - Boleh lihat SEMUA laporan, TIDAK boleh padam laporan.")
 
 from collections import Counter
 tarikh_all = [l.get('tarikh_lawatan','') for l in filtered_list]
