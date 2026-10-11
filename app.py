@@ -983,11 +983,11 @@ html_one = f"""
                     </tr>
                     <tr style="border-bottom:1px solid #F1F5F9; background:#E0F7FA;">
                         <td style="padding:11px 14px; font-weight:800; color:#006064; font-size:11px; border-right:1px solid #B2EBF2;">📊 BILANGAN SIDANG</td>
-                        <td style="padding:10px 14px;"><b style="color:white; background:#006064; padding:4px 14px; border-radius:20px; font-size:12px;">{sel.get('bilangan_sidang', sel.get('total_bilik', '-'))} Sidang</b> <span style="margin-left:8px; color:#006064; font-size:10px; font-weight:600;">Jumlah keseluruhan sidang di makmal ini (contoh 4 Sidang)</span></td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#006064; padding:4px 14px; border-radius:20px; font-size:12px;">{sel.get('bilangan_sidang', sel.get('total_bilik', '-'))} Sidang</b></td>
                     </tr>
                     <tr style="background:#F3E5F5; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">⏰ SIDANG LAWATAN</td>
-                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'}</b> <span style="margin-left:8px; color:#6A1B9A; font-size:10px; font-weight:600;">Sidang semasa pemantau hadir (contoh hadir Sidang 2 daripada 4 Sidang)</span></td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'}</b></td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
