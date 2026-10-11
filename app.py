@@ -565,7 +565,7 @@ elif MODE=="AMALI":
     bilik_makmal_ujian = m2.number_input("Bilik Ujian", 0,10,1)
     bilik_persediaan = m3.number_input("Bilik Persediaan", 0,10,1)
     bilik_kuar = m4.number_input("Bilik Kuarantin", 0,10,1)
-    sidang_no = m5.selectbox("Sidang", ["1","2","3","4","Semua"])
+    sidang_no = m5.selectbox("⏰ Sidang Lawatan", ["1","2","3","4","Semua"])
     bilik_pep = bilik_makmal_ujian
     bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=petugas=bilik_kelas=0
     total_bilik = bilik_makmal+bilik_makmal_ujian+bilik_persediaan+bilik_kuar
@@ -878,6 +878,8 @@ b_sakit = sel.get('bilik_sakit',0)
 b_dewan = sel.get('dewan',0)
 b_total = sel.get('total_bilik',0)
 b_makmal = sel.get('bilik_makmal',0)
+b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan',0))
+b_persediaan = sel.get('bilik_persediaan',0)
 b_sidang = sel.get('sidang_no','')
 b_ujian = sel.get('bilik_ujian',0)
 b_lapor = sel.get('bilik_lapor',0)
@@ -897,7 +899,10 @@ if MODE in ["SPM"]:
     bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 elif MODE=="AMALI":
-    bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Teori: {b_pep}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang: {b_sidang}', '#F3E5F5', '#6A1B9A')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan', 0))
+    b_persediaan = sel.get('bilik_persediaan', 0)
+    b_kuar_amali = sel.get('bilik_kuarantin', 0)
+    bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Sidang: {b_sidang}', '#F3E5F5', '#6A1B9A')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 elif MODE in ["UBBM","UBBI"]:
     bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
@@ -964,6 +969,14 @@ html_one = f"""
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT / DAERAH</td>
                         <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9; background:#FFFEF7;">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🧪 NAMA MAKMAL</td>
+                        <td style="padding:10px 14px;"><b style="color:#2E7D32; background:#E8F5E9; padding:4px 12px; border-radius:20px; font-size:12px;">🔬 {sel.get('nama_makmal','-') or '-'}</b> <span style="margin-left:8px; color:#64748B; font-size:10px;">(Amali Sains - Isi Sendiri)</span></td>
+                    </tr>
+                    <tr style="background:#F3E5F5; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">⏰ SIDANG LAWATAN</td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_no','-') or '-'}</b> <span style="margin-left:8px; color:#6A1B9A; font-size:10px; font-weight:600;">Pemantau pilih semasa lawatan</span></td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
