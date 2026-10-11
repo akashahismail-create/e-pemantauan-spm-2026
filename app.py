@@ -179,7 +179,7 @@ def login_screen():
         
         if "Pemantau" in role_pilih:
             nama_login = st.text_input("Nama Pemantau (penuh)", placeholder="Contoh: Akashah Bin Ismail")
-            st.caption("Gunakan nama penuh yang sama setiap kali login")
+            st.caption("Gunakan nama penuh yang sama setiap kali login | Sistem menyokong 600 orang pemantau")
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("➡️ Masuk sebagai Pemantau", type="primary", use_container_width=True):
                 if nama_login.strip() == "":
