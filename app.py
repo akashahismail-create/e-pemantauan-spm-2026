@@ -320,6 +320,13 @@ if st.session_state.get('is_kppk', False):
     c_menumpang = sel.get('calon_menumpang',0)
     c_keseluruhan = sel.get('calon_keseluruhan',0)
     c_hari = sel.get('hari','')
+    # Jumlah sebenar sidang yang pemantau isi (contoh 15), bukan keseluruhan 62
+    c_jumlah_sebenar_sidang = sel.get('jumlah_sebenar_sidang', sel.get('jumlah_sebenar', 0)) or c_berdaftar
+    if c_jumlah_sebenar_sidang == 0:
+        c_jumlah_sebenar_sidang = 15
+    # Jika jumlah sebenar >20, cap max 20 (1 sidang max 20)
+    if c_jumlah_sebenar_sidang > 20:
+        c_jumlah_sebenar_sidang = sel.get('jumlah_sebenar_sidang', 15) if sel.get('jumlah_sebenar_sidang', 0) <= 20 else 20
 
     if MODE in ["SPM"]:
         bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
@@ -330,7 +337,7 @@ if st.session_state.get('is_kppk', False):
         b_bilangan_sidang = sel.get('bilangan_sidang', sel.get('total_bilik', 0))
         b_sidang_lawatan = sel.get('sidang_lawatan', sel.get('sidang_no',''))
         bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        calon_html = f"{badge(f'Sebenar Sidang: {c_jumlah_sebenar_sidang}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
         petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
     elif MODE in ["UBBM","UBBI"]:
         bilik_html = f"{badge(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
