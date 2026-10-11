@@ -132,7 +132,7 @@ st.markdown("""
     <h1>🏛️ JABATAN PENDIDIKAN NEGERI SELANGOR</h1>
     <h3>SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</h3>
     <h2>📋 e-Pemantauan Sektor Pentaksiran dan Peperiksaan JPN Selangor Tahun 2026</h2>
-    <p>👥 35 Pemantau | 🎓 SPM, Amali Sains, Ujian Bertutur BM/BI, STAM & MUET | 🔐 Sistem Login Selamat</p>
+    <p>🎓 SPM, Amali Sains, Ujian Bertutur BM/BI, STAM & MUET</p>
     <p style="margin-top:8px; font-size:11px; background: rgba(255,255,255,0.15); display:inline-block; padding:4px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.2);">✨ Created by Akashah Ismail | JPN Selangor 2026</p>
 </div>
 """, unsafe_allow_html=True)
