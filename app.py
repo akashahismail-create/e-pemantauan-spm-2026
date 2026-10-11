@@ -763,7 +763,7 @@ if st.session_state.is_admin:
 else:
     nama_pemantau = p1.text_input("Nama Pemantau", value=st.session_state.user_name, disabled=True)
 
-jawatan_pemantau = p2.selectbox("Jawatan", ["-- Pilih --", "Penolong Pengarah SPP", "Penolong PPD SPP"])
+    jawatan_pemantau = p2.selectbox("Jawatan", ["-- Pilih --", "Penolong Pengarah SPP", "Penolong PPD SPP", "Penyelia Kawasan", "Penyelia Kawasan PPD", "Penyelia Kawasan JPN", "Penyelia Kawasan Daerah"])
 if "PPD SPP" in jawatan_pemantau and "Penolong PPD" in jawatan_pemantau:
     daerah_pemantau = p3.selectbox("Daerah", ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"])
 elif "Penolong Pengarah SPP" in jawatan_pemantau:
