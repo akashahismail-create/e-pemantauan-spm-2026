@@ -635,7 +635,9 @@ if MODE=="SPM":
     bilik_kuar = b2.number_input("Bilik Kuarantin", 0,10,1)
     bilik_sakit = b3.number_input("Bilik Sakit", 0,10,1)
     bilik_dewan = b4.number_input("Dewan", 0,10,0)
-    bilik_makmal=""; sidang_no=""; bilik_lapor=0; bilik_ujian=0; station=0; petugas=0; bilik_kelas=0
+    b5,b6 = st.columns(2)
+    petugas = b5.number_input("👮 Bilangan Petugas SPM", 0,50,5, help="Bil petugas termasuk Ketua Pengawas")
+    bilik_makmal=""; sidang_no=""; bilik_lapor=0; bilik_ujian=0; station=0; bilik_kelas=0
     total_bilik = bilik_pep+bilik_kuar+bilik_sakit+bilik_dewan
 elif MODE=="AMALI":
     st.markdown("#### 🔬 Bilangan Bilik (Amali Sains)")
@@ -644,12 +646,13 @@ elif MODE=="AMALI":
     bilik_makmal_ujian = m2.number_input("Bilik Ujian", 0,10,1)
     bilik_persediaan = m3.number_input("Bilik Persediaan", 0,10,1)
     bilik_kuar = m4.number_input("Bilik Kuarantin", 0,10,1)
-    m5,m6 = st.columns(2)
+    m5,m6,m7 = st.columns(3)
     bilangan_sidang = m5.number_input("📊 Bilangan Sidang (Total Sidang Makmal)", 0,10,4, help="Berapa banyak sidang keseluruhan di makmal ini, contoh 4 sidang")
     sidang_lawatan = m6.selectbox("⏰ Sidang Lawatan (Semasa Pemantau Hadir)", ["1","2","3","4","Semua"], help="Sidang ke berapa semasa pemantau buat lawatan, contoh Sidang 2")
+    petugas = m7.number_input("👮 Bil Petugas Amali", 0,30,5, help="Bil petugas makmal Amali")
     sidang_no = sidang_lawatan  # untuk compatibility lama
     bilik_pep = bilik_makmal_ujian
-    bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=petugas=bilik_kelas=0
+    bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=bilik_kelas=0
     total_bilik = bilik_makmal+bilik_makmal_ujian+bilik_persediaan+bilik_kuar
 elif MODE in ["UBBM","UBBI"]:
     st.markdown(f"#### 🗣️ Bilangan Bilik & Sesi (Ujian Bertutur {MODE})")
@@ -766,7 +769,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         errors.append(f"❌ Sila isi Calon Berdaftar atau Menumpang ({MODE})")
     if MODE in ["UBBM","UBBI"] and station==0:
         errors.append("❌ Sila isi Bilangan Station (Ujian Bertutur)")
-    if MODE in ["UBBM","UBBI","STAM","MUET"] and petugas==0:
+    if MODE in ["SPM","AMALI","UBBM","UBBI","STAM","MUET"] and petugas==0:
         errors.append("❌ Sila isi Bilangan Petugas")
     if not ulasan or ulasan.strip() == "" or len(ulasan.strip()) < 5:
         errors.append("❌ Sila isi Ulasan Pemantau (min 5 huruf) - WAJIB")
@@ -982,6 +985,7 @@ c_hari = sel.get('hari','')
 if MODE in ["SPM"]:
     bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+    petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
 elif MODE=="AMALI":
     b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan', 0))
     b_persediaan = sel.get('bilik_persediaan', 0)
@@ -990,14 +994,17 @@ elif MODE=="AMALI":
     b_sidang_lawatan = sel.get('sidang_lawatan', sel.get('sidang_no',''))
     bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+    petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
 elif MODE in ["UBBM","UBBI"]:
     # FIX: Petugas jangan letak di Bilik - nanti keliru, letak di Kehadiran Petugas asing di atas Kehadiran Calon
     bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 else:
-    bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Petugas: {b_petugas}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    # FIX: Petugas jangan dalam bilik untuk STAM/MUET juga - letak atas Kehadiran Calon
+    bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+    petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
 
 jenis_label = sel.get('jenis','SPM')
 if jenis_label=="UBBM":
@@ -1038,6 +1045,10 @@ if MODE=="SPM":
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🚪 BILIK PEPERIKSAAN SPM</td>
                         <td style="padding:10px 14px;">{bilik_html}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS SPM</td>
+                        <td style="padding:10px 14px;">{petugas_html}</td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON SPM</td>
@@ -1082,6 +1093,10 @@ elif MODE=="AMALI":
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🔬 BILIK AMALI SAINS</td>
                         <td style="padding:10px 14px;">{bilik_html}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS AMALI</td>
+                        <td style="padding:10px 14px;">{petugas_html}</td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON AMALI</td>
@@ -1151,6 +1166,10 @@ elif MODE=="STAM":
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🕌 BILIK STAM (Tiada Sidang, Tiada Station)</td>
                         <td style="padding:10px 14px;">{bilik_html}</td>
                     </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS STAM</td>
+                        <td style="padding:10px 14px;">{petugas_html}</td>
+                    </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON STAM</td>
                         <td style="padding:10px 14px;">{calon_html}</td>
@@ -1182,6 +1201,10 @@ else:  # MUET
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🎓 BILIK MUET (Tiada Sidang, Tiada Station)</td>
                         <td style="padding:10px 14px;">{bilik_html}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS MUET</td>
+                        <td style="padding:10px 14px;">{petugas_html}</td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON MUET</td>
