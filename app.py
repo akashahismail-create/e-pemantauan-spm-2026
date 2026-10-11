@@ -427,9 +427,10 @@ pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD", daerah_options)
 if MODE in ["STAM","MUET"]:
     pilih_nama = col_s.text_input(f"2️⃣ Nama Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: SMKA ... / Pusat STAM ...")
     pilih_no = col_p.text_input(f"3️⃣ No Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: BC001 / ST001")
-    # Kod PPD ambil dari pilihan daerah - map nama ke kod pertama
-    if pilih_daerah != "-- Pilih Daerah --" and pilih_daerah in NAMA_KE_KOD_MAP:
-        kod_ppd = NAMA_KE_KOD_MAP[pilih_daerah][0]
+    # Kod PPD ambil dari pilihan daerah - map nama ke kod pertama (case-insensitive)
+    daerah_upper = pilih_daerah.strip().upper() if pilih_daerah != "-- Pilih Daerah --" else ""
+    if daerah_upper and daerah_upper in NAMA_KE_KOD_MAP:
+        kod_ppd = NAMA_KE_KOD_MAP[daerah_upper][0]
     else:
         kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
     bil_calon = ""
@@ -438,10 +439,12 @@ if MODE in ["STAM","MUET"]:
     no_opts = []
     st.info(f"📝 {MODE} - Pusat & No Pusat diisi manual oleh pemantau (tak sama dengan SPM)")
 else:
-    # SPM, AMALI, UBBM, UBBI - pakai dropdown dengan filter TEPAT ikut daerah sahaja
+    # SPM, AMALI, UBBM, UBBI - pakai dropdown dengan filter TEPAT ikut daerah sahaja (FIX case-insensitive)
     if pilih_daerah != "-- Pilih Daerah --":
         df_by_daerah = pd.DataFrame()
-        kod_list = NAMA_KE_KOD_MAP.get(pilih_daerah, [pilih_daerah])
+        # Lookup case-insensitive - kunci dalam map adalah UPPER
+        daerah_upper = pilih_daerah.strip().upper()
+        kod_list = NAMA_KE_KOD_MAP.get(daerah_upper, [pilih_daerah])
         
         # 1. Cuba filter ikut Kod_PPD = kod (BA, BE etc)
         if "Kod_PPD" in df_pusat.columns:
@@ -450,7 +453,7 @@ else:
             
             # 2. Jika tak jumpa, cuba filter Kod_PPD = nama daerah terus (HULU SELANGOR)
             if df_by_daerah.empty:
-                mask_nama = df_pusat["Kod_PPD"].astype(str).str.strip().str.upper() == pilih_daerah.upper()
+                mask_nama = df_pusat["Kod_PPD"].astype(str).str.strip().str.upper() == daerah_upper
                 df_by_daerah = df_pusat[mask_nama]
         
         # 3. Jika masih kosong, cuba filter ikut No_Pusat (kod dari No Pusat - BEA... -> HULU SELANGOR)
@@ -458,7 +461,7 @@ else:
             try:
                 def match_daerah(no_pusat):
                     try:
-                        return kod_to_daerah(str(no_pusat)) == pilih_daerah
+                        return kod_to_daerah(str(no_pusat)).upper() == daerah_upper
                     except:
                         return False
                 mask_no = df_pusat["No_Pusat"].apply(match_daerah)
@@ -468,16 +471,16 @@ else:
         
         # 4. Jika masih kosong, cuba cari column Daerah / PPD / Nama_PPD jika ada
         if df_by_daerah.empty:
-            for col in ["Daerah", "PPD", "Nama_PPD", "Daerah_PPD"]:
+            for col in ["Daerah", "PPD", "Nama_PPD", "Daerah_PPD", "Nama_Daerah"]:
                 if col in df_pusat.columns:
-                    mask_col = df_pusat[col].astype(str).str.strip().str.upper().str.contains(pilih_daerah.upper(), na=False)
+                    mask_col = df_pusat[col].astype(str).str.strip().str.upper().str.contains(daerah_upper, na=False)
                     if mask_col.any():
                         df_by_daerah = df_pusat[mask_col]
                         break
         
         # 5. Jika masih kosong juga, baru papar amaran dan kosongkan list
         if df_by_daerah.empty:
-            st.error(f"⚠️ Tiada sekolah ditemui untuk {pilih_daerah} (Kod: {', '.join(kod_list)}). Semak fail Excel selenggara_pusat.")
+            st.error(f"⚠️ Tiada sekolah ditemui untuk {pilih_daerah} (Kod: {', '.join(kod_list)}). Semak fail Excel selenggara_pusat. Kod_PPD dalam Excel: {df_pusat['Kod_PPD'].dropna().unique()[:10].tolist() if 'Kod_PPD' in df_pusat.columns else 'tiada'}")
             df_by_daerah = pd.DataFrame(columns=df_pusat.columns)
             nama_list = ["-- Tiada Sekolah Dalam Daerah Ini --"]
         else:
