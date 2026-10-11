@@ -275,6 +275,44 @@ if st.session_state.get('is_kppk', False):
         filtered_kppk = [l for l in lap_list_kppk if l.get('tarikh_lawatan','') == tarikh_selected]
     
     filtered_kppk = sorted(filtered_kppk, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
+
+    # ===== TAMBAH PILIH DAERAH UNTUK KPPK/PENGARAH SELEPAS PILIH TARIKH =====
+    from collections import Counter as CounterDaerahKPPK
+    daerah_list_kppk = []
+    for l in filtered_kppk:
+        try:
+            d = get_nama_daerah_from_pusat(l.get('no_pusat',''), l.get('kod_ppd',''))
+        except:
+            d = l.get('daerah_pemantau','') or l.get('kod_ppd','') or 'Tidak Diketahui'
+        if not d or str(d).strip() == '':
+            d = l.get('daerah_pemantau','Tidak Diketahui')
+        daerah_list_kppk.append(str(d).strip())
+
+    counter_daerah_kppk = CounterDaerahKPPK(daerah_list_kppk)
+    unique_daerah_kppk = sorted(set(daerah_list_kppk))
+
+    if len(unique_daerah_kppk) > 1:
+        daerah_options_kppk = ["🌍 Semua Daerah"] + [f"{d} ({counter_daerah_kppk[d]} laporan)" for d in unique_daerah_kppk]
+        pilih_daerah_kppk_raw = st.selectbox(f"📍 Pilih Daerah (KPPK/Pengarah) - {len(unique_daerah_kppk)} daerah:", daerah_options_kppk, key=f"pilih_daerah_kppk_{MODE_KPPK}_{pilih_tarikh_raw}")
+
+        if pilih_daerah_kppk_raw == "🌍 Semua Daerah":
+            filtered_kppk_daerah = filtered_kppk
+        else:
+            daerah_selected_kppk = pilih_daerah_kppk_raw.split(" (")[0]
+            filtered_kppk_daerah = []
+            for l in filtered_kppk:
+                try:
+                    d = get_nama_daerah_from_pusat(l.get('no_pusat',''), l.get('kod_ppd',''))
+                except:
+                    d = l.get('daerah_pemantau','') or l.get('kod_ppd','') or 'Tidak Diketahui'
+                if str(d).strip() == daerah_selected_kppk:
+                    filtered_kppk_daerah.append(l)
+        filtered_kppk = filtered_kppk_daerah
+        st.info(f"📍 KPPK Filter: {pilih_tarikh_raw} + {pilih_daerah_kppk_raw} = {len(filtered_kppk)} laporan")
+    else:
+        if unique_daerah_kppk:
+            st.caption(f"📍 Daerah: {unique_daerah_kppk[0]} - {len(filtered_kppk)} laporan")
+
     st.write(f"Menunjukkan {len(filtered_kppk)} laporan untuk {pilih_tarikh_raw}")
     
     if len(filtered_kppk) > 1:
