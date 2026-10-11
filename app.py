@@ -6,7 +6,7 @@ import os, json
 from datetime import datetime, date, time
 from io import BytesIO
 
-st.set_page_config(page_title="Pemantauan SPM & Amali Sains 2026", layout="wide", page_icon="📋")
+st.set_page_config(page_title="e-Pemantauan Sektor Pentaksiran dan Peperiksaan JPN Selangor Tahun 2026", layout="wide", page_icon="📋")
 
 # SOROK TOOLBAR STREAMLIT
 st.markdown("""
@@ -139,7 +139,7 @@ def login_screen():
     _, col_center, _ = st.columns([1,2,1])
     with col_center:
         st.markdown('<div class="login-container">', unsafe_allow_html=True)
-        st.markdown('<div class="login-title">🔐 Log Masuk Sistem</div>', unsafe_allow_html=True)
+        st.markdown('<div class="login-title">🔐 e-Pemantauan Sektor Pentaksiran dan Peperiksaan<br>JPN Selangor Tahun 2026</div>', unsafe_allow_html=True)
         st.markdown('<div class="login-card">', unsafe_allow_html=True)
         
         role_pilih = st.radio("Log masuk sebagai:", ["👤 Pemantau (PPD/JPN)", "🔑 Admin JPN"], horizontal=True)
@@ -197,6 +197,17 @@ with c_logout:
         st.session_state.user_name = ""
         st.session_state.is_admin = False
         st.rerun()
+
+st.markdown("""
+<div style="background: linear-gradient(135deg, #0A1931 0%, #0D47A1 50%, #1565C0 100%); padding:18px 24px; border-radius:14px; margin:10px 0; box-shadow: 0 8px 24px rgba(13,71,161,0.25);">
+    <div style="display:flex; align-items:center; gap:12px;">
+        <div style="background: rgba(255,193,7,0.2); border:1px solid rgba(255,193,7,0.4); color:#FFECB3; font-size:11px; font-weight:800; letter-spacing:1.5px; padding:4px 12px; border-radius:20px;">🏛️ JPN SELANGOR 2026</div>
+        <div style="color:#FFC107; font-size:10px; font-weight:700;">● SISTEM RASMI</div>
+    </div>
+    <div style="color:white; font-size:22px; font-weight:900; margin-top:8px; letter-spacing:0.5px; text-shadow:0 2px 8px rgba(0,0,0,0.3);">e-Pemantauan Sektor Pentaksiran dan Peperiksaan</div>
+    <div style="color:#90CAF9; font-size:13px; font-weight:600; margin-top:4px; letter-spacing:0.3px;">Jabatan Pendidikan Negeri Selangor Tahun 2026 | SPM • Amali Sains • Ujian Bertutur BM/BI • STAM</div>
+</div>
+""", unsafe_allow_html=True)
 
 st.divider()
 jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM"], horizontal=True, label_visibility="collapsed")
