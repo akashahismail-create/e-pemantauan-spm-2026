@@ -680,17 +680,19 @@ elif MODE=="AMALI":
     total_bilik = bilik_makmal+bilik_makmal_ujian+bilik_persediaan+bilik_kuar
 elif MODE in ["UBBM","UBBI"]:
     st.markdown(f"#### 🗣️ Bilangan Bilik & Sesi (Ujian Bertutur {MODE})")
-    u1,u2,u3,u4 = st.columns(4)
-    bilik_ujian = u1.number_input("Bilik Ujian", 0,20,3)
-    bilik_kuar = u2.number_input("Bilik Kuarantin", 0,10,1)
-    bilik_lapor = u3.number_input("Bilik Lapor Diri", 0,10,1)
-    station = u4.number_input("Bilangan Station", 0,20,4)
+    u1,u2,u3 = st.columns(3)
+    bilik_menunggu = u1.number_input("Bilik Menunggu", 0,20,2)
+    bilik_ujian = u2.number_input("Bilik Ujian", 0,20,3)
+    bilik_kuar = u3.number_input("Bilik Kuarantin", 0,10,1)
     s1,s2,s3 = st.columns(3)
-    sidang_no = s1.selectbox("Sidang", ["1","2","3","4","Semua"])
+    sidang_no = s1.selectbox("Sidang Dipantau", ["1","2","3","4","Semua"])
     petugas = s2.number_input("Bilangan Petugas", 0,30,5)
     hari_text = s3.text_input("Hari", value=hari_melayu)
     bilik_pep=bilik_ujian; bilik_sakit=0; bilik_dewan=0; bilik_makmal=""; bilik_kelas=0
-    total_bilik = bilik_ujian+bilik_kuar+bilik_lapor
+    # Total bilik = Menunggu + Ujian + Kuarantin (Station dan Lapor Diri dibuang)
+    total_bilik = bilik_menunggu+bilik_ujian+bilik_kuar
+    bilik_lapor = bilik_menunggu  # Backward compat - simpan sebagai menunggu juga
+    station = 0  # Station dibuang
 elif MODE=="STAM":
     st.markdown("#### 🕌 Bilangan Bilik & Kelas (STAM)")
     st1,st2,st3 = st.columns(3)
@@ -721,15 +723,15 @@ if MODE in ["SPM","AMALI"]:
     keseluruhan = calon_berdaftar + calon_cicir + calon_bantah
     st.caption(f"Tidak Hadir: {tidak_hadir} | Keseluruhan: {keseluruhan}")
 elif MODE in ["UBBM","UBBI"]:
-    st.markdown("#### 👥 Bilangan Calon (Ujian Bertutur)")
+    st.markdown("#### 👥 Bilangan Calon Untuk Sidang yang Dipantau (Ujian Bertutur)")
     ub1,ub2,ub3 = st.columns(3)
-    calon_berdaftar = ub1.number_input("Calon Berdaftar", 0,500, 30)
-    calon_hadir = ub2.number_input("Calon Hadir", 0,500, 28)
+    calon_berdaftar = ub1.number_input("Calon Berdaftar Untuk Sidang yang Dipantau", 0,500, 30)
+    calon_hadir = ub2.number_input("Calon Hadir Untuk Sidang yang Dipantau", 0,500, 28)
     calon_tidak_hadir = ub3.number_input("Calon Tidak Hadir", 0,100, 2)
     calon_cicir=0; calon_bantah=0; calon_menumpang=0
     tidak_hadir = calon_tidak_hadir
     keseluruhan = calon_berdaftar
-    st.caption(f"Sidang: {sidang_no} | Station: {station} | Petugas: {petugas}")
+    st.caption(f"Sidang Dipantau: {sidang_no} | Petugas: {petugas} | Bilik: Menunggu={bilik_menunggu}, Ujian={bilik_ujian}, Kuarantin={bilik_kuar}")
 elif MODE=="STAM":
     st.markdown("#### 👥 Bilangan Calon (STAM)")
     st1,st2,st3,st4 = st.columns(4)
@@ -809,8 +811,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         errors.append("❌ Sila isi Calon Berdaftar (tidak boleh 0)")
     if MODE in ["STAM","MUET"] and calon_berdaftar==0 and calon_menumpang==0:
         errors.append(f"❌ Sila isi Calon Berdaftar atau Menumpang ({MODE})")
-    if MODE in ["UBBM","UBBI"] and station==0:
-        errors.append("❌ Sila isi Bilangan Station (Ujian Bertutur)")
+    # Station dibuang untuk UBBM/UBBI - tak perlu validation lagi
     if MODE in ["SPM","AMALI","UBBM","UBBI","STAM","MUET"] and petugas==0:
         errors.append("❌ Sila isi Bilangan Petugas")
     if not ulasan or ulasan.strip() == "" or len(ulasan.strip()) < 5:
@@ -848,6 +849,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "sidang_lawatan": sidang_lawatan if 'sidang_lawatan' in locals() else "",
         "sidang_no": sidang_no if 'sidang_no' in locals() else "",
         "total_bilik": total_bilik,
+        "bilik_menunggu": bilik_menunggu if 'bilik_menunggu' in locals() else 0,
         "bilik_ujian": bilik_ujian if 'bilik_ujian' in locals() else 0,
         "bilik_lapor": bilik_lapor if 'bilik_lapor' in locals() else 0,
         "station": station if 'station' in locals() else 0,
@@ -1021,6 +1023,7 @@ b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan',0))
 b_persediaan = sel.get('bilik_persediaan',0)
 b_sidang = sel.get('sidang_no','')
 b_ujian = sel.get('bilik_ujian',0)
+b_menunggu = sel.get('bilik_menunggu', sel.get('bilik_lapor',0))
 b_lapor = sel.get('bilik_lapor',0)
 b_station = sel.get('station',0)
 b_petugas = sel.get('petugas',0)
@@ -1048,8 +1051,8 @@ elif MODE=="AMALI":
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
     petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
 elif MODE in ["UBBM","UBBI"]:
-    # FIX: Petugas jangan letak di Bilik - nanti keliru, letak di Kehadiran Petugas asing di atas Kehadiran Calon
-    bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    # FIX UBBM/UBBI BARU: Bilik Menunggu, Bilik Ujian, Bilik Kuarantin, Sidang Dipantau - Buang Station & Lapor Diri
+    bilik_html = f"{badge(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
     petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 else:
