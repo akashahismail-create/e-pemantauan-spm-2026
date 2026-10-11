@@ -372,13 +372,17 @@ if st.session_state.get('is_kppk', False):
             sidang_lawatan = sel_data.get('sidang_lawatan', sel_data.get('sidang_no','')) or ''
             mode_data = sel_data.get('jenis','')
             
-            # KHAS AMALI - graf sidang sebenar
+            # KHAS AMALI - graf sidang sebenar - HANYA sidang dilawati (20), bukan keseluruhan 62
             if mode_data == "AMALI" or str(sidang_lawatan).strip() != "":
-                total_sidang = berdaftar if berdaftar > 0 else (hadir + th)
+                jumlah_sebenar_sidang = sel_data.get('jumlah_sebenar_sidang', 0) or sel_data.get('jumlah_sebenar', 0) or 20
+                if jumlah_sebenar_sidang == 0:
+                    jumlah_sebenar_sidang = berdaftar if berdaftar > 0 and berdaftar <= 20 else (hadir + th if (hadir+th) > 0 else 20)
+                total_sidang = jumlah_sebenar_sidang
                 if total_sidang == 0:
-                    total_sidang = 1
-                if th == 0 and berdaftar > hadir:
-                    th = berdaftar - hadir
+                    total_sidang = 20
+                th = total_sidang - hadir
+                if th < 0:
+                    th = 0
                 pct_hadir = int(hadir/total_sidang*100) if total_sidang else 0
                 pct_th = 100 - pct_hadir
                 return f'<div style="text-align:center;"><div style="font-size:9px; font-weight:800; color:#6A1B9A; background:#F3E5F5; padding:3px 8px; border-radius:20px; margin-bottom:6px;">📊 SIDANG {sidang_lawatan} - {hadir}/{total_sidang}</div><div style="width:90px; height:90px; border-radius:50%; background: conic-gradient(#4CAF50 0% {pct_hadir}%, #EF5350 {pct_hadir}% 100%); margin:0 auto;"></div><div style="font-size:9px; margin-top:8px;"><span style="color:#4CAF50; font-weight:700;">Hadir S{sidang_lawatan}: {hadir} ({pct_hadir}%)</span><br/><span style="color:#EF5350; font-weight:700;">TH S{sidang_lawatan}: {th} ({pct_th}%)</span><br/><span style="font-size:8px; color:#6A1B9A;">Jumlah Sebenar S{sidang_lawatan}: {total_sidang}</span></div></div>'
@@ -1366,15 +1370,22 @@ def buat_carta_pai_html(sel_data):
         sidang_lawatan = sel_data.get('sidang_lawatan', sel_data.get('sidang_no','')) or ''
         mode_data = sel_data.get('jenis','')
         
-        # ===== KHAS UNTUK AMALI - GRAF SIDANG LAWATAN SEBENAR =====
+        # ===== KHAS UNTUK AMALI - GRAF SIDANG LAWATAN SEBENAR - HANYA SIDANG 1 SAHAJA, BUKAN KESELURUHAN 62 =====
         if mode_data == "AMALI" or str(sidang_lawatan).strip() != "":
-            # Untuk Amali, graf tunjuk Hadir Sidang vs TH Sidang (jumlah sebenar sidang)
-            total_sidang = berdaftar if berdaftar > 0 else (hadir + th)
+            # Untuk Amali, graf tunjuk Hadir Sidang vs TH Sidang - HANYA untuk sidang yang dilawati sahaja (20 max), bukan keseluruhan 62
+            # Jumlah sebenar sidang = yang pemantau taip (contoh 20), bukan calon berdaftar keseluruhan (62)
+            jumlah_sebenar_sidang = sel_data.get('jumlah_sebenar_sidang', 0) or sel_data.get('jumlah_sebenar', 0) or 20
+            # Jika tiada jumlah_sebenar_sidang, guna hadir+th atau 20
+            if jumlah_sebenar_sidang == 0:
+                jumlah_sebenar_sidang = berdaftar if berdaftar > 0 and berdaftar <= 20 else (hadir + th if (hadir+th) > 0 else 20)
+            
+            total_sidang = jumlah_sebenar_sidang
             if total_sidang == 0:
-                total_sidang = 1
-            # Jika TH 0 dan berdaftar > hadir, kira TH = berdaftar - hadir (jumlah sebenar - hadir)
-            if th == 0 and berdaftar > hadir:
-                th = berdaftar - hadir
+                total_sidang = 20
+            # TH = Sebenar - Hadir (contoh Sebenar 20 - Hadir 15 = TH 5, bukan 62-15=47)
+            th = total_sidang - hadir
+            if th < 0:
+                th = 0
             
             segments = []
             if hadir > 0: 
