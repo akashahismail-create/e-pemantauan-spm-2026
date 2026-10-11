@@ -1072,7 +1072,7 @@ if MODE=="AMALI":
     st.success(f"✅ Makmal: {makmal_diperlukan} diperlukan | {makmal_lawatan} {sidang_lawatan_detail}: Jumlah Sebenar {jumlah_sebenar_sidang} calon, Hadir {calon_hadir_sidang}, TH {tidak_hadir_sidang} (Sebenar - Hadir)")
     st.caption(f"Formula: Jumlah Sebenar Sidang = min(20, baki calon makmal) | TH Sidang = Sebenar - Hadir | Contoh 103 calon = Makmal1: 80 (4x20) + Makmal2: 23 (20+3)")
 
-if MODE=="SPM":
+elif MODE=="SPM":
     st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #C2185B 0%, #EC407A 100%);">👥</div><div><div class="borang-header-title">Bilangan Calon SPM</div><div class="borang-header-subtitle">Hadir + Berdaftar + Cicir + Bantah</div></div></div>', unsafe_allow_html=True)
     ca1,ca2,ca3,ca4 = st.columns(4)
     calon_hadir = ca1.number_input("Calon Hadir", 0,500, int(bil_calon) if str(bil_calon).isdigit() else 20)
