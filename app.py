@@ -368,6 +368,21 @@ if st.session_state.get('is_kppk', False):
         try:
             hadir = int(sel_data.get('calon_hadir',0) or 0)
             th = int(sel_data.get('calon_tidak_hadir',0) or 0)
+            berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
+            sidang_lawatan = sel_data.get('sidang_lawatan', sel_data.get('sidang_no','')) or ''
+            mode_data = sel_data.get('jenis','')
+            
+            # KHAS AMALI - graf sidang sebenar
+            if mode_data == "AMALI" or str(sidang_lawatan).strip() != "":
+                total_sidang = berdaftar if berdaftar > 0 else (hadir + th)
+                if total_sidang == 0:
+                    total_sidang = 1
+                if th == 0 and berdaftar > hadir:
+                    th = berdaftar - hadir
+                pct_hadir = int(hadir/total_sidang*100) if total_sidang else 0
+                pct_th = 100 - pct_hadir
+                return f'<div style="text-align:center;"><div style="font-size:9px; font-weight:800; color:#6A1B9A; background:#F3E5F5; padding:3px 8px; border-radius:20px; margin-bottom:6px;">📊 SIDANG {sidang_lawatan} - {hadir}/{total_sidang}</div><div style="width:90px; height:90px; border-radius:50%; background: conic-gradient(#4CAF50 0% {pct_hadir}%, #EF5350 {pct_hadir}% 100%); margin:0 auto;"></div><div style="font-size:9px; margin-top:8px;"><span style="color:#4CAF50; font-weight:700;">Hadir S{sidang_lawatan}: {hadir} ({pct_hadir}%)</span><br/><span style="color:#EF5350; font-weight:700;">TH S{sidang_lawatan}: {th} ({pct_th}%)</span><br/><span style="font-size:8px; color:#6A1B9A;">Jumlah Sebenar S{sidang_lawatan}: {total_sidang}</span></div></div>'
+            
             total = hadir + th
             if total == 0: total = 1
             pct_hadir = int(hadir/total*100) if total else 0
@@ -1201,6 +1216,57 @@ def buat_carta_pai_html(sel_data):
         bantah = int(sel_data.get('calon_bantah',0) or 0)
         menumpang = int(sel_data.get('calon_menumpang',0) or 0)
         berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
+        sidang_lawatan = sel_data.get('sidang_lawatan', sel_data.get('sidang_no','')) or ''
+        mode_data = sel_data.get('jenis','')
+        
+        # ===== KHAS UNTUK AMALI - GRAF SIDANG LAWATAN SEBENAR =====
+        if mode_data == "AMALI" or str(sidang_lawatan).strip() != "":
+            # Untuk Amali, graf tunjuk Hadir Sidang vs TH Sidang (jumlah sebenar sidang)
+            total_sidang = berdaftar if berdaftar > 0 else (hadir + th)
+            if total_sidang == 0:
+                total_sidang = 1
+            # Jika TH 0 dan berdaftar > hadir, kira TH = berdaftar - hadir (jumlah sebenar - hadir)
+            if th == 0 and berdaftar > hadir:
+                th = berdaftar - hadir
+            
+            segments = []
+            if hadir > 0: 
+                label_hadir = f"Hadir Sidang {sidang_lawatan}" if sidang_lawatan else "Hadir Sidang"
+                segments.append((hadir, '#4CAF50', label_hadir))
+            if th > 0: 
+                label_th = f"TH Sidang {sidang_lawatan}" if sidang_lawatan else "TH Sidang"
+                segments.append((th, '#EF5350', label_th))
+            if not segments:
+                segments = [(total_sidang if total_sidang>0 else 1, '#42A5F5', f"Berdaftar Sidang {sidang_lawatan}")]
+                total_sidang = total_sidang if total_sidang>0 else 1
+            
+            gradient_parts = []
+            legend_html = ""
+            curr_pct = 0
+            for val, col2, label in segments:
+                pct = (val / total_sidang) * 100 if total_sidang>0 else 0
+                next_pct = curr_pct + pct
+                gradient_parts.append(f"{col2} {curr_pct:.1f}% {next_pct:.1f}%")
+                legend_html += f'<div style="display:flex; align-items:center; gap:5px; font-size:9px; margin:3px 0;"><div style="width:10px; height:10px; background:{col2}; border-radius:50%;"></div><span style="font-weight:700;">{label}</span> <span style="color:#333; font-weight:600;">{val} ({pct:.0f}%)</span></div>'
+                curr_pct = next_pct
+            gradient_str = ", ".join(gradient_parts)
+            chart_html = f"""
+            <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+                <div style="font-size:9px; font-weight:800; color:#6A1B9A; margin-bottom:8px; background:#F3E5F5; padding:4px 10px; border-radius:20px;">📊 KEHADIRAN SIDANG {sidang_lawatan}</div>
+                <div style="position:relative; width:120px; height:120px;">
+                    <div style="width:120px; height:120px; border-radius:50%; background: conic-gradient({gradient_str}); box-shadow: 0 4px 15px rgba(0,0,0,0.15);"></div>
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:white; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size:16px; font-weight:900; color:#6A1B9A;">S{sidang_lawatan}</div>
+                        <div style="font-size:7px; font-weight:700; color:#78909C;">SIDANG</div>
+                        <div style="font-size:10px; font-weight:800; color:#2E7D32;">{hadir}/{total_sidang}</div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; width:100%; background:#F3E5F5; border-radius:8px; padding:6px 8px; border:1px solid #E1BEE7;">{legend_html}<div style="margin-top:6px; padding-top:6px; border-top:1px dashed #CE93D8; font-size:8px; color:#6A1B9A; font-weight:700;">Jumlah Sebenar Sidang {sidang_lawatan}: {total_sidang} calon<br/>Hadir: {hadir} | TH: {th} (Sebenar - Hadir)</div></div>
+            </div>
+            """
+            return chart_html
+        
+        # ===== UNTUK MOD LAIN (SPM, UBBM, UBBI, STAM, MUET) - KEKAL ASAL =====
         total = hadir + th + cicir + bantah + menumpang
         if total == 0:
             total = berdaftar if berdaftar>0 else 1
