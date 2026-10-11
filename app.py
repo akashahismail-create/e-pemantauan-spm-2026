@@ -236,12 +236,12 @@ st.markdown("""
         <div style="color:#FFC107; font-size:10px; font-weight:700;">● SISTEM RASMI</div>
     </div>
     <div style="color:white; font-size:22px; font-weight:900; margin-top:8px; letter-spacing:0.5px; text-shadow:0 2px 8px rgba(0,0,0,0.3);">e-Pemantauan Sektor Pentaksiran dan Peperiksaan</div>
-    <div style="color:#90CAF9; font-size:13px; font-weight:600; margin-top:4px; letter-spacing:0.3px;">Jabatan Pendidikan Negeri Selangor Tahun 2026 | SPM • Amali Sains • Ujian Bertutur BM/BI • STAM</div>
+    <div style="color:#90CAF9; font-size:13px; font-weight:600; margin-top:4px; letter-spacing:0.3px;">Jabatan Pendidikan Negeri Selangor Tahun 2026 | SPM • Amali Sains • Ujian Bertutur BM/BI • STAM • MUET</div>
 </div>
 """, unsafe_allow_html=True)
 
 st.divider()
-jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM"], horizontal=True, label_visibility="collapsed")
+jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True, label_visibility="collapsed")
 
 if "1. Pemantauan SPM" in jenis:
     df_pusat, df_jadual = load_spm()
@@ -278,10 +278,16 @@ elif "4. Ujian Bertutur BI" in jenis:
     MODE = "UBBI"
     df_ringkas = df_pusat
     df_jadual_amali = pd.DataFrame()
-else:
+elif "5. STAM" in jenis:
     df_pusat, _ = load_spm()
     SENARAI_TARIKH = ["2026-10-19","2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-11-02","2026-11-03","2026-11-04","2026-11-05","2026-11-06"]
     MODE = "STAM"
+    df_ringkas = df_pusat
+    df_jadual_amali = pd.DataFrame()
+else:  # MUET
+    df_pusat, _ = load_spm()
+    SENARAI_TARIKH = ["2026-03-14","2026-03-15","2026-03-16","2026-07-11","2026-07-12","2026-07-13","2026-11-07","2026-11-08","2026-11-09","2026-11-14","2026-11-15","2026-11-16"]
+    MODE = "MUET"
     df_ringkas = df_pusat
     df_jadual_amali = pd.DataFrame()
 
@@ -293,8 +299,10 @@ elif MODE=="UBBM":
     FILE_LAP = "laporan_ubbm.json"
 elif MODE=="UBBI":
     FILE_LAP = "laporan_ubbi.json"
-else:
+elif MODE=="STAM":
     FILE_LAP = "laporan_stam.json"
+else:
+    FILE_LAP = "laporan_muet.json"
 
 def load_laporan():
     if os.path.exists(FILE_LAP):
@@ -350,8 +358,8 @@ def get_nama_daerah_from_pusat(no_pusat, kod_ppd=""):
 DAERAH_LIST = ["Petaling Perdana","Petaling Utama","Hulu Langat","Gombak","Klang","Kuala Langat","Kuala Selangor","Hulu Selangor","Sabak Bernam","Sepang"]
 
 st.markdown("#### 🏫 Maklumat Pusat - Pilih Daerah Dulu")
-if MODE=="STAM":
-    st.caption("📌 STAM - Pusat Tak Sama SPM - Isi Sendiri | Daerah/PPD Tetap Pilih")
+if MODE in ["STAM","MUET"]:
+    st.caption(f"📌 {MODE} - Pusat Tak Sama SPM - Isi Sendiri | Daerah/PPD Tetap Pilih")
 else:
     st.caption("1️⃣ Pilih Daerah/PPD → 2️⃣ Pilih Sekolah (auto filter) → 3️⃣ Pilih No Pusat")
 
@@ -366,15 +374,15 @@ col_d, col_s, col_p = st.columns([1,2,1])
 pilih_daerah = col_d.selectbox("1️⃣ Daerah / PPD (Kekal)", daerah_options)
 
 # ===== UNTUK STAM - ISI SENDIRI, TAK PERLU PILIHAN =====
-if MODE=="STAM":
-    pilih_nama = col_s.text_input("2️⃣ Nama Pusat STAM (Isi Sendiri)", placeholder="Contoh: SMKA ... / Pusat STAM ...")
-    pilih_no = col_p.text_input("3️⃣ No Pusat STAM (Isi Sendiri)", placeholder="Contoh: BC001 / ST001")
+if MODE in ["STAM","MUET"]:
+    pilih_nama = col_s.text_input(f"2️⃣ Nama Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: SMKA ... / Pusat STAM ...")
+    pilih_no = col_p.text_input(f"3️⃣ No Pusat {MODE} (Isi Sendiri)", placeholder="Contoh: BC001 / ST001")
     kod_ppd = pilih_daerah if pilih_daerah!="-- Pilih Daerah --" else ""
     bil_calon = ""
     df_by_daerah = df_pusat
     nama_list = []
     no_opts = []
-    st.info("📝 STAM - Pusat & No Pusat diisi manual oleh pemantau (tak sama dengan SPM)")
+    st.info(f"📝 {MODE} - Pusat & No Pusat diisi manual oleh pemantau (tak sama dengan SPM)")
 else:
     # SPM, AMALI, UBBM, UBBI - pakai dropdown
     if pilih_daerah != "-- Pilih Daerah --":
@@ -426,14 +434,14 @@ else:
     nama_makmal_final = ""
     pilih_makmal = ""
 
-if MODE=="STAM":
+if MODE in ["STAM","MUET"]:
     if pilih_nama and pilih_no:
-        st.success(f"✅ STAM | {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | {pilih_daerah}")
+        st.success(f"✅ {MODE} | {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | {pilih_daerah}")
 else:
     if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --"] and pilih_no not in ["-- Pilih Sekolah Dulu --"]:
         st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
 
-if MODE=="STAM":
+if MODE in ["STAM","MUET"]:
     pilih_nama_final = pilih_nama.strip() if pilih_nama and pilih_nama.strip()!="" else ""
     pilih_no_final = pilih_no.strip() if pilih_no and pilih_no.strip()!="" else ""
 else:
@@ -511,9 +519,12 @@ elif MODE=="UBBM":
     pilih_mp = st.selectbox("🗣️ Mata Pelajaran", ["Bahasa Melayu - Ujian Bertutur (1103/3)", "Bahasa Melayu - Ujian Bertutur - Menumpang"])
 elif MODE=="UBBI":
     pilih_mp = st.selectbox("🗣️ Mata Pelajaran", ["Bahasa Inggeris - Ujian Bertutur (1119/3)", "Bahasa Inggeris - Ujian Bertutur - Menumpang"])
-else:
+elif MODE=="STAM":
     stam_options = ["Hifz Al-Quran (9301)", "Hadith & Mustolah (9302)", "Tauhid & Mantiq (9303)", "Fiqh & Usul Fiqh (9304)", "Tafsir (9305)", "Nahu & Sorof (9306)", "Insya & Mutolaah (9307)", "Arudh & Qafiyah (9308)", "Balaghah (9309)", "Adab & Nusus (9310)", "Semua Kertas STAM"]
     pilih_mp = st.selectbox("📖 Kertas Peperiksaan STAM", stam_options)
+else: # MUET
+    muet_options = ["Listening (800/1)", "Speaking (800/2)", "Reading (800/3)", "Writing (800/4)", "Semua Kertas MUET (800)"]
+    pilih_mp = st.selectbox("📝 Kertas Peperiksaan MUET", muet_options)
 
 st.divider()
 
@@ -548,8 +559,16 @@ elif MODE in ["UBBM","UBBI"]:
     hari_text = s3.text_input("Hari", value=hari_melayu)
     bilik_pep=bilik_ujian; bilik_sakit=0; bilik_dewan=0; bilik_makmal=""; bilik_kelas=0
     total_bilik = bilik_ujian+bilik_kuar+bilik_lapor
-else:
+elif MODE=="STAM":
     st.markdown("#### 🕌 Bilangan Bilik & Kelas (STAM)")
+    st1,st2,st3 = st.columns(3)
+    bilik_kelas = st1.number_input("Bil Kelas / Dewan", 0,30,5)
+    bilik_kuar = st2.number_input("Bilik Kuarantin", 0,10,1)
+    petugas = st3.number_input("Bil Petugas (termasuk Ketua Pengawas)", 0,30,5)
+    bilik_pep=bilik_kelas; bilik_ujian=0; bilik_lapor=0; station=0; bilik_sakit=0; bilik_dewan=0; bilik_makmal=""; sidang_no=""; hari_text=""
+    total_bilik = bilik_kelas+bilik_kuar
+else: # MUET
+    st.markdown("#### 🎓 Bilangan Bilik & Kelas (MUET)")
     st1,st2,st3 = st.columns(3)
     bilik_kelas = st1.number_input("Bil Kelas / Dewan", 0,30,5)
     bilik_kuar = st2.number_input("Bilik Kuarantin", 0,10,1)
@@ -579,8 +598,19 @@ elif MODE in ["UBBM","UBBI"]:
     tidak_hadir = calon_tidak_hadir
     keseluruhan = calon_berdaftar
     st.caption(f"Sidang: {sidang_no} | Station: {station} | Petugas: {petugas}")
-else:
+elif MODE=="STAM":
     st.markdown("#### 👥 Bilangan Calon (STAM)")
+    st1,st2,st3,st4 = st.columns(4)
+    calon_berdaftar = st1.number_input("Calon Berdaftar", 0,500, 30)
+    calon_menumpang = st2.number_input("Calon Menumpang", 0,100, 0)
+    calon_cicir = st3.number_input("Calon Cicir", 0,50,0)
+    calon_bantah = st4.number_input("Calon Bantah", 0,50,0)
+    calon_hadir = calon_berdaftar
+    tidak_hadir = 0
+    keseluruhan = calon_berdaftar + calon_menumpang
+    st.caption(f"Berdaftar: {calon_berdaftar} + Menumpang: {calon_menumpang} = Keseluruhan: {keseluruhan} | Petugas: {petugas}")
+else: # MUET
+    st.markdown("#### 👥 Bilangan Calon (MUET)")
     st1,st2,st3,st4 = st.columns(4)
     calon_berdaftar = st1.number_input("Calon Berdaftar", 0,500, 30)
     calon_menumpang = st2.number_input("Calon Menumpang", 0,100, 0)
@@ -627,11 +657,11 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         errors.append("❌ Sila isi Bilangan Bilik (Total tidak boleh 0)")
     if MODE in ["SPM","AMALI","UBBM","UBBI"] and calon_berdaftar == 0:
         errors.append("❌ Sila isi Calon Berdaftar (tidak boleh 0)")
-    if MODE=="STAM" and calon_berdaftar==0 and calon_menumpang==0:
-        errors.append("❌ Sila isi Calon Berdaftar atau Menumpang (STAM)")
+    if MODE in ["STAM","MUET"] and calon_berdaftar==0 and calon_menumpang==0:
+        errors.append(f"❌ Sila isi Calon Berdaftar atau Menumpang ({MODE})")
     if MODE in ["UBBM","UBBI"] and station==0:
         errors.append("❌ Sila isi Bilangan Station (Ujian Bertutur)")
-    if MODE in ["UBBM","UBBI","STAM"] and petugas==0:
+    if MODE in ["UBBM","UBBI","STAM","MUET"] and petugas==0:
         errors.append("❌ Sila isi Bilangan Petugas")
     if not ulasan or ulasan.strip() == "" or len(ulasan.strip()) < 5:
         errors.append("❌ Sila isi Ulasan Pemantau (min 5 huruf) - WAJIB")
@@ -858,6 +888,8 @@ elif jenis_label=="UBBI":
     jenis_label_full = "UJIAN BERTUTUR BAHASA INGGERIS"
 elif jenis_label=="STAM":
     jenis_label_full = "SIJIL TINGGI AGAMA MALAYSIA (STAM)"
+elif jenis_label=="MUET":
+    jenis_label_full = "MALAYSIAN UNIVERSITY ENGLISH TEST (MUET)"
 elif jenis_label=="AMALI":
     jenis_label_full = "AMALI SAINS SPM 2026"
 else:
