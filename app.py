@@ -536,8 +536,9 @@ else:
         st.success(f"✅ {pilih_nama} | No: {pilih_no} | PPD: {kod_ppd} | Calon: {bil_calon}")
 
 if MODE in ["STAM","MUET"]:
-    pilih_nama_final = pilih_nama.strip() if pilih_nama and pilih_nama.strip()!="" else ""
-    pilih_no_final = pilih_no.strip() if pilih_no and pilih_no.strip()!="" else ""
+    # AUTO TUKAR KE HURUF BESAR untuk No Pusat dan Nama Sekolah/Pusat - STAM & MUET sahaja (ulasan kekal)
+    pilih_nama_final = pilih_nama.strip().upper() if pilih_nama and pilih_nama.strip()!="" else ""
+    pilih_no_final = pilih_no.strip().upper() if pilih_no and pilih_no.strip()!="" else ""
 else:
     pilih_nama_final = pilih_nama if pilih_nama not in ["-- Pilih Sekolah --", "-- Pilih Daerah Dulu --", "-- Pilih --"] else ""
     pilih_no_final = pilih_no if pilih_no not in ["-- Pilih Sekolah Dulu --", "-- Pilih --"] else ""
