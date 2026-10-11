@@ -560,13 +560,15 @@ if MODE=="SPM":
     total_bilik = bilik_pep+bilik_kuar+bilik_sakit+bilik_dewan
 elif MODE=="AMALI":
     st.markdown("#### 🔬 Bilangan Bilik (Amali Sains)")
-    m1,m2,m3,m4 = st.columns(4)
+    m1,m2,m3,m4,m5 = st.columns(5)
     bilik_makmal = m1.number_input("Bil Makmal", 0,10,2)
-    bilik_pep = m2.number_input("Bilik Teori", 0,10,1)
-    sidang_no = m3.selectbox("Sidang", ["1","2","3","4","Semua"])
-    bilik_kuar = m4.number_input("Bilik Persediaan", 0,5,1)
+    bilik_makmal_ujian = m2.number_input("Bilik Ujian", 0,10,1)
+    bilik_persediaan = m3.number_input("Bilik Persediaan", 0,10,1)
+    bilik_kuar = m4.number_input("Bilik Kuarantin", 0,10,1)
+    sidang_no = m5.selectbox("Sidang", ["1","2","3","4","Semua"])
+    bilik_pep = bilik_makmal_ujian
     bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=petugas=bilik_kelas=0
-    total_bilik = bilik_makmal+bilik_pep+bilik_kuar
+    total_bilik = bilik_makmal+bilik_makmal_ujian+bilik_persediaan+bilik_kuar
 elif MODE in ["UBBM","UBBI"]:
     st.markdown(f"#### 🗣️ Bilangan Bilik & Sesi (Ujian Bertutur {MODE})")
     u1,u2,u3,u4 = st.columns(4)
