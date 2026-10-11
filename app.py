@@ -760,9 +760,9 @@ st.markdown("#### 👮 Maklumat Pemantau")
 p1,p2,p3 = st.columns(3)
 if st.session_state.is_admin:
     nama_pemantau = p1.text_input("Nama Pemantau", value=st.session_state.user_name)
+    jawatan_pemantau = p2.selectbox("Jawatan", ["-- Pilih --", "Penolong Pengarah SPP", "Penolong PPD SPP", "Penyelia Kawasan"])
 else:
     nama_pemantau = p1.text_input("Nama Pemantau", value=st.session_state.user_name, disabled=True)
-
     jawatan_pemantau = p2.selectbox("Jawatan", ["-- Pilih --", "Penolong Pengarah SPP", "Penolong PPD SPP", "Penyelia Kawasan"])
 
 # Jika Penyelia Kawasan - Daerah auto ikut pilihan daerah sebelum pilihan sekolah (tak boleh keluar daerah)
