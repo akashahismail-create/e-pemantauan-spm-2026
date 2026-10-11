@@ -560,12 +560,15 @@ if MODE=="SPM":
     total_bilik = bilik_pep+bilik_kuar+bilik_sakit+bilik_dewan
 elif MODE=="AMALI":
     st.markdown("#### 🔬 Bilangan Bilik (Amali Sains)")
-    m1,m2,m3,m4,m5 = st.columns(5)
+    m1,m2,m3,m4 = st.columns(4)
     bilik_makmal = m1.number_input("Bil Makmal", 0,10,2)
     bilik_makmal_ujian = m2.number_input("Bilik Ujian", 0,10,1)
     bilik_persediaan = m3.number_input("Bilik Persediaan", 0,10,1)
     bilik_kuar = m4.number_input("Bilik Kuarantin", 0,10,1)
-    sidang_no = m5.selectbox("⏰ Sidang Lawatan", ["1","2","3","4","Semua"])
+    m5,m6 = st.columns(2)
+    bilangan_sidang = m5.number_input("📊 Bilangan Sidang (Total Sidang Makmal)", 0,10,4, help="Berapa banyak sidang keseluruhan di makmal ini, contoh 4 sidang")
+    sidang_lawatan = m6.selectbox("⏰ Sidang Lawatan (Semasa Pemantau Hadir)", ["1","2","3","4","Semua"], help="Sidang ke berapa semasa pemantau buat lawatan, contoh Sidang 2")
+    sidang_no = sidang_lawatan  # untuk compatibility lama
     bilik_pep = bilik_makmal_ujian
     bilik_sakit=bilik_dewan=bilik_lapor=bilik_ujian=station=petugas=bilik_kelas=0
     total_bilik = bilik_makmal+bilik_makmal_ujian+bilik_persediaan+bilik_kuar
@@ -714,6 +717,8 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "bilik_makmal": bilik_makmal if 'bilik_makmal' in locals() else "",
         "bilik_makmal_ujian": bilik_makmal_ujian if 'bilik_makmal_ujian' in locals() else 0,
         "bilik_persediaan": bilik_persediaan if 'bilik_persediaan' in locals() else 0,
+        "bilangan_sidang": bilangan_sidang if 'bilangan_sidang' in locals() else 0,
+        "sidang_lawatan": sidang_lawatan if 'sidang_lawatan' in locals() else "",
         "sidang_no": sidang_no if 'sidang_no' in locals() else "",
         "total_bilik": total_bilik,
         "bilik_ujian": bilik_ujian if 'bilik_ujian' in locals() else 0,
@@ -902,7 +907,9 @@ elif MODE=="AMALI":
     b_makmal_ujian = sel.get('bilik_makmal_ujian', sel.get('bilik_peperiksaan', 0))
     b_persediaan = sel.get('bilik_persediaan', 0)
     b_kuar_amali = sel.get('bilik_kuarantin', 0)
-    bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Sidang: {b_sidang}', '#F3E5F5', '#6A1B9A')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
+    b_bilangan_sidang = sel.get('bilangan_sidang', sel.get('total_bilik', 0))
+    b_sidang_lawatan = sel.get('sidang_lawatan', sel.get('sidang_no',''))
+    bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
     calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
 elif MODE in ["UBBM","UBBI"]:
     bilik_html = f"{badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Lapor Diri: {b_lapor}', '#E3F2FD', '#1565C0')} {badge(f'Station: {b_station}', '#F3E5F5', '#6A1B9A')} {badge(f'Sidang: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
@@ -974,9 +981,13 @@ html_one = f"""
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🧪 NAMA MAKMAL</td>
                         <td style="padding:10px 14px;"><b style="color:#2E7D32; background:#E8F5E9; padding:4px 12px; border-radius:20px; font-size:12px;">🔬 {sel.get('nama_makmal','-') or '-'}</b> <span style="margin-left:8px; color:#64748B; font-size:10px;">(Amali Sains - Isi Sendiri)</span></td>
                     </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9; background:#E0F7FA;">
+                        <td style="padding:11px 14px; font-weight:800; color:#006064; font-size:11px; border-right:1px solid #B2EBF2;">📊 BILANGAN SIDANG</td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#006064; padding:4px 14px; border-radius:20px; font-size:12px;">{sel.get('bilangan_sidang', sel.get('total_bilik', '-'))} Sidang</b> <span style="margin-left:8px; color:#006064; font-size:10px; font-weight:600;">Jumlah keseluruhan sidang di makmal ini (contoh 4 Sidang)</span></td>
+                    </tr>
                     <tr style="background:#F3E5F5; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">⏰ SIDANG LAWATAN</td>
-                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_no','-') or '-'}</b> <span style="margin-left:8px; color:#6A1B9A; font-size:10px; font-weight:600;">Pemantau pilih semasa lawatan</span></td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-')) or '-'}</b> <span style="margin-left:8px; color:#6A1B9A; font-size:10px; font-weight:600;">Sidang semasa pemantau hadir (contoh hadir Sidang 2 daripada 4 Sidang)</span></td>
                     </tr>
                     <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
