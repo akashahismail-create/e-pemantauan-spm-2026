@@ -438,29 +438,52 @@ if MODE in ["STAM","MUET"]:
     no_opts = []
     st.info(f"📝 {MODE} - Pusat & No Pusat diisi manual oleh pemantau (tak sama dengan SPM)")
 else:
-    # SPM, AMALI, UBBM, UBBI - pakai dropdown dengan filter tepat ikut kod
+    # SPM, AMALI, UBBM, UBBI - pakai dropdown dengan filter TEPAT ikut daerah sahaja
     if pilih_daerah != "-- Pilih Daerah --":
-        if pilih_daerah in NAMA_KE_KOD_MAP:
-            # Filter tepat ikut senarai kod untuk daerah tersebut
-            kod_list = NAMA_KE_KOD_MAP[pilih_daerah]
-            if "Kod_PPD" in df_pusat.columns:
-                df_by_daerah = df_pusat[df_pusat["Kod_PPD"].astype(str).str.strip().str.upper().isin(kod_list)]
-            else:
-                df_by_daerah = df_pusat
-        elif "Kod_PPD" in df_pusat.columns and pilih_daerah in df_pusat["Kod_PPD"].values:
-            # Jika masih pilih kod lama (BA, BJ etc)
-            df_by_daerah = df_pusat[df_pusat["Kod_PPD"]==pilih_daerah]
-        else:
-            df_by_daerah = df_pusat
+        df_by_daerah = pd.DataFrame()
+        kod_list = NAMA_KE_KOD_MAP.get(pilih_daerah, [pilih_daerah])
         
+        # 1. Cuba filter ikut Kod_PPD = kod (BA, BE etc)
+        if "Kod_PPD" in df_pusat.columns:
+            mask_kod = df_pusat["Kod_PPD"].astype(str).str.strip().str.upper().isin([k.upper() for k in kod_list])
+            df_by_daerah = df_pusat[mask_kod]
+            
+            # 2. Jika tak jumpa, cuba filter Kod_PPD = nama daerah terus (HULU SELANGOR)
+            if df_by_daerah.empty:
+                mask_nama = df_pusat["Kod_PPD"].astype(str).str.strip().str.upper() == pilih_daerah.upper()
+                df_by_daerah = df_pusat[mask_nama]
+        
+        # 3. Jika masih kosong, cuba filter ikut No_Pusat (kod dari No Pusat - BEA... -> HULU SELANGOR)
+        if df_by_daerah.empty and "No_Pusat" in df_pusat.columns:
+            try:
+                def match_daerah(no_pusat):
+                    try:
+                        return kod_to_daerah(str(no_pusat)) == pilih_daerah
+                    except:
+                        return False
+                mask_no = df_pusat["No_Pusat"].apply(match_daerah)
+                df_by_daerah = df_pusat[mask_no]
+            except:
+                pass
+        
+        # 4. Jika masih kosong, cuba cari column Daerah / PPD / Nama_PPD jika ada
         if df_by_daerah.empty:
-            # Fallback: cuba filter ikut nama daerah dalam data jika ada
-            df_by_daerah = df_pusat
-            st.warning(f"⚠️ Tiada data Kod_PPD untuk {pilih_daerah}, papar semua sekolah")
+            for col in ["Daerah", "PPD", "Nama_PPD", "Daerah_PPD"]:
+                if col in df_pusat.columns:
+                    mask_col = df_pusat[col].astype(str).str.strip().str.upper().str.contains(pilih_daerah.upper(), na=False)
+                    if mask_col.any():
+                        df_by_daerah = df_pusat[mask_col]
+                        break
         
-        nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
-        kod_display = ", ".join(NAMA_KE_KOD_MAP.get(pilih_daerah, [pilih_daerah]))
-        st.caption(f"📍 {len(nama_list)-1} sekolah dalam {pilih_daerah} (Kod: {kod_display})")
+        # 5. Jika masih kosong juga, baru papar amaran dan kosongkan list
+        if df_by_daerah.empty:
+            st.error(f"⚠️ Tiada sekolah ditemui untuk {pilih_daerah} (Kod: {', '.join(kod_list)}). Semak fail Excel selenggara_pusat.")
+            df_by_daerah = pd.DataFrame(columns=df_pusat.columns)
+            nama_list = ["-- Tiada Sekolah Dalam Daerah Ini --"]
+        else:
+            nama_list = ["-- Pilih Sekolah --"] + sorted(df_by_daerah["Nama_Pusat"].dropna().unique().tolist())
+            kod_display = ", ".join(kod_list)
+            st.success(f"✅ {len(nama_list)-1} sekolah dalam {pilih_daerah} (Kod: {kod_display}) - Filter Tepat!")
     else:
         df_by_daerah = df_pusat
         nama_list = ["-- Pilih Daerah Dulu --"]
