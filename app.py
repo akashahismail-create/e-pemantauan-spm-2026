@@ -1044,10 +1044,17 @@ if MODE=="AMALI":
                 jumlah_sebenar_sidang = 0
             break
     
-    cs3.metric("📊 Jumlah Sebenar Sidang Dilawati", f"{jumlah_sebenar_sidang} calon", help="Jumlah sebenar calon yang sepatutnya hadir sidang ini (max 20)")
+    # Pemantau taip sendiri Jumlah Sebenar Sidang (contoh 15, 20 max)
+    # Jika auto kira bagi cadangan, tapi pemantau boleh ubah
+    cs3, cs4a, cs4b = st.columns([1.2,1,1])
+    jumlah_sebenar_input = cs3.number_input(f"📊 Jumlah Sebenar Calon {sidang_lawatan_detail} {makmal_lawatan} (Pemantau Taip)", 0, 20, min(jumlah_sebenar_sidang, 20) if jumlah_sebenar_sidang>0 else 20, help="Taip jumlah sebenar calon yang sepatutnya hadir sidang ini. Contoh: 15 atau 20 (max 20 per sidang). Kalau Hadir 15/15 = penuh 100%")
+    calon_hadir_sidang = cs4a.number_input(f"✅ Hadir {sidang_lawatan_detail}", 0, jumlah_sebenar_input if jumlah_sebenar_input>0 else 20, min(jumlah_sebenar_input, jumlah_sebenar_input) if jumlah_sebenar_input>0 else 20, help=f"Hadir untuk {sidang_lawatan_detail} sahaja, max = Jumlah Sebenar ({jumlah_sebenar_input})")
+    # Auto kira TH
+    th_auto = jumlah_sebenar_input - calon_hadir_sidang
+    cs4b.metric(f"❌ TH {sidang_lawatan_detail}", f"{th_auto}", help="Auto: Sebenar - Hadir")
     
-    # Input hadir untuk sidang ini sahaja
-    calon_hadir_sidang = cs4.number_input(f"✅ Hadir {sidang_lawatan_detail} {makmal_lawatan}", 0, 20, min(jumlah_sebenar_sidang, 20) if jumlah_sebenar_sidang>0 else 20, help=f"Hadir untuk {sidang_lawatan_detail} di {makmal_lawatan} sahaja, max {jumlah_sebenar_sidang}")
+    # Override jumlah_sebenar_sidang dengan input pemantau
+    jumlah_sebenar_sidang = jumlah_sebenar_input
     
     calon_berdaftar = calon_berdaftar_total  # Simpan total keseluruhan
     calon_hadir = calon_hadir_sidang  # Untuk graf, hadir sidang ini
@@ -1205,7 +1212,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
             "makmal_diperlukan": st.session_state.get('amali_makmal_diperlukan', 1),
             "makmal_lawatan": st.session_state.get('amali_makmal_lawatan', 'Makmal 1'),
             "sidang_lawatan_detail": st.session_state.get('amali_sidang_lawatan_detail', 'Sidang 1'),
-            "jumlah_sebenar_sidang": st.session_state.get('amali_jumlah_sebenar_sidang', 20),
+            "jumlah_sebenar_sidang": jumlah_sebenar_sidang if 'jumlah_sebenar_sidang' in locals() else st.session_state.get('amali_jumlah_sebenar_sidang', 20),
             "sidang_per_makmal": st.session_state.get('amali_sidang_per_makmal', 4),
             "kapasiti_per_makmal": st.session_state.get('amali_kapasiti_per_makmal', 80),
             "calon_berdaftar_total": calon_berdaftar if 'calon_berdaftar' in locals() else 0,
