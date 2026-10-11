@@ -268,11 +268,20 @@ st.markdown("""
 
 st.divider()
 
-# ===== KPPK/PENGARAH - TANPA BORANG, HANYA PILIH PEPERIKSAAN & TARIKH - LAPORAN SAMA FORMAT 100% DENGAN ADMIN/PEMANTAU (FIX FINAL KASHAH) =====
+# ===== KPPK/PENGARAH - TANPA BORANG, HANYA PILIH PEPERIKSAAN & TARIKH (FIX - SAMAKAN DESIGN ADMIN/PEMANTAU) =====
 if st.session_state.get('is_kppk', False):
-    st.markdown("<div style='background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%); padding:18px 22px; border-radius:14px; margin-bottom:16px;'><div style='display:flex; align-items:center; gap:10px;'><div style='background: rgba(255,255,255,0.2); padding:8px 14px; border-radius:20px; font-size:12px; font-weight:800; color:white;'>KPPK / PENGARAH</div><div style='color:#E1BEE7; font-size:11px; font-weight:700;'>MOD LIHAT SAHAJA - Tiada Borang</div></div><div style='color:white; font-size:18px; font-weight:800; margin-top:10px;'>Papan Pemuka Laporan - Pilih Peperiksaan</div><div style='color:#CE93D8; font-size:12px; margin-top:4px;'>Pilih peperiksaan - Pilih tarikh - Format sama 100% dengan Admin & Pemantau</div></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%); padding:18px 22px; border-radius:14px; margin-bottom:16px; box-shadow: 0 8px 24px rgba(123,31,162,0.25);">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="background: rgba(255,255,255,0.2); padding:8px 14px; border-radius:20px; font-size:12px; font-weight:800; color:white;">👔 KPPK / PENGARAH</div>
+            <div style="color:#E1BEE7; font-size:11px; font-weight:700;">MOD LIHAT SAHAJA - Laporan Full Premium Sama Seperti Admin/Pemantau</div>
+        </div>
+        <div style="color:white; font-size:18px; font-weight:800; margin-top:10px;">📊 Papan Pemuka Laporan Pemantauan - Pilih Peperiksaan</div>
+        <div style="color:#CE93D8; font-size:12px; margin-top:4px;">Pilih jenis peperiksaan (SPM, Amali Sains, UBBM, UBBI, STAM, MUET) → Pilih tarikh → Lihat laporan full (gambar + carta + jadual premium)</div>
+    </div>
+    """, unsafe_allow_html=True)
     
-    jenis_kppk = st.radio("Pilih Peperiksaan untuk Lihat Laporan:", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True)
+    jenis_kppk = st.radio("📌 Pilih Peperiksaan untuk Lihat Laporan:", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True)
     
     if "1. Pemantauan SPM" in jenis_kppk:
         FILE_LAP_KPPK = "laporan_spm_504.json"
@@ -303,9 +312,10 @@ if st.session_state.get('is_kppk', False):
         return []
     
     lap_list_kppk = load_laporan_kppk()
-    st.divider()
-    st.markdown(f"#### Laporan {MODE_KPPK} - KPPK/Pengarah (Format Sama 100% Admin)")
     
+    st.divider()
+    st.markdown(f"#### 📊 Laporan {MODE_KPPK} - KPPK/Pengarah (View Full Premium - Sama Seperti Admin)")
+
     if not lap_list_kppk:
         st.info(f"Belum ada laporan {MODE_KPPK} dalam sistem.")
         st.stop()
@@ -323,39 +333,97 @@ if st.session_state.get('is_kppk', False):
     tarikh_all = [l.get('tarikh_lawatan','') for l in lap_list_kppk]
     counter_tarikh = Counter(tarikh_all)
     unique_tarikh = sorted(set(tarikh_all), reverse=True)
-    tarikh_options = ["Semua Tarikh"] + [f"{t} ({counter_tarikh[t]} laporan)" for t in unique_tarikh if t]
-    pilih_tarikh_raw = st.selectbox(f"Pilih Tarikh Pemantauan {MODE_KPPK} ({len(unique_tarikh)} tarikh, {len(lap_list_kppk)} laporan):", tarikh_options)
     
-    if pilih_tarikh_raw == "Semua Tarikh":
+    tarikh_options = ["📅 Semua Tarikh"] + [f"{t} ({counter_tarikh[t]} laporan)" for t in unique_tarikh if t]
+    pilih_tarikh_raw = st.selectbox(f"📅 Pilih Tarikh Pemantauan {MODE_KPPK} ({len(unique_tarikh)} tarikh, {len(lap_list_kppk)} laporan):", tarikh_options)
+    
+    if pilih_tarikh_raw == "📅 Semua Tarikh":
         filtered_kppk = lap_list_kppk
     else:
         tarikh_selected = pilih_tarikh_raw.split(" (")[0]
         filtered_kppk = [l for l in lap_list_kppk if l.get('tarikh_lawatan','') == tarikh_selected]
     
     filtered_kppk = sorted(filtered_kppk, key=lambda x: (x.get('tarikh_lawatan',''), x.get('masa_lawatan',''), x.get('no_pusat','')))
+    
     st.write(f"Menunjukkan {len(filtered_kppk)} laporan untuk {pilih_tarikh_raw}")
     
     if len(filtered_kppk) > 1:
         pilihan_labels = []
         for l in filtered_kppk:
             mp_short = l.get('mata_pelajaran','')[:35]
-            pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:25]} | {l.get('masa_lawatan','')} | {mp_short} | {l.get('nama_pemantau','')[:15]}")
-        idx_pilih = st.selectbox(f"Pilih Laporan {MODE_KPPK} - {pilih_tarikh_raw}:", range(len(filtered_kppk)), format_func=lambda i: pilihan_labels[i])
+            pilihan_labels.append(f"{l.get('no_pusat','')} | {l.get('nama_sekolah','')[:25]} | {l.get('masa_lawatan','')} | {mp_short} | 👤 {l.get('nama_pemantau','')[:15]}")
+        idx_pilih = st.selectbox(f"📑 Pilih Laporan {MODE_KPPK} - {pilih_tarikh_raw}:", range(len(filtered_kppk)), format_func=lambda i: pilihan_labels[i])
         sel = filtered_kppk[idx_pilih]
     else:
         sel = filtered_kppk[0]
-        st.success(f"{sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} {sel.get('masa_lawatan','')} | {sel['mata_pelajaran'][:40]}")
+        st.success(f"📌 {sel['no_pusat']} | {sel['nama_sekolah']} | {sel['tarikh_lawatan']} {sel.get('masa_lawatan','')} | {sel['mata_pelajaran'][:40]}")
     
     MODE = MODE_KPPK
-    
-    def badge(text, bg="#E3F2FD", color="#0D47A1"):
+    lap_list = lap_list_kppk
+    filtered_list = filtered_kppk
+
+    # ===== FULL PREMIUM SAMA MACAM ADMIN =====
+    IMG_D = IMG_DEWAN_B64
+    IMG_S = IMG_SEKOLAH_B64
+
+    def buat_carta_pai_html_kppk(sel_data):
+        try:
+            hadir = int(sel_data.get('calon_hadir',0) or 0)
+            th = int(sel_data.get('calon_tidak_hadir',0) or 0)
+            cicir = int(sel_data.get('calon_cicir',0) or 0)
+            bantah = int(sel_data.get('calon_bantah',0) or 0)
+            menumpang = int(sel_data.get('calon_menumpang',0) or 0)
+            berdaftar = int(sel_data.get('calon_berdaftar',0) or 0)
+            total = hadir + th + cicir + bantah + menumpang
+            if total == 0:
+                total = berdaftar if berdaftar>0 else 1
+                hadir = total
+            segments = []
+            if hadir > 0: segments.append((hadir, '#4CAF50', 'Hadir'))
+            if th > 0: segments.append((th, '#EF5350', 'TH'))
+            if menumpang > 0: segments.append((menumpang, '#42A5F5', 'Menumpang'))
+            if cicir > 0: segments.append((cicir, '#FFA726', 'Cicir'))
+            if bantah > 0: segments.append((bantah, '#AB47BC', 'Bantah'))
+            if not segments:
+                segments = [(berdaftar if berdaftar>0 else 1, '#42A5F5', 'Berdaftar')]
+                total = berdaftar if berdaftar>0 else 1
+            gradient_parts = []
+            legend_html = ""
+            curr_pct = 0
+            for val, col2, label in segments:
+                pct = (val / total) * 100 if total>0 else 0
+                next_pct = curr_pct + pct
+                gradient_parts.append(f"{col2} {curr_pct:.1f}% {next_pct:.1f}%")
+                legend_html += f'<div style="display:flex; align-items:center; gap:5px; font-size:9px; margin:2px 0;"><div style="width:10px; height:10px; background:{col2}; border-radius:50%;"></div><span style="font-weight:600;">{label}</span> <span style="color:#666;">{val} ({pct:.0f}%)</span></div>'
+                curr_pct = next_pct
+            gradient_str = ", ".join(gradient_parts)
+            chart_html = f"""
+            <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
+                <div style="font-size:10px; font-weight:800; color:#0D47A1; margin-bottom:8px; background:#E3F2FD; padding:4px 10px; border-radius:20px;">📊 STATUS CALON</div>
+                <div style="position:relative; width:120px; height:120px;">
+                    <div style="width:120px; height:120px; border-radius:50%; background: conic-gradient({gradient_str}); box-shadow: 0 4px 15px rgba(0,0,0,0.15);"></div>
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:white; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="font-size:18px; font-weight:900; color:#0D47A1;">{berdaftar}</div>
+                        <div style="font-size:7px; font-weight:700; color:#78909C;">BERDAFTAR</div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; width:100%; background:#F8FAFC; border-radius:8px; padding:6px 8px; border:1px solid #F1F5F9;">{legend_html}</div>
+            </div>
+            """
+            return chart_html
+        except Exception as e:
+            return f"<div>Error: {e}</div>"
+
+    CHART_PAI_HTML_KPPK = buat_carta_pai_html_kppk(sel)
+
+    def badge_kppk(text, bg="#E3F2FD", color="#0D47A1"):
         return f'<span style="display:inline-block; background:{bg}; color:{color}; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin:1px;">{text}</span>'
 
     b_kebal = sel.get('bilik_kebal_penyelia','')
     if b_kebal and "Penyelia Kawasan" in str(sel.get('jawatan_pemantau','')):
-        pemantau_html = f" {sel['nama_pemantau']} | {badge(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')} {badge(f'Bilik Kebal: {b_kebal}', '#FFF3E0', '#EF6C00')}"
+        pemantau_html_kppk = f"👤 {sel['nama_pemantau']} | {badge_kppk(sel['jawatan_pemantau'], '#0D47A1', 'white')} {badge_kppk(sel['daerah_pemantau'], '#E0E7FF', '#4338CA')} {badge_kppk(f'🏦 Bilik Kebal: {b_kebal}', '#FFF3E0', '#EF6C00')}"
     else:
-        pemantau_html = f" {sel.get('nama_pemantau','')} | {badge(sel.get('jawatan_pemantau',''), '#0D47A1', 'white')} {badge(sel.get('daerah_pemantau',''), '#E0E7FF', '#4338CA')}"
+        pemantau_html_kppk = f"👤 {sel.get('nama_pemantau','')} | {badge_kppk(sel.get('jawatan_pemantau',''), '#0D47A1', 'white')} {badge_kppk(sel.get('daerah_pemantau',''), '#E0E7FF', '#4338CA')}"
 
     b_pep = sel.get('bilik_peperiksaan',0)
     b_kuar = sel.get('bilik_kuarantin',0)
@@ -380,152 +448,291 @@ if st.session_state.get('is_kppk', False):
     c_hari = sel.get('hari','')
 
     if MODE in ["SPM"]:
-        bilik_html = f"{badge(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
-        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+        bilik_html_kppk = f"{badge_kppk(f'Pep: {b_pep}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Sakit: {b_sakit}', '#FCE4EC', '#C2185B')} {badge_kppk(f'Dewan: {b_dewan}', '#E3F2FD', '#1565C0')} {badge_kppk(f'Total: {b_total}', '#0D47A1', 'white')}"
+        calon_html_kppk = f"{badge_kppk(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge_kppk(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge_kppk(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge_kppk(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html_kppk = f"{badge_kppk(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge_kppk(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
     elif MODE=="AMALI":
         b_kuar_amali = sel.get('bilik_kuarantin', 0)
         b_bilangan_sidang = sel.get('bilangan_sidang', sel.get('total_bilik', 0))
         b_sidang_lawatan = sel.get('sidang_lawatan', sel.get('sidang_no',''))
-        bilik_html = f"{badge(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
-        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
+        bilik_html_kppk = f"{badge_kppk(f'Makmal: {b_makmal}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'Bilik Ujian: {b_makmal_ujian}', '#E3F2FD', '#1565C0')} {badge_kppk(f'Persediaan: {b_persediaan}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Kuarantin: {b_kuar_amali}', '#FFEBEE', '#C62828')} {badge_kppk(f'Bil Sidang: {b_bilangan_sidang}', '#E0F7FA', '#006064')} {badge_kppk(f'Lawatan Sidang: {b_sidang_lawatan}', '#F3E5F5', '#6A1B9A')} {badge_kppk(f'Total Bilik: {b_total}', '#0D47A1', 'white')}"
+        calon_html_kppk = f"{badge_kppk(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge_kppk(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge_kppk(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html_kppk = f"{badge_kppk(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge_kppk(f'Petugas Makmal Amali', '#E0F7FA', '#006064')}"
     elif MODE in ["UBBM","UBBI"]:
-        bilik_html = f"{badge(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
-        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        bilik_html_kppk = f"{badge_kppk(f'Bilik Menunggu: {b_menunggu}', '#E3F2FD', '#1565C0')} {badge_kppk(f'Bilik Ujian: {b_ujian}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Sidang Dipantau: {b_sidang}', '#E0F2F1', '#00695C')} {badge_kppk(f'Total: {b_total}', '#0D47A1', 'white')}"
+        petugas_html_kppk = f"{badge_kppk(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge_kppk(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+        calon_html_kppk = f"{badge_kppk(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge_kppk(f'Hadir: {c_hadir}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'TH: {c_th}', '#FFEBEE', '#C62828')} {badge_kppk(f'Hari: {c_hari}', '#FFF8E1', '#F57F17')} {badge_kppk(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
     else:
-        bilik_html = f"{badge(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge(f'Total: {b_total}', '#0D47A1', 'white')}"
-        calon_html = f"{badge(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
-        petugas_html = f"{badge(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
+        bilik_html_kppk = f"{badge_kppk(f'Kelas/Dewan: {b_kelas}', '#E8F5E9', '#2E7D32')} {badge_kppk(f'Kuarantin: {b_kuar}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Total: {b_total}', '#0D47A1', 'white')}"
+        calon_html_kppk = f"{badge_kppk(f'Berdaftar: {c_berdaftar}', '#E3F2FD', '#0D47A1')} {badge_kppk(f'Menumpang: {c_menumpang}', '#E0F7FA', '#006064')} {badge_kppk(f'Cicir: {c_cicir}', '#FFF3E0', '#EF6C00')} {badge_kppk(f'Bantah: {c_bantah}', '#F3E5F5', '#6A1B9A')} {badge_kppk(f'Keseluruhan: {c_keseluruhan}', '#0D47A1', 'white')}"
+        petugas_html_kppk = f"{badge_kppk(f'Bil Petugas: {b_petugas}', '#0D47A1', 'white')} {badge_kppk(f'Ketua Pengawas + Pengawas', '#E0F7FA', '#006064')}"
 
     jenis_label = sel.get('jenis','SPM')
     if jenis_label=="UBBM":
         jenis_label_full = "UJIAN BERTUTUR BAHASA MELAYU"
-        jenis_icon = "BM"
+        jenis_icon = "🗣️"
     elif jenis_label=="UBBI":
         jenis_label_full = "UJIAN BERTUTUR BAHASA INGGERIS"
-        jenis_icon = "BI"
+        jenis_icon = "🗣️"
     elif jenis_label=="STAM":
-        jenis_label_full = "STAM"
-        jenis_icon = "STAM"
+        jenis_label_full = "SIJIL TINGGI AGAMA MALAYSIA (STAM)"
+        jenis_icon = "🕌"
     elif jenis_label=="MUET":
-        jenis_label_full = "MUET"
-        jenis_icon = "MUET"
+        jenis_label_full = "MALAYSIAN UNIVERSITY ENGLISH TEST (MUET)"
+        jenis_icon = "🎓"
     elif jenis_label=="AMALI":
         jenis_label_full = "AMALI SAINS SPM 2026"
-        jenis_icon = "AMALI"
+        jenis_icon = "🧪"
     else:
         jenis_label_full = "SPM 2026"
-        jenis_icon = "SPM"
-
-    IMG_D = IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else ""
-    IMG_S = IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else ""
-
-    def buat_carta_pai_html_kppk(sel_data):
-        try:
-            hadir = int(sel_data.get('calon_hadir',0) or 0)
-            th = int(sel_data.get('calon_tidak_hadir',0) or 0)
-            total = hadir + th
-            if total == 0: total = 1
-            pct_hadir = int(hadir/total*100) if total else 0
-            pct_th = 100 - pct_hadir
-            return f'<div style="text-align:center;"><div style="width:90px; height:90px; border-radius:50%; background: conic-gradient(#4CAF50 0% {pct_hadir}%, #EF5350 {pct_hadir}% 100%); margin:0 auto;"></div><div style="font-size:10px; margin-top:8px;"><span style="color:#4CAF50;">Hadir {pct_hadir}%</span> <span style="color:#EF5350; margin-left:8px;">TH {pct_th}%</span></div></div>'
-        except:
-            return '<div style="text-align:center; font-size:10px; color:#999;">Carta</div>'
-    
-    CHART_PAI_HTML = buat_carta_pai_html_kppk(sel)
+        jenis_icon = "📝"
 
     if MODE=="SPM":
-        table_rows = f"<tr style='background:#F8FAFC; border-bottom:2px solid #E8EEF6;'><td style='padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;'>NAMA PUSAT / SEKOLAH (SPM)</td><td style='padding:11px 14px; font-weight:700; font-size:13px;'>{sel['nama_sekolah']}</td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;'>NO PUSAT / DAERAH</td><td style='padding:10px 14px;'><b style='color:#0D47A1;'>{sel['no_pusat']}</b> <span style='margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;'>{sel.get('kod_ppd','')}</span></td></tr><tr style='background:#FAFBFC; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;'>TARIKH, HARI & MP</td><td style='padding:10px 14px;'><span style='background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;'>{sel['tarikh_lawatan']}</span> <span style='background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;'>{sel['masa_lawatan']}</span> <b style='color:#0D47A1; margin-left:8px;'>{sel['mata_pelajaran']}</b></td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;'>BILIK PEPERIKSAAN SPM</td><td style='padding:10px 14px;'>{bilik_html}</td></tr><tr style='background:#FFF3E0; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;'>KEHADIRAN PETUGAS SPM</td><td style='padding:10px 14px;'>{petugas_html}</td></tr><tr style='background:#FAFBFC; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;'>KEHADIRAN CALON SPM</td><td style='padding:10px 14px;'>{calon_html}</td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;'>ULASAN PEMANTAUAN SPM</td><td style='padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;'>{sel['ulasan'] or 'Tiada ulasan'}</td></tr><tr style='background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);'><td style='padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;'>PEMANTAU SPM</td><td style='padding:11px 14px; font-weight:600;'>{pemantau_html}</td></tr>"
+        table_rows_kppk = f'''
+                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🏫 NAMA PUSAT / SEKOLAH (SPM)</td>
+                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT / DAERAH</td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {sel.get('kod_ppd','')} ({sel.get('daerah_pemantau','')})</span></td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
+                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel['tarikh_lawatan']}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel['masa_lawatan']}</span> <span style="background:#E8F5E9; color:#2E7D32; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">📅 {sel.get('hari','')}</span> <b style="color:#0D47A1; margin-left:8px;">{sel['mata_pelajaran']}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🚪 BILIK PEPERIKSAAN SPM</td>
+                        <td style="padding:10px 14px;">{bilik_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS SPM</td>
+                        <td style="padding:10px 14px;">{petugas_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON SPM</td>
+                        <td style="padding:10px 14px;">{calon_html_kppk}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN PEMANTAUAN SPM</td>
+                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel.get('ulasan','Tiada ulasan')} ❞</td>
+                    </tr>
+                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU SPM</td>
+                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html_kppk}</td>
+                    </tr>
+        '''
+    elif MODE=="AMALI":
+        table_rows_kppk = f'''
+                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🏫 NAMA PUSAT / SEKOLAH (AMALI)</td>
+                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT / DAERAH</td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {sel.get('kod_ppd','')} ({sel.get('daerah_pemantau','')})</span></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9; background:#FFFEF7;">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🧪 NAMA MAKMAL</td>
+                        <td style="padding:10px 14px;"><b style="color:#2E7D32; background:#E8F5E9; padding:4px 12px; border-radius:20px; font-size:12px;">🔬 {sel.get('nama_makmal','-')}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9; background:#E0F7FA;">
+                        <td style="padding:11px 14px; font-weight:800; color:#006064; font-size:11px; border-right:1px solid #B2EBF2;">📊 BILANGAN SIDANG</td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#006064; padding:4px 14px; border-radius:20px; font-size:12px;">{sel.get('bilangan_sidang', sel.get('total_bilik', '-'))} Sidang</b></td>
+                    </tr>
+                    <tr style="background:#F3E5F5; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">⏰ SIDANG LAWATAN</td>
+                        <td style="padding:10px 14px;"><b style="color:white; background:#6A1B9A; padding:4px 14px; border-radius:20px; font-size:12px;">Sidang {sel.get('sidang_lawatan', sel.get('sidang_no','-'))}</b></td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP</td>
+                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel['tarikh_lawatan']}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel['masa_lawatan']}</span> <b style="color:#0D47A1; margin-left:8px;">{sel['mata_pelajaran']}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🔬 BILIK AMALI</td>
+                        <td style="padding:10px 14px;">{bilik_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS AMALI</td>
+                        <td style="padding:10px 14px;">{petugas_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON AMALI</td>
+                        <td style="padding:10px 14px;">{calon_html_kppk}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN AMALI</td>
+                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel.get('ulasan','Tiada ulasan')} ❞</td>
+                    </tr>
+                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU AMALI</td>
+                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html_kppk}</td>
+                    </tr>
+        '''
+    elif MODE in ["UBBM","UBBI"]:
+        table_rows_kppk = f'''
+                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🏫 NAMA PUSAT / SEKOLAH ({MODE})</td>
+                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT / DAERAH</td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {sel.get('kod_ppd','')} ({sel.get('daerah_pemantau','')})</span></td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH, HARI & MP ({MODE})</td>
+                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel['tarikh_lawatan']}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel['masa_lawatan']}</span> <b style="color:#0D47A1; margin-left:8px;">{sel['mata_pelajaran']}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🚪 BILIK {MODE}</td>
+                        <td style="padding:10px 14px;">{bilik_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS {MODE}</td>
+                        <td style="padding:10px 14px;">{petugas_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON {MODE}</td>
+                        <td style="padding:10px 14px;">{calon_html_kppk}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN {MODE}</td>
+                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel.get('ulasan','Tiada ulasan')} ❞</td>
+                    </tr>
+                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU {MODE}</td>
+                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html_kppk}</td>
+                    </tr>
+        '''
     else:
-        table_rows = f"<tr style='background:#F8FAFC; border-bottom:2px solid #E8EEF6;'><td style='padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px;'>NAMA PUSAT / SEKOLAH ({MODE})</td><td style='padding:11px 14px; font-weight:700;'>{sel['nama_sekolah']}</td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;'>NO PUSAT / DAERAH</td><td style='padding:10px 14px;'><b>{sel['no_pusat']}</b> {sel.get('kod_ppd','')}</td></tr><tr style='background:#FAFBFC; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569;'>TARIKH, HARI & MP</td><td style='padding:10px 14px;'>{sel['tarikh_lawatan']} {sel['masa_lawatan']} {sel['mata_pelajaran']}</td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;'>BILIK ({MODE})</td><td style='padding:10px 14px;'>{bilik_html}</td></tr><tr style='background:#FFF3E0; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:800; color:#EF6C00;'>KEHADIRAN PETUGAS {MODE}</td><td style='padding:10px 14px;'>{petugas_html}</td></tr><tr style='background:#FAFBFC; border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569;'>KEHADIRAN CALON UNTUK SIDANG DIPANTAU</td><td style='padding:10px 14px;'>{calon_html}</td></tr><tr style='border-bottom:1px solid #F1F5F9;'><td style='padding:11px 14px; font-weight:700; color:#475569; background:#FAFBFC;'>ULASAN</td><td style='padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;'>{sel['ulasan'] or 'Tiada ulasan'}</td></tr><tr style='background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);'><td style='padding:11px 14px; font-weight:800; color:#0D47A1;'>PEMANTAU</td><td style='padding:11px 14px; font-weight:600;'>{pemantau_html}</td></tr>"
+        table_rows_kppk = f'''
+                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🎓 NAMA PUSAT {MODE}</td>
+                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT {MODE} / DAERAH</td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {sel.get('kod_ppd','')} ({sel.get('daerah_pemantau','')})</span></td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH & MASA LAWATAN {MODE}</td>
+                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:3px 8px; border-radius:6px; font-size:11px;">{sel['tarikh_lawatan']}</span> <span style="background:#FFF8E1; color:#F57F17; padding:3px 8px; border-radius:6px; font-size:11px; margin-left:4px;">🕒 {sel['masa_lawatan']}</span> <b style="color:#0D47A1; margin-left:8px;">{sel['mata_pelajaran']}</b></td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🎓 BILIK {MODE}</td>
+                        <td style="padding:10px 14px;">{bilik_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS {MODE}</td>
+                        <td style="padding:10px 14px;">{petugas_html_kppk}</td>
+                    </tr>
+                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON {MODE}</td>
+                        <td style="padding:10px 14px;">{calon_html_kppk}</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #F1F5F9;">
+                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN {MODE}</td>
+                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel.get('ulasan','Tiada ulasan')} ❞</td>
+                    </tr>
+                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
+                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU {MODE}</td>
+                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html_kppk}</td>
+                    </tr>
+        '''
 
-    html_one = f"""
-<div style="width:100%; display:flex; justify-content:center; padding:12px 8px; background: linear-gradient(135deg, #EEF2F7 0%, #E3EAF3 100%);">
-    <div style="width:100%; max-width:860px; background:white; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(13,71,161,0.18); border:1px solid white; position:relative;">
-        <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
-        <div style="background: linear-gradient(135deg, #0A1931 0%, #0D47A1 45%, #1565C0 100%); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="flex:1;">
-                <div style="background: rgba(255,193,7,0.2); color:#FFECB3; font-size:10px; font-weight:800; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:6px;">{jenis_icon} SEKTOR PENTAKSIRAN & PEPERIKSAAN - {MODE}</div>
-                <div style="color:white; font-size:20px; font-weight:900;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
-                <div style="color:#90CAF9; font-size:11px; font-weight:700; margin-top:6px;">LAPORAN PEMANTAUAN {jenis_label_full} - {sel['tarikh_lawatan']} - {sel['masa_lawatan']}</div>
+    html_one_kppk = f"""
+    <div style="width:100%; display:flex; justify-content:center; padding:12px 8px; background: linear-gradient(135deg, #EEF2F7 0%, #E3EAF3 100%);">
+        <div style="width:100%; max-width:860px; background:white; border-radius:20px; overflow:hidden; box-shadow: 0 20px 60px rgba(13,71,161,0.18); border:1px solid white; position:relative;">
+            <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
+            <div style="background: linear-gradient(135deg, #0A1931 0%, #0D47A1 45%, #1565C0 100%); padding:22px 26px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="flex:1;">
+                    <div style="background: rgba(255,193,7,0.2); color:#FFECB3; font-size:10px; font-weight:800; padding:3px 10px; border-radius:20px; display:inline-block; margin-bottom:6px;">{jenis_icon} SEKTOR PENTAKSIRAN & PEPERIKSAAN - {MODE} | 👔 KPPK/PENGARAH VIEW</div>
+                    <div style="color:white; font-size:20px; font-weight:900;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
+                    <div style="color:#90CAF9; font-size:11px; font-weight:700; margin-top:6px;">LAPORAN PEMANTAUAN {jenis_label_full} • {sel['tarikh_lawatan']} • {sel['masa_lawatan']}</div>
+                </div>
+                <div style="text-align:right; margin-left:20px;">
+                    <div style="background:white; color:#0D2A54; font-size:20px; font-weight:900; padding:10px 18px; border-radius:12px;">{sel['no_pusat']}</div>
+                    <div style="color:#FFECB3; font-size:9px; font-weight:700; margin-top:7px; text-align:center;">NO. PUSAT {MODE}</div>
+                </div>
             </div>
-            <div style="text-align:right; margin-left:20px;">
-                <div style="background:white; color:#0D2A54; font-size:20px; font-weight:900; padding:10px 18px; border-radius:12px;">{sel['no_pusat']}</div>
-                <div style="color:#FFECB3; font-size:9px; font-weight:700; margin-top:7px; text-align:center;">NO. PUSAT {MODE}</div>
-            </div>
-        </div>
-        <div style="padding:18px; background:#F8FAFC;">
-            <div style="display:flex; gap:14px;">
-                <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
-                    <img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:100%; object-fit:cover;">
-                    <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
-                        <div style="color:white; font-size:11px; font-weight:800;">DEWAN / BILIK {MODE}</div>
+            <div style="padding:18px; background:#F8FAFC;">
+                <div style="display:flex; gap:14px;">
+                    <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
+                        <img src="data:image/jpeg;base64,{IMG_D}" style="width:100%; height:100%; object-fit:cover;">
+                        <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <div style="color:white; font-size:11px; font-weight:800;">📸 DEWAN / BILIK {MODE}</div>
+                        </div>
+                    </div>
+                    <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
+                        <img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:100%; object-fit:cover;">
+                        <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
+                            <div style="color:white; font-size:11px; font-weight:800;">🏫 BANGUNAN {MODE}</div>
+                        </div>
+                    </div>
+                    <div style="flex:0.95; background:white; border-radius:14px; padding:14px 12px; box-shadow: 0 8px 24px rgba(13,71,161,0.1); border:1px solid #E8EEF6; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        {CHART_PAI_HTML_KPPK}
                     </div>
                 </div>
-                <div style="flex:1.25; position:relative; border-radius:14px; overflow:hidden; height:195px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); border:2px solid white;">
-                    <img src="data:image/jpeg;base64,{IMG_S}" style="width:100%; height:100%; object-fit:cover;">
-                    <div style="position:absolute; bottom:0; left:0; right:0; padding:12px; background: linear-gradient(transparent, rgba(0,0,0,0.7));">
-                        <div style="color:white; font-size:11px; font-weight:800;">BANGUNAN {MODE}</div>
-                    </div>
-                </div>
-                <div style="flex:0.95; background:white; border-radius:14px; padding:14px 12px; box-shadow: 0 8px 24px rgba(13,71,161,0.1); border:1px solid #E8EEF6; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                    {CHART_PAI_HTML}
+            </div>
+            <div style="padding:0 18px 18px;">
+                <div style="background:white; border-radius:14px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border:1px solid #E8EEF6;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
+                        {table_rows_kppk}
+                    </table>
                 </div>
             </div>
-        </div>
-        <div style="padding:0 18px 18px;">
-            <div style="background:white; border-radius:14px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border:1px solid #E8EEF6;">
-                <table style="width:100%; border-collapse:collapse; font-size:12.5px;">
-                    {table_rows}
-                </table>
+            <div style="padding:20px 26px; background:#F1F5F9; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; gap:24px;">
+                <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
+                    <div style="font-size:11px; font-weight:800; color:#0D47A1;">PEMANTAU</div>
+                    <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['nama_pemantau']}</div>
+                    <div style="font-size:9px; color:#64748B;">{sel['tarikh_submit']}</div>
+                </div>
+                <div style="text-align:center; flex:1; border-top:2px dashed #94A3B8; padding-top:10px; margin-top:30px;">
+                    <div style="font-size:11px; font-weight:800; color:#475569;">COP SEKOLAH / PUSAT</div>
+                    <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['no_pusat']}</div>
+                </div>
+                <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
+                    <div style="font-size:11px; font-weight:800; color:#0D47A1;">PENGESAHAN JPN / PPD</div>
+                    <div style="font-size:9px; color:#64748B; margin-top:12px;">Tandatangan & Cop Rasmi</div>
+                </div>
             </div>
-        </div>
-        <div style="padding:20px 26px; background:#F1F5F9; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; gap:24px;">
-            <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
-                <div style="font-size:11px; font-weight:800; color:#0D47A1;">PEMANTAU</div>
-                <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['nama_pemantau']}</div>
-                <div style="font-size:9px; color:#64748B;">{sel['tarikh_submit']}</div>
+            <div style="background: linear-gradient(90deg, #0D47A1 0%, #1565C0 100%); padding:10px 26px; display:flex; justify-content:space-between;">
+                <div style="color:rgba(255,255,255,0.8); font-size:9px;">© 2026 JPN Selangor | e-Pemantauan • SPM, Amali, Ujian Bertutur, STAM & MUET | ✨ Created by Akashah Ismail | 👔 KPPK View</div>
+                <div style="color:#A5D6A7; font-size:9px;">● SAH & DIREKODKAN</div>
             </div>
-            <div style="text-align:center; flex:1; border-top:2px dashed #94A3B8; padding-top:10px; margin-top:30px;">
-                <div style="font-size:11px; font-weight:800; color:#475569;">COP SEKOLAH / PUSAT</div>
-                <div style="font-size:12px; font-weight:700; margin-top:4px;">{sel['no_pusat']}</div>
+            <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
+            <div style="background:#0A1931; padding:8px; text-align:center;">
+                <span style="color:#FFECB3; font-size:10px; letter-spacing:0.5px;">✨ Created by <b style="color:white;">Akashah Ismail</b> | Sektor Pentaksiran & Peperiksaan JPN Selangor | 2026</span>
             </div>
-            <div style="text-align:center; flex:1; border-top:2px solid #0D47A1; padding-top:10px; margin-top:30px;">
-                <div style="font-size:11px; font-weight:800; color:#0D47A1;">PENGESAHAN JPN / PPD</div>
-                <div style="font-size:9px; color:#64748B; margin-top:12px;">Tandatangan & Cop Rasmi</div>
-            </div>
-        </div>
-        <div style="background: linear-gradient(90deg, #0D47A1 0%, #1565C0 100%); padding:10px 26px; display:flex; justify-content:space-between;">
-            <div style="color:rgba(255,255,255,0.8); font-size:9px;">2026 JPN Selangor | e-Pemantauan - SPM, Amali, Ujian Bertutur, STAM & MUET | Created by Akashah Ismail</div>
-            <div style="color:#A5D6A7; font-size:9px;">SAH & DIREKODKAN | KPPK VIEW - SAMA FORMAT ADMIN 100%</div>
-        </div>
-        <div style="height:5px; background: linear-gradient(90deg, #FFC107 0%, #FFD54F 50%, #FFC107 100%);"></div>
-        <div style="background:#0A1931; padding:8px; text-align:center;">
-            <span style="color:#FFECB3; font-size:10px; letter-spacing:0.5px;">Created by <b style="color:white;">Akashah Ismail</b> | Sektor Pentaksiran & Peperiksaan JPN Selangor | 2026</span>
         </div>
     </div>
-</div>
-"""
+    """
 
-    components.html(html_one, height=740, scrolling=True)
+    components.html(html_one_kppk, height=740, scrolling=True)
+
     st.divider()
     c1, c2 = st.columns(2)
     with c1:
-        full_html = f"<html><head><meta charset='utf-8'></head><body>{html_one}</body></html>"
-        st.download_button("Cetak PDF / Cetak (KPPK - Sama Format Admin)", full_html, file_name=f"Laporan_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK_SAMA_ADMIN.html", mime="text/html", use_container_width=True, type="primary")
+        full_html_kppk = f"<html><head><meta charset='utf-8'></head><body>{html_one_kppk}</body></html>"
+        st.download_button("🖨️ Cetak PDF / Cetak (KPPK)", full_html_kppk, file_name=f"Laporan_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK.html", mime="text/html", use_container_width=True, type="primary")
     with c2:
         df_one = pd.DataFrame([sel])
         out = BytesIO()
         with pd.ExcelWriter(out, engine='openpyxl') as writer: df_one.to_excel(writer, index=False)
-        st.download_button("Download Excel (KPPK)", out.getvalue(), file_name=f"{MODE}_{sel['no_pusat']}_KPPK.xlsx", use_container_width=True)
-    st.success("Format laporan KPPK/Pengarah SAMA 100% dengan format Admin & Pemantau!")
-    st.info("KPPK/Pengarah - Mod Lihat Sahaja - Tiada borang Maklumat Pusat, tiada akses padam - Hanya pilih peperiksaan & tarikh - Format SAMA 100%")
+        st.download_button("📊 Download Excel (KPPK)", out.getvalue(), file_name=f"{MODE}_{sel['no_pusat']}_KPPK.xlsx", use_container_width=True)
+
+    if filtered_list:
+        df_all = pd.DataFrame(filtered_list)
+        out_all = BytesIO()
+        with pd.ExcelWriter(out_all, engine='openpyxl') as writer: df_all.to_excel(writer, index=False)
+        st.download_button(f"📊 Download SEMUA {MODE} ({len(filtered_list)} laporan) - KPPK View", out_all.getvalue(), file_name=f"SEMUA_{MODE}_KPPK.xlsx", use_container_width=True)
+
+    st.info("👔 KPPK/Pengarah - Mod Lihat Sahaja (Full Premium) - Tiada akses padam - Design sama seperti Admin/Pemantau")
     st.stop()
 
-jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True, label_visibility="collapsed")
 
+
+jenis = st.radio("", ["1. Pemantauan SPM", "2. Pemantauan Amali Sains", "3. Ujian Bertutur BM", "4. Ujian Bertutur BI", "5. STAM", "6. MUET"], horizontal=True, label_visibility="collapsed")
 
 if "1. Pemantauan SPM" in jenis:
     df_pusat, df_jadual = load_spm()
