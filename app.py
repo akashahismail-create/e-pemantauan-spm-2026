@@ -526,7 +526,7 @@ if st.session_state.get('is_kppk', False):
     view_key_kppk = f"view_opr_kppk_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
     view_choice_kppk = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_kppk)
     if "OPR 1 Page" in view_choice_kppk:
-        opr_html_kppk = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
+        opr_html_kppk = buat_opr_html(sel, MODE, jenis_label_full)
         components.html(opr_html_kppk, height=1400, scrolling=True)
         st.success("📑 Format OPR 1 Page")
         full_html_opr = f"<html><head><meta charset='utf-8'></head><body>{opr_html_kppk}</body></html>"
@@ -1611,13 +1611,15 @@ def buat_carta_pai_html(sel_data):
 
 
 # ===== OPR 1 PAGE REPORT - OPTION 2 - FORMAT CANTIK =====
-def buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S):
+def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
     try:
-        # Gambar OPR standard menarik tanpa bendera - ringan (105KB total)
-        IMG_OPR_1 = IMG_OPR_1_B64
-        IMG_OPR_2 = IMG_OPR_2_B64
-        IMG_OPR_3 = IMG_OPR_3_B64
-        IMG_OPR_4 = IMG_OPR_4_B64
+        # Gambar OPR standard tanpa bendera - ringan & safe
+        IMG_D = IMG_D if IMG_D is not None else (IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else "")
+        IMG_S = IMG_S if IMG_S is not None else (IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else "")
+        IMG_OPR_1 = IMG_OPR_1_B64 if 'IMG_OPR_1_B64' in globals() else IMG_D
+        IMG_OPR_2 = IMG_OPR_2_B64 if 'IMG_OPR_2_B64' in globals() else IMG_S
+        IMG_OPR_3 = IMG_OPR_3_B64 if 'IMG_OPR_3_B64' in globals() else IMG_D
+        IMG_OPR_4 = IMG_OPR_4_B64 if 'IMG_OPR_4_B64' in globals() else IMG_S
         tarikh = sel.get('tarikh_lawatan','-')
         masa = sel.get('masa_lawatan','-')
         tempat = sel.get('nama_sekolah','-')
@@ -2186,7 +2188,7 @@ IMG_S = IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else ""
 view_key_main2 = f"view_opr_main2_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
 view_choice_main2 = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_main2)
 if "OPR 1 Page" in view_choice_main2:
-    opr_html_main2 = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
+    opr_html_main2 = buat_opr_html(sel, MODE, jenis_label_full)
     components.html(opr_html_main2, height=1400, scrolling=True)
     st.success("📑 Format OPR 1 Page")
     full_html_opr_main2 = f"<html><head><meta charset='utf-8'></head><body>{opr_html_main2}</body></html>"
