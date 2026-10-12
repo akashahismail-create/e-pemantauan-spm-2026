@@ -170,8 +170,8 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
 <div style="width:100%; display:flex; justify-content:center; padding:8px; background:#F5F7FA;">
     <div style="width:100%; max-width:900px; background:white; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.15); border:2px solid #FFC107;">
         <div style="background: linear-gradient(135deg, #0D2A54 0%, #0D47A1 100%); padding:12px 20px; display:flex; align-items:center; gap:16px; border-bottom:4px solid #FFC107;">
-            <div style="background:white; border-radius:8px; padding:6px; width:70px; height:70px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <div style="font-size:28px;">🏛️</div>
+            <div style="background:white; border-radius:8px; padding:4px; width:75px; height:75px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                <img src="data:image/png;base64,{IMG_JATA}" style="width:100%; height:100%; object-fit:contain;">
             </div>
             <div style="flex:1; color:white;">
                 <div style="font-size:11px; font-weight:700; letter-spacing:1px; opacity:0.9;">KEMENTERIAN PENDIDIKAN MALAYSIA</div>
