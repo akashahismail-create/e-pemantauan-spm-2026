@@ -248,7 +248,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 <div style="font-size:9px; font-weight:600; opacity:0.7;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
                 <div style="font-size:18px; font-weight:900; margin-top:4px; letter-spacing:0.5px;">ONE PAGE REPORT (OPR)</div>
                 <div style="font-size:11px; font-weight:800; margin-top:2px;">PEMANTAUAN {jenis_label_full} - JPN SELANGOR</div>
-                <div style="font-size:10px; font-weight:700; color:#FFECB3;">UNIT PENTAKSIRAN DAN PEPERIKSAAN</div>
+                <div style="font-size:10px; font-weight:700; color:#FFECB3;">SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</div>
                 <div style="font-size:11px; font-weight:800; color:#FFD54F; background:rgba(255,193,7,0.2); padding:2px 8px; border-radius:4px; display:inline-block; margin-top:4px;">{tempat.upper()}</div>
             </div>
         </div>
@@ -314,7 +314,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 <div style="background:#2E7D32; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">✅</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">PENGURUSAN DAN PELAKSANAAN BERJALAN LANCAR DAN TERATUR</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
             </div>
         </div>
-        <div style="background:#0D2A54; padding:8px 20px; display:flex; justify-content:space-between; align-items:center;"><div style="color:#90CAF9; font-size:8px; font-weight:600;">JPN SELANGOR • UNIT PENTAKSIRAN DAN PEPERIKSAAN</div><div style="color:#FFECB3; font-size:8px; font-weight:700;">OPR {MODE} • {tarikh} • SAH & DIREKODKAN</div></div>
+        <div style="background:#0D2A54; padding:8px 20px; display:flex; justify-content:space-between; align-items:center;"><div style="color:#90CAF9; font-size:8px; font-weight:600;">JPN SELANGOR • SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</div><div style="color:#FFECB3; font-size:8px; font-weight:700;">OPR {MODE} • {tarikh} • SAH & DIREKODKAN</div></div>
     </div>
 </div>
         """
