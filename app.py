@@ -520,7 +520,7 @@ if st.session_state.get('is_kppk', False):
 </div>
 """
 
-    # ===== OPTION 2 - PILIH VIEW: DETAIL vs OPR CANTIK (KPPK) =====
+    # ===== PILIH FORMAT LAPORAN =====
     IMG_D = IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else ""
     IMG_S = IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else ""
     view_key_kppk = f"view_opr_kppk_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
@@ -2180,7 +2180,7 @@ html_one = f"""
 </div>
 """
 
-# ===== OPTION 2 - MAIN VIEW =====
+# ===== PILIH FORMAT LAPORAN =====
 IMG_D = IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else ""
 IMG_S = IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else ""
 view_key_main2 = f"view_opr_main2_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
