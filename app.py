@@ -121,13 +121,79 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             objektif_text = "Pemantauan dilaksanakan bagi memastikan pengurusan dan pelaksanaan peperiksaan Amali Sains SPM berjalan lancar, teratur dan mematuhi SOP."
         
         dapatan_points = []
+        # Ambil penilaian dari data (jika ada) - untuk laporan jujur
+        susun_stat = sel.get('susun_status', '✅ Teratur')
+        kertas_stat = sel.get('kertas_status', '✅ Teratur & Selamat')
+        kemudahan_stat = sel.get('kemudahan_status', '✅ Dipatuhi')
+        pelaksanaan_stat = sel.get('pelaksanaan_status', '✅ Lancar, Terkawal & Mematuhi Prosedur')
+        cat_susun = sel.get('catatan_susun', '')
+        cat_kertas = sel.get('catatan_kertas', '')
+        cat_kemudahan = sel.get('catatan_kemudahan', '')
+        cat_pelaksanaan = sel.get('catatan_pelaksanaan', '')
+        
         dapatan_points.append(f"Seramai <b>{c_hadir} orang calon {MODE} (Berdaftar: {c_berdaftar})</b> telah hadir dan {c_keseluruhan} keseluruhan calon direkodkan di pusat peperiksaan.")
         if b_total > 0:
             dapatan_points.append(f"Pusat peperiksaan menyediakan <b>{b_pep} bilik peperiksaan</b> dan <b>{b_kuar} bilik kuarantin</b> dengan jumlah <b>{b_total} bilik</b>.")
-        dapatan_points.append(f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur.")
-        dapatan_points.append(f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur.")
-        dapatan_points.append(f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi.")
-        dapatan_points.append(f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan.")
+        
+        # Dapatan 1 - Susun atur (dinamik ikut pilihan pemantau)
+        if "❌" in susun_stat:
+            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
+            if cat_susun:
+                txt_susun += f" <i>Catatan: {cat_susun}</i>"
+        elif "⚠️" in susun_stat:
+            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
+            if cat_susun:
+                txt_susun += f" <i>Catatan: {cat_susun}</i>"
+        else:
+            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur."
+            if cat_susun:
+                txt_susun += f" <i>({cat_susun})</i>"
+        dapatan_points.append(txt_susun)
+        
+        # Dapatan 2 - Kertas (dinamik)
+        if "❌" in kertas_stat:
+            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
+            if cat_kertas:
+                txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
+        elif "⚠️" in kertas_stat:
+            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
+            if cat_kertas:
+                txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
+        else:
+            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur."
+            if cat_kertas:
+                txt_kertas += f" <i>({cat_kertas})</i>"
+        dapatan_points.append(txt_kertas)
+        
+        # Dapatan 3 - Kemudahan (dinamik)
+        if "❌" in kemudahan_stat:
+            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#C62828;'>TIDAK dipatuhi</b>."
+            if cat_kemudahan:
+                txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
+        elif "⚠️" in kemudahan_stat:
+            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#EF6C00;'>dipatuhi sebahagian / perlu penambahbaikan</b>."
+            if cat_kemudahan:
+                txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
+        else:
+            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi."
+            if cat_kemudahan:
+                txt_kemudahan += f" <i>({cat_kemudahan})</i>"
+        dapatan_points.append(txt_kemudahan)
+        
+        # Dapatan 4 - Pelaksanaan keseluruhan (dinamik)
+        if "❌" in pelaksanaan_stat:
+            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#C62828;'>berlaku isu / tidak lancar / tidak mematuhi prosedur yang ditetapkan</b>."
+            if cat_pelaksanaan:
+                txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
+        elif "⚠️" in pelaksanaan_stat:
+            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#EF6C00;'>berjalan lancar dengan penambahbaikan diperlukan</b>."
+            if cat_pelaksanaan:
+                txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
+        else:
+            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan."
+            if cat_pelaksanaan:
+                txt_pelaksanaan += f" <i>({cat_pelaksanaan})</i>"
+        dapatan_points.append(txt_pelaksanaan)
         
         dapatan_html = ""
         for pt in dapatan_points:
@@ -1508,6 +1574,14 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "calon_bantah": calon_bantah if 'calon_bantah' in locals() else 0,
         "calon_menumpang": calon_menumpang if 'calon_menumpang' in locals() else 0,
         "calon_keseluruhan": keseluruhan,
+        "susun_status": susun_status if 'susun_status' in locals() else "✅ Teratur",
+        "kertas_status": kertas_status if 'kertas_status' in locals() else "✅ Teratur & Selamat",
+        "kemudahan_status": kemudahan_status if 'kemudahan_status' in locals() else "✅ Dipatuhi",
+        "pelaksanaan_status": pelaksanaan_status if 'pelaksanaan_status' in locals() else "✅ Lancar, Terkawal & Mematuhi Prosedur",
+        "catatan_susun": catatan_susun if 'catatan_susun' in locals() else "",
+        "catatan_kertas": catatan_kertas if 'catatan_kertas' in locals() else "",
+        "catatan_kemudahan": catatan_kemudahan if 'catatan_kemudahan' in locals() else "",
+        "catatan_pelaksanaan": catatan_pelaksanaan if 'catatan_pelaksanaan' in locals() else "",
         "ulasan": ulasan, "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
         **extra_amali,
