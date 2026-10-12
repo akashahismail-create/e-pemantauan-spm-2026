@@ -1443,9 +1443,42 @@ else: # MUET - SAMA 100% TEMPLATE BORANG SPM (ikut arahan terbaru Kashah - scree
     keseluruhan = calon_berdaftar + calon_cicir + calon_bantah
     st.caption(f"Tidak Hadir: {tidak_hadir} | Keseluruhan: {keseluruhan}")
     if calon_hadir == 0:
-        st.warning("⚠️ Sila isi Calon Hadir MUET (wajib)")
+        st.warning("⚠️ Sila isi Calon Hadir (wajib)")
 
-ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
+    # ===== PENILAIAN PEMATUHAN - DAPATAN PEMANTAUAN (BOLEH PILIH BAIK/TIDAK) =====
+    st.divider()
+    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #1A237E 0%, #3949AB 100%);">✅</div><div><div class="borang-header-title">Penilaian Pematuhan - Dapatan Pemantauan</div><div class="borang-header-subtitle">Pilih status pematuhan sebenar - Laporan OPR akan ikut pilihan ini (Bukan fix teratur sahaja)</div></div></div>', unsafe_allow_html=True)
+    
+    st.info("💡 **Penting:** Pilih status sebenar pematuhan di pusat. Jika pusat tidak patuh SOP, pilih 'Tidak Teratur / Tidak Dipatuhi' supaya laporan jujur. Ayat OPR akan berubah ikut pilihan anda.")
+    
+    pp1, pp2 = st.columns(2)
+    susun_status = pp1.selectbox("1️⃣ Susun atur bilik & kedudukan calon", 
+        ["✅ Teratur", "⚠️ Perlu Penambahbaikan", "❌ Tidak Teratur / Tidak Mematuhi SOP"], 
+        key=f"susun_{MODE}_{pilih_no_final}")
+    
+    kertas_status = pp2.selectbox("2️⃣ Pengurusan & keselamatan kertas/bahan", 
+        ["✅ Teratur & Selamat", "⚠️ Perlu Penambahbaikan", "❌ Tidak Teratur / Tidak Mematuhi SOP"], 
+        key=f"kertas_{MODE}_{pilih_no_final}")
+    
+    pp3, pp4 = st.columns(2)
+    kemudahan_status = pp3.selectbox("3️⃣ Kemudahan, dokumentasi & keselamatan", 
+        ["✅ Dipatuhi", "⚠️ Dipatuhi Sebahagian / Perlu Penambahbaikan", "❌ Tidak Dipatuhi"], 
+        key=f"kemudahan_{MODE}_{pilih_no_final}")
+    
+    pelaksanaan_status = pp4.selectbox("4️⃣ Pelaksanaan keseluruhan peperiksaan", 
+        ["✅ Lancar, Terkawal & Mematuhi Prosedur", "⚠️ Lancar dengan Penambahbaikan Diperlukan", "❌ Berlaku Isu / Tidak Lancar / Tidak Mematuhi Prosedur"], 
+        key=f"pelaksanaan_{MODE}_{pilih_no_final}")
+    
+    pp5, pp6 = st.columns(2)
+    catatan_susun = pp5.text_input("📝 Catatan Susun Atur (jika ada)", placeholder="Contoh: Bilik sempit, jarak calon dekat...", key=f"cat_susun_{MODE}_{pilih_no_final}")
+    catatan_kertas = pp6.text_input("📝 Catatan Kertas/Bahan (jika ada)", placeholder="Contoh: Kunci bilik kebal lewat...", key=f"cat_kertas_{MODE}_{pilih_no_final}")
+    
+    pp7, pp8 = st.columns(2)
+    catatan_kemudahan = pp7.text_input("📝 Catatan Kemudahan (jika ada)", placeholder="Contoh: Dokumentasi tidak lengkap...", key=f"cat_kemudahan_{MODE}_{pilih_no_final}")
+    catatan_pelaksanaan = pp8.text_input("📝 Catatan Pelaksanaan (jika ada)", placeholder="Contoh: Calon lewat 10 minit...", key=f"cat_pelaksanaan_{MODE}_{pilih_no_final}")
+    
+    st.divider()
+    ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
 
 st.divider()
 st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #37474F 0%, #78909C 100%);">👮</div><div><div class="borang-header-title">Maklumat Pemantau & Ulasan</div><div class="borang-header-subtitle">Nama + Jawatan + Daerah + Ulasan Wajib</div></div></div>', unsafe_allow_html=True)
