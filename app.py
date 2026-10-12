@@ -522,16 +522,16 @@ if st.session_state.get('is_kppk', False):
 
     # ===== OPTION 2 - PILIH VIEW: DETAIL vs OPR CANTIK (KPPK) =====
     view_key_kppk = f"view_opr_kppk_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
-    view_choice_kppk = st.radio("📑 Pilih Format Laporan KPPK:", ["📄 Laporan Detail (Lama)", "📑 OPR 1 Page (Baru - Cantik)"], horizontal=True, key=view_key_kppk)
+    view_choice_kppk = st.radio("📑 Pilih Format Laporan KPPK:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_kppk)
     if "OPR 1 Page" in view_choice_kppk:
         opr_html_kppk = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
         components.html(opr_html_kppk, height=1400, scrolling=True)
-        st.success("📑 Format OPR 1 Page KPPK - Cantik macam gambar")
+        st.success("📑 Format OPR 1 Page")
         full_html_opr = f"<html><head><meta charset='utf-8'></head><body>{opr_html_kppk}</body></html>"
-        st.download_button("Cetak PDF OPR (KPPK - Format Baru Cantik)", full_html_opr, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK.html", mime="text/html", use_container_width=True, type="primary")
+        st.download_button("Cetak PDF OPR (KPPK)", full_html_opr, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK.html", mime="text/html", use_container_width=True, type="primary")
     else:
         components.html(html_one, height=740, scrolling=True)
-        st.caption("📄 Format Lama")
+        
     st.divider()
     c1, c2 = st.columns(2)
     with c1:
@@ -2180,13 +2180,13 @@ html_one = f"""
 
 # ===== OPTION 2 - MAIN VIEW =====
 view_key_main2 = f"view_opr_main2_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
-view_choice_main2 = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail (Lama)", "📑 OPR 1 Page (Baru - Cantik)"], horizontal=True, key=view_key_main2)
+view_choice_main2 = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_main2)
 if "OPR 1 Page" in view_choice_main2:
     opr_html_main2 = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
     components.html(opr_html_main2, height=1400, scrolling=True)
-    st.success("📑 Format OPR 1 Page - Cantik")
+    st.success("📑 Format OPR 1 Page")
     full_html_opr_main2 = f"<html><head><meta charset='utf-8'></head><body>{opr_html_main2}</body></html>"
-    st.download_button("🖨️ Cetak PDF OPR (Baru Cantik)", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
+    st.download_button("🖨️ Cetak PDF OPR", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
 else:
     components.html(html_one, height=740, scrolling=True)
 
