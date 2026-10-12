@@ -77,6 +77,7 @@ IMG_OPR_4_B64 = """/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAsICAoIBwsKCQoNDAsNERwSEQ8PE
 def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
     try:
         # Gambar OPR standard tanpa bendera - ringan & safe
+        IMG_JATA = IMG_JATA_B64 if 'IMG_JATA_B64' in globals() else ""
         IMG_D = IMG_D if IMG_D is not None else (IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else "")
         IMG_S = IMG_S if IMG_S is not None else (IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else "")
         IMG_OPR_1 = IMG_OPR_1_B64 if 'IMG_OPR_1_B64' in globals() else IMG_D
