@@ -1347,38 +1347,10 @@ elif MODE in ["UBBM","UBBI"]:
     keseluruhan = calon_berdaftar
     st.caption(f"Sidang Dipantau: {sidang_no} | Petugas: {petugas} | Bilik: Menunggu={bilik_menunggu}, Ujian={bilik_ujian}, Kuarantin={bilik_kuar}")
 elif MODE=="STAM":
-    # ===== FIX KHAS STAM SAHAJA - JANGAN KACAU MODE LAIN =====
-    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%);">🕌</div><div><div class="borang-header-title">Maklumat STAM 2026 - Skrip Contoh Selangor</div><div class="borang-header-subtitle">Kod Kertas + Pusat (BQ) + Bilik Kebal + Mata Pelajaran STAM</div></div></div>', unsafe_allow_html=True)
-    
-    # Data dari SKRIP_CONTOH_SELANGOR_2026.xlsx - contoh
-    # BQ21 SAMT TENGKU AMPUAN RAHIMAH, KV SULTAN ABDUL SAMAD, etc.
-    st.info("📖 Data STAM dari Skrip Contoh Selangor 2026 - 12 OKT - 2 NOV 2026 | BQ11, BQ12, BQ21, BQ31, BQ41")
-
-    s_kod1, s_kod2, s_kod3 = st.columns(3)
-    kod_kertas_stam = s_kod1.selectbox("📄 Kod Kertas STAM", 
-        ["S101/21 HIFZ AL-QURAN DAN TAJWID", "S102/21 FIQH (KERTAS 2)", "S103/21 TAUHID DAN MANTIQ (KERTAS 2)", 
-         "S104/21 TAFSIR DAN ULUMUHU (KERTAS 2)", "S106/21 NAHU DAN SARF (KERTAS 2)", "S107/21 INSYA' DAN MUTALAAH", 
-         "S108/21 ADAB DAN NUSUS", "S109/21 ARUDH DAN QAFIYAH (KERTAS 2)", "S110/21 BALAGHAH", "Lain-lain"],
-        help="Kod Kertas dari Skrip Contoh - contoh S103/21")
-    
-    pusat_bq_stam = s_kod2.selectbox("🏫 Pusat BQ (Kod Pusat STAM)", 
-        ["BQ11 SAMT SULTAN HISAMUDDIN", "BQ12 KOLEJ ISLAM SULTAN ALAM SHAH / SMK DATO HAMZAH", 
-         "BQ21 SAMT TENGKU AMPUAN RAHIMAH / KV SULTAN ABDUL SAMAD", "BQ31 SAM JERAM / SMK RAJA MUDA MUSA", 
-         "BQ41 SAMT KUALA KUBU BHARU / SMK KUALA KUBU BHARU", "Lain-lain"],
-        help="Pusat BQ dari Skrip Contoh Selangor")
-    
-    bilik_kebal_stam = s_kod3.text_input("🏦 Bilik Kebal STAM", placeholder="Contoh: Bilik Kebal BQ11 / Bilik Kebal PPD Klang", help="Bilik Kebal untuk STAM - dari Skrip Contoh")
-    
-    # Simpan untuk laporan
-    st.session_state['stam_kod_kertas'] = kod_kertas_stam
-    st.session_state['stam_pusat_bq'] = pusat_bq_stam
-    st.session_state['stam_bilik_kebal'] = bilik_kebal_stam
-
-    st.divider()
-    st.markdown("#### 👥 Bilangan Calon (STAM) - WAJIB ISI HADIR")
+    st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%);">🕌</div><div><div class="borang-header-title">Bilangan Calon STAM</div><div class="borang-header-subtitle">Hadir + Berdaftar + Cicir + Bantah</div></div></div>', unsafe_allow_html=True)
     st1,st2,st3,st4,st5 = st.columns(5)
     calon_berdaftar = st1.number_input("Calon Berdaftar (STAM)", 0,500, 30, key=f"stam_berdaftar_{MODE}")
-    calon_hadir = st2.number_input("✅ Calon Hadir (STAM) - WAJIB ISI", 0,500, 28, key=f"stam_hadir_{MODE}", help="Pemantau WAJIB isi bilangan calon yang hadir peperiksaan STAM")
+    calon_hadir = st2.number_input("✅ Calon Hadir (STAM)", 0,500, 28, key=f"stam_hadir_{MODE}")
     calon_menumpang = st3.number_input("Calon Menumpang", 0,100, 0, key=f"stam_menumpang_{MODE}")
     calon_cicir = st4.number_input("Calon Cicir", 0,50,0, key=f"stam_cicir_{MODE}")
     calon_bantah = st5.number_input("Calon Bantah", 0,50,0, key=f"stam_bantah_{MODE}")
@@ -1386,9 +1358,6 @@ elif MODE=="STAM":
     if tidak_hadir < 0:
         tidak_hadir = 0
     keseluruhan = calon_berdaftar + calon_menumpang + calon_cicir + calon_bantah
-    st.caption(f"STAM | {kod_kertas_stam} | {pusat_bq_stam} | Berdaftar: {calon_berdaftar} | Hadir: {calon_hadir} | TH: {tidak_hadir} | Menumpang: {calon_menumpang} | Cicir: {calon_cicir} | Bantah: {calon_bantah} | Keseluruhan: {keseluruhan} | Petugas: {petugas}")
-    if calon_hadir == 0:
-        st.warning("⚠️ Sila isi Calon Hadir STAM (wajib)")
 
 else: # MUET - SAMA 100% TEMPLATE BORANG SPM (ikut arahan terbaru Kashah - screenshot)
     st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #C2185B 0%, #EC407A 100%);">👥</div><div><div class="borang-header-title">Bilangan Calon MUET</div><div class="borang-header-subtitle">Hadir + Berdaftar + Cicir + Bantah - Sama Template SPM</div></div></div>', unsafe_allow_html=True)
@@ -2024,27 +1993,27 @@ elif MODE in ["UBBM","UBBI"]:
                         <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
                     </tr>
     '''
-# STAM - Template KHAS dengan Kod Kertas, Pusat BQ, Bilik Kebal dari Skrip Contoh Selangor 2026 - FIX STAM SAHAJA
+# STAM - Template KHAS dengan Kod Kertas, Pusat STAM, Bilik Kebal dari STAM
 elif MODE=="STAM":
     table_rows = f'''
                     <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
-                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🕌 NAMA PUSAT STAM (Skrip Contoh)</td>
+                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🕌 NAMA PUSAT STAM</td>
                         <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
                     </tr>
                     <tr style="border-bottom:1px solid #F1F5F9;">
                         <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT STAM / DAERAH</td>
-                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span> <span style="margin-left:6px; background:#F3E5F5; color:#6A1B9A; padding:2px 8px; border-radius:10px; font-size:9px;">Skrip Contoh 2026</span></td>
+                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span> <span style="margin-left:6px; background:#F3E5F5; color:#6A1B9A; padding:2px 8px; border-radius:10px; font-size:9px;"> 2026</span></td>
                     </tr>
                     <tr style="background:#F3E5F5; border-bottom:2px solid #E1BEE7;">
-                        <td style="padding:12px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">📄 KOD KERTAS STAM (Skrip Contoh)</td>
+                        <td style="padding:12px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">📄 KOD KERTAS STAM</td>
                         <td style="padding:10px 14px;"><span style="background:#6A1B9A; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('kod_kertas_stam', sel.get('mata_pelajaran','-'))}</span> <span style="margin-left:8px; background:#F3E5F5; color:#6A1B9A; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">Contoh: S103/21 TAUHID DAN MANTIQ</span></td>
                     </tr>
                     <tr style="background:#EDE7F6; border-bottom:2px solid #D1C4E9;">
-                        <td style="padding:12px 14px; font-weight:800; color:#4527A0; font-size:11px; border-right:1px solid #D1C4E9;">🏫 PUSAT BQ STAM (Skrip Contoh)</td>
+                        <td style="padding:12px 14px; font-weight:800; color:#4527A0; font-size:11px; border-right:1px solid #D1C4E9;">🏫 PUSAT BQ STAM</td>
                         <td style="padding:10px 14px;"><span style="background:#4527A0; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('pusat_bq_stam', '-')}</span> <span style="margin-left:8px; background:#EDE7F6; color:#4527A0; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">BQ11, BQ12, BQ21, BQ31, BQ41</span></td>
                     </tr>
                     <tr style="background:#FFF3E0; border-bottom:2px solid #FFE0B2;">
-                        <td style="padding:12px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">🏦 BILIK KEBAL STAM (Skrip Contoh)</td>
+                        <td style="padding:12px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">🏦 BILIK KEBAL STAM</td>
                         <td style="padding:10px 14px;"><span style="background:#EF6C00; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700;">{sel.get('bilik_kebal_stam', sel.get('bilik_kebal_penyelia','-'))}</span></td>
                     </tr>
                                                                                                                                                                                                                             <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
