@@ -121,7 +121,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         if b_total > 0:
             dapatan_points.append(f"Pusat peperiksaan menyediakan <b>{b_pep} bilik peperiksaan</b> dan <b>{b_kuar} bilik kuarantin</b> dengan jumlah <b>{b_total} bilik</b>.")
         dapatan_points.append(f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur.")
-        dapatan_points.append(f"Pengurusan kertas peperiksaan serta prosedur JOB dan JOTB telah disemak dan berada dalam keadaan teratur.")
+        dapatan_points.append(f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur.")
         dapatan_points.append(f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi.")
         dapatan_points.append(f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan.")
         
