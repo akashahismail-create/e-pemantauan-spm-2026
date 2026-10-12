@@ -121,7 +121,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         if b_total > 0:
             dapatan_points.append(f"Pusat peperiksaan menyediakan <b>{b_pep} bilik peperiksaan</b> dan <b>{b_kuar} bilik kuarantin</b> dengan jumlah <b>{b_total} bilik</b>.")
         dapatan_points.append(f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur.")
-        dapatan_points.append(f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur.")
+        dapatan_points.append(f"Pengurusan kertas peperiksaan serta prosedur JOB dan JOTB telah disemak dan berada dalam keadaan teratur.")
         dapatan_points.append(f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi.")
         dapatan_points.append(f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan.")
         
@@ -709,7 +709,7 @@ if st.session_state.get('is_kppk', False):
     view_choice_kppk = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_kppk)
     if "OPR 1 Page" in view_choice_kppk:
         opr_html_kppk = buat_opr_html(sel, MODE, jenis_label_full)
-        components.html(opr_html_kppk, height=900, scrolling=True)
+        components.html(opr_html_kppk, height=1400, scrolling=True)
         st.success("📑 Format OPR 1 Page")
         full_html_opr = f"<html><head><meta charset='utf-8'></head><body>{opr_html_kppk}</body></html>"
         st.download_button("Cetak PDF OPR (KPPK)", full_html_opr, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK.html", mime="text/html", use_container_width=True, type="primary")
@@ -2161,7 +2161,7 @@ view_key_main2 = f"view_opr_main2_{MODE}_{sel.get('no_pusat','')}_{sel.get('tari
 view_choice_main2 = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail", "📑 OPR 1 Page"], horizontal=True, key=view_key_main2)
 if "OPR 1 Page" in view_choice_main2:
     opr_html_main2 = buat_opr_html(sel, MODE, jenis_label_full)
-    components.html(opr_html_main2, height=900, scrolling=True)
+    components.html(opr_html_main2, height=1400, scrolling=True)
     st.success("📑 Format OPR 1 Page")
     full_html_opr_main2 = f"<html><head><meta charset='utf-8'></head><body>{opr_html_main2}</body></html>"
     st.download_button("🖨️ Cetak PDF OPR", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
