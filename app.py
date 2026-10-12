@@ -236,6 +236,30 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             stat4_val = b_kuar
             stat4_label = "Kuarantin"
         
+        # ===== STATUS PEMANTAUAN DINAMIK - IKUT WARNA DAPATAN (MERAH = PERLU PENAMBAHBAIKAN) =====
+        has_merah = any("❌" in s for s in [susun_stat, kertas_stat, kemudahan_stat, pelaksanaan_stat])
+        has_kuning = any("⚠️" in s for s in [susun_stat, kertas_stat, kemudahan_stat, pelaksanaan_stat])
+        
+        if has_merah:
+            status_bg = "#C62828"  # Merah - Tidak patuh
+            status_bg_light = "#FFEBEE"
+            status_icon = "❌"
+            status_text = "PENGURUSAN DAN PELAKSANAAN PERLU PENAMBAHBAIKAN"
+            # Jika ada yang kritikal TIDAK
+            if "TIDAK" in txt_susun or "TIDAK" in txt_kertas or "TIDAK" in txt_kemudahan:
+                status_text = "PENGURUSAN DAN PELAKSANAAN TIDAK MEMATUHI SOP - PERLU TINDAKAN SEGERA"
+        elif has_kuning:
+            status_bg = "#EF6C00"  # Oren - Perlu penambahbaikan
+            status_bg_light = "#FFF3E0"
+            status_icon = "⚠️"
+            status_text = "PENGURUSAN DAN PELAKSANAAN LANCAR DENGAN PENAMBAHBAIKAN DIPERLUKAN"
+        else:
+            status_bg = "#2E7D32"  # Hijau - Lancar teratur
+            status_bg_light = "#F1F8E9"
+            status_icon = "✅"
+            status_text = "PENGURUSAN DAN PELAKSANAAN BERJALAN LANCAR DAN TERATUR"
+        
+
         opr_html = f"""
 <div style="width:100%; display:flex; justify-content:center; padding:8px; background:#F5F7FA;">
     <div style="width:100%; max-width:900px; background:white; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.15); border:2px solid #FFC107;">
@@ -248,7 +272,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 <div style="font-size:9px; font-weight:600; opacity:0.7;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
                 <div style="font-size:18px; font-weight:900; margin-top:4px; letter-spacing:0.5px;">ONE PAGE REPORT (OPR)</div>
                 <div style="font-size:11px; font-weight:800; margin-top:2px;">PEMANTAUAN {jenis_label_full} - JPN SELANGOR</div>
-                <div style="font-size:10px; font-weight:700; color:#FFECB3;">SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</div>
+                <div style="font-size:10px; font-weight:700; color:#FFECB3;">UNIT PENTAKSIRAN DAN PEPERIKSAAN</div>
                 <div style="font-size:11px; font-weight:800; color:#FFD54F; background:rgba(255,193,7,0.2); padding:2px 8px; border-radius:4px; display:inline-block; margin-top:4px;">{tempat.upper()}</div>
             </div>
         </div>
@@ -310,11 +334,11 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">📝 IMPAK / RUMUSAN</div>
                 <div style="font-size:11px; line-height:1.6; color:#37474F; background:#F8FAFC; padding:10px 12px; border-radius:8px; border-left:4px solid #0D47A1;">Secara keseluruhannya, pihak sekolah menunjukkan komitmen dan kerjasama yang baik dalam memastikan peperiksaan {MODE} berjalan lancar. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan.<br/><br/><i style="background:#FFFEF7; padding:4px 8px; border-radius:4px; border-left:2px solid #FFC107; display:inline-block; margin-top:6px;">❝ {ulasan[:200]} ❞</i></div>
             </div>
-            <div style="flex:0.8; padding:12px; background:#F1F8E9; display:flex; align-items:center; justify-content:center;">
-                <div style="background:#2E7D32; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">✅</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">PENGURUSAN DAN PELAKSANAAN BERJALAN LANCAR DAN TERATUR</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
+            <div style="flex:0.8; padding:12px; background:{status_bg_light}; display:flex; align-items:center; justify-content:center;">
+                <div style="background:{status_bg}; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">{status_icon}</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">{status_text}</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
             </div>
         </div>
-        <div style="background:#0D2A54; padding:8px 20px; display:flex; justify-content:space-between; align-items:center;"><div style="color:#90CAF9; font-size:8px; font-weight:600;">JPN SELANGOR • SEKTOR PENTAKSIRAN DAN PEPERIKSAAN</div><div style="color:#FFECB3; font-size:8px; font-weight:700;">OPR {MODE} • {tarikh} • SAH & DIREKODKAN</div></div>
+        <div style="background:#0D2A54; padding:8px 20px; display:flex; justify-content:space-between; align-items:center;"><div style="color:#90CAF9; font-size:8px; font-weight:600;">JPN SELANGOR • UNIT PENTAKSIRAN DAN PEPERIKSAAN</div><div style="color:#FFECB3; font-size:8px; font-weight:700;">OPR {MODE} • {tarikh} • SAH & DIREKODKAN</div></div>
     </div>
 </div>
         """
