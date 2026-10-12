@@ -2018,59 +2018,7 @@ elif MODE in ["UBBM","UBBI"]:
                         <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU {MODE}</td>
                         <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
                     </tr>
-    '''
-# STAM - Template KHAS dengan Kod Kertas, Pusat BQ, Bilik Kebal dari Skrip Contoh Selangor 2026 - FIX STAM SAHAJA
-elif MODE=="STAM":
-    table_rows = f'''
-                    <tr style="background:#F8FAFC; border-bottom:2px solid #E8EEF6;">
-                        <td style="padding:11px 14px; width:26%; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #EEF2F7;">🕌 NAMA PUSAT STAM (Skrip Contoh)</td>
-                        <td style="padding:11px 14px; font-weight:700; font-size:13px;">{sel['nama_sekolah']}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📍 NO PUSAT STAM / DAERAH</td>
-                        <td style="padding:10px 14px;"><b style="color:#0D47A1;">{sel['no_pusat']}</b> <span style="margin-left:8px; background:#0D47A1; color:white; padding:4px 12px; border-radius:20px; font-weight:700; font-size:11px;">📍 {get_nama_daerah_from_pusat(sel['no_pusat'], sel.get('kod_ppd',''))} ({sel.get('kod_ppd','')})</span> <span style="margin-left:6px; background:#F3E5F5; color:#6A1B9A; padding:2px 8px; border-radius:10px; font-size:9px;">Skrip Contoh 2026</span></td>
-                    </tr>
-                    <tr style="background:#F3E5F5; border-bottom:2px solid #E1BEE7;">
-                        <td style="padding:12px 14px; font-weight:800; color:#6A1B9A; font-size:11px; border-right:1px solid #E1BEE7;">📄 KOD KERTAS STAM (Skrip Contoh)</td>
-                        <td style="padding:10px 14px;"><span style="background:#6A1B9A; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('kod_kertas_stam', sel.get('mata_pelajaran','-'))}</span> <span style="margin-left:8px; background:#F3E5F5; color:#6A1B9A; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">Contoh: S103/21 TAUHID DAN MANTIQ</span></td>
-                    </tr>
-                    <tr style="background:#EDE7F6; border-bottom:2px solid #D1C4E9;">
-                        <td style="padding:12px 14px; font-weight:800; color:#4527A0; font-size:11px; border-right:1px solid #D1C4E9;">🏫 PUSAT BQ STAM (Skrip Contoh)</td>
-                        <td style="padding:10px 14px;"><span style="background:#4527A0; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:800;">{sel.get('pusat_bq_stam', '-')}</span> <span style="margin-left:8px; background:#EDE7F6; color:#4527A0; padding:4px 12px; border-radius:20px; font-size:10px; font-weight:700;">BQ11, BQ12, BQ21, BQ31, BQ41</span></td>
-                    </tr>
-                    <tr style="background:#FFF3E0; border-bottom:2px solid #FFE0B2;">
-                        <td style="padding:12px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">🏦 BILIK KEBAL STAM (Skrip Contoh)</td>
-                        <td style="padding:10px 14px;"><span style="background:#EF6C00; color:white; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700;">{sel.get('bilik_kebal_stam', sel.get('bilik_kebal_penyelia','-'))}</span></td>
-                    </tr>
-                                                                                                                                                                                                                            <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">📅 TARIKH & HARI LAWATAN STAM</td>
-                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">📅 {sel['tarikh_lawatan']}</span> <span style="background:#E8F5E9; color:#2E7D32; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; margin-left:6px;">📆 {sel.get('hari','')}</span> <span style="background:#FFF8E1; color:#F57F17; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; margin-left:6px;">🕒 {sel['masa_lawatan']}</span></td>
-                    </tr>
-                    <tr style="background:#FFF9C4; border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:800; color:#F57F17; font-size:11px; border-right:1px solid #FFE0B2;">📚 MATA PELAJARAN</td>
-                        <td style="padding:10px 14px;"><span style="background:#0D47A1; color:white; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:800;">{sel['mata_pelajaran']}</span></td>
-                    </tr>
-                    <tr style="border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">🕌 BILIK STAM (Tiada Sidang, Tiada Station)</td>
-                        <td style="padding:10px 14px;">{bilik_html}</td>
-                    </tr>
-                    <tr style="background:#FFF3E0; border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:800; color:#EF6C00; font-size:11px; border-right:1px solid #FFE0B2;">👮 KEHADIRAN PETUGAS STAM</td>
-                        <td style="padding:10px 14px;">{petugas_html}</td>
-                    </tr>
-                    <tr style="background:#FAFBFC; border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; border-right:1px solid #EEF2F7;">👥 KEHADIRAN CALON STAM</td>
-                        <td style="padding:10px 14px;">{calon_html}</td>
-                    </tr>
-                    <tr style="border-bottom:1px solid #F1F5F9;">
-                        <td style="padding:11px 14px; font-weight:700; color:#475569; font-size:11px; background:#FAFBFC; border-right:1px solid #EEF2F7;">📝 ULASAN STAM</td>
-                        <td style="padding:11px 14px; font-style:italic; background:#FFFEF7; border-left:3px solid #FFC107;">❝ {sel['ulasan'] or 'Tiada ulasan'} ❞</td>
-                    </tr>
-                    <tr style="background: linear-gradient(90deg, #EEF2FF 0%, #E0E7FF 100%);">
-                        <td style="padding:11px 14px; font-weight:800; color:#0D47A1; font-size:11px; border-right:1px solid #C7D2FE;">👮 PEMANTAU STAM</td>
-                        <td style="padding:11px 14px; font-weight:600;">{pemantau_html}</td>
-                    </tr>
-    '''
+
 # MUET - Template tiada Sidang, tiada Station
 else:  # MUET
     table_rows = f'''
@@ -2188,7 +2136,7 @@ if "OPR 1 Page" in view_choice_main2:
     components.html(opr_html_main2, height=1400, scrolling=True)
     st.success("📑 Format OPR 1 Page - Cantik")
     full_html_opr_main2 = f"<html><head><meta charset='utf-8'></head><body>{opr_html_main2}</body></html>"
-    st.download_button("🖨️ Cetak PDF OPR (Baru Cantik)", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
+    st.download_button("🖨️ Cetak PDF OPR ", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
 else:
     components.html(html_one, height=740, scrolling=True)
 
