@@ -513,7 +513,18 @@ if st.session_state.get('is_kppk', False):
 </div>
 """
 
-    components.html(html_one, height=740, scrolling=True)
+    # ===== OPTION 2 - PILIH VIEW: DETAIL vs OPR CANTIK (KPPK) =====
+    view_key_kppk = f"view_opr_kppk_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
+    view_choice_kppk = st.radio("📑 Pilih Format Laporan KPPK:", ["📄 Laporan Detail (Lama)", "📑 OPR 1 Page (Baru - Cantik)"], horizontal=True, key=view_key_kppk)
+    if "OPR 1 Page" in view_choice_kppk:
+        opr_html_kppk = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
+        components.html(opr_html_kppk, height=1400, scrolling=True)
+        st.success("📑 Format OPR 1 Page KPPK - Cantik macam gambar")
+        full_html_opr = f"<html><head><meta charset='utf-8'></head><body>{opr_html_kppk}</body></html>"
+        st.download_button("Cetak PDF OPR (KPPK - Format Baru Cantik)", full_html_opr, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}_KPPK.html", mime="text/html", use_container_width=True, type="primary")
+    else:
+        components.html(html_one, height=740, scrolling=True)
+        st.caption("📄 Format Lama")
     st.divider()
     c1, c2 = st.columns(2)
     with c1:
@@ -1589,6 +1600,181 @@ def buat_carta_pai_html(sel_data):
     except Exception as e:
         return f"<div>Error: {e}</div>"
 
+
+# ===== OPR 1 PAGE REPORT - OPTION 2 - FORMAT CANTIK =====
+def buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S):
+    try:
+        tarikh = sel.get('tarikh_lawatan','-')
+        masa = sel.get('masa_lawatan','-')
+        tempat = sel.get('nama_sekolah','-')
+        no_pusat = sel.get('no_pusat','-')
+        nama_pemantau = sel.get('nama_pemantau','-')
+        jawatan = sel.get('jawatan_pemantau','-')
+        daerah = sel.get('daerah_pemantau', sel.get('kod_ppd','-'))
+        mp = sel.get('mata_pelajaran','-')
+        ulasan = sel.get('ulasan','Tiada ulasan')
+        
+        c_berdaftar = sel.get('calon_berdaftar',0)
+        c_hadir = sel.get('calon_hadir',0)
+        c_th = sel.get('calon_tidak_hadir',0)
+        c_menumpang = sel.get('calon_menumpang',0)
+        c_cicir = sel.get('calon_cicir',0)
+        c_bantah = sel.get('calon_bantah',0)
+        c_keseluruhan = sel.get('calon_keseluruhan',0)
+        
+        b_pep = sel.get('bilik_peperiksaan', sel.get('bilik_kelas',0))
+        b_kuar = sel.get('bilik_kuarantin',0)
+        b_total = sel.get('total_bilik',0)
+        
+        if MODE=="STAM":
+            objektif_text = "Pemantauan dilaksanakan bagi memastikan pengurusan dan pelaksanaan peperiksaan STAM di pusat peperiksaan berjalan dengan lancar dan teratur serta mematuhi ketetapan prosedur SOP yang telah ditetapkan oleh Lembaga Peperiksaan dan Kementerian Pendidikan Malaysia."
+        elif MODE=="SPM":
+            objektif_text = "Pemantauan dilaksanakan bagi memastikan pengurusan dan pelaksanaan peperiksaan SPM berjalan lancar, teratur dan mematuhi SOP Lembaga Peperiksaan Malaysia serta menjamin integriti peperiksaan."
+        elif MODE=="MUET":
+            objektif_text = "Pemantauan dilaksanakan bagi memastikan pengurusan dan pelaksanaan peperiksaan MUET berjalan lancar dan teratur serta mematuhi prosedur operasi standard yang ditetapkan."
+        elif MODE in ["UBBM","UBBI"]:
+            objektif_text = "Pemantauan Ujian Bertutur dilaksanakan bagi memastikan pelaksanaan ujian lisan berjalan lancar, teratur dan mematuhi SOP yang ditetapkan oleh Lembaga Peperiksaan."
+        else:
+            objektif_text = "Pemantauan dilaksanakan bagi memastikan pengurusan dan pelaksanaan peperiksaan Amali Sains SPM berjalan lancar, teratur dan mematuhi SOP."
+        
+        dapatan_points = []
+        dapatan_points.append(f"Seramai <b>{c_hadir} orang calon {MODE} (Berdaftar: {c_berdaftar})</b> telah hadir dan {c_keseluruhan} keseluruhan calon direkodkan di pusat peperiksaan.")
+        if b_total > 0:
+            dapatan_points.append(f"Pusat peperiksaan menyediakan <b>{b_pep} bilik peperiksaan</b> dan <b>{b_kuar} bilik kuarantin</b> dengan jumlah <b>{b_total} bilik</b>.")
+        dapatan_points.append(f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur.")
+        dapatan_points.append(f"Pengurusan kertas peperiksaan serta prosedur JOB dan JOTB telah disemak dan berada dalam keadaan teratur.")
+        dapatan_points.append(f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi.")
+        dapatan_points.append(f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan.")
+        
+        dapatan_html = ""
+        for pt in dapatan_points:
+            dapatan_html += f'<div style="display:flex; gap:8px; margin-bottom:8px;"><div style="background:#E3F2FD; color:#0D47A1; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;">✓</div><div style="font-size:11px; line-height:1.5; color:#37474F;">{pt}</div></div>'
+        
+        if MODE=="STAM":
+            stat1_val = c_hadir
+            stat1_label = "Calon STAM (sekolah)"
+            stat2_val = c_menumpang if c_menumpang>0 else max(0, c_keseluruhan - c_hadir)
+            stat2_label = "Calon persendirian"
+            stat3_val = b_pep
+            stat3_label = "Bil bilik peperiksaan"
+            stat4_val = b_kuar
+            stat4_label = "Bilik kuarantin"
+        elif MODE=="SPM":
+            stat1_val = c_hadir
+            stat1_label = "Calon Hadir SPM"
+            stat2_val = c_th
+            stat2_label = "Tidak Hadir"
+            stat3_val = b_pep
+            stat3_label = "Bilik peperiksaan"
+            stat4_val = b_total
+            stat4_label = "Jumlah bilik"
+        elif MODE=="MUET":
+            stat1_val = c_hadir
+            stat1_label = "Calon Hadir MUET"
+            stat2_val = c_th
+            stat2_label = "Tidak Hadir"
+            stat3_val = b_pep if b_pep>0 else b_total
+            stat3_label = "Kelas/Dewan"
+            stat4_val = b_kuar
+            stat4_label = "Bilik kuarantin"
+        else:
+            stat1_val = c_hadir
+            stat1_label = f"Calon Hadir {MODE}"
+            stat2_val = c_berdaftar
+            stat2_label = "Berdaftar"
+            stat3_val = b_total
+            stat3_label = "Jumlah bilik"
+            stat4_val = b_kuar
+            stat4_label = "Kuarantin"
+        
+        opr_html = f"""
+<div style="width:100%; display:flex; justify-content:center; padding:8px; background:#F5F7FA;">
+    <div style="width:100%; max-width:900px; background:white; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.15); border:2px solid #FFC107;">
+        <div style="background: linear-gradient(135deg, #0D2A54 0%, #0D47A1 100%); padding:12px 20px; display:flex; align-items:center; gap:16px; border-bottom:4px solid #FFC107;">
+            <div style="background:white; border-radius:8px; padding:6px; width:70px; height:70px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <div style="font-size:28px;">🏛️</div>
+            </div>
+            <div style="flex:1; color:white;">
+                <div style="font-size:11px; font-weight:700; letter-spacing:1px; opacity:0.9;">KEMENTERIAN PENDIDIKAN MALAYSIA</div>
+                <div style="font-size:9px; font-weight:600; opacity:0.7;">JABATAN PENDIDIKAN NEGERI SELANGOR</div>
+                <div style="font-size:18px; font-weight:900; margin-top:4px; letter-spacing:0.5px;">ONE PAGE REPORT (OPR)</div>
+                <div style="font-size:11px; font-weight:800; margin-top:2px;">PEMANTAUAN {jenis_label_full} - JPN SELANGOR</div>
+                <div style="font-size:10px; font-weight:700; color:#FFECB3;">UNIT PENTAKSIRAN DAN PEPERIKSAAN</div>
+                <div style="font-size:11px; font-weight:800; color:#FFD54F; background:rgba(255,193,7,0.2); padding:2px 8px; border-radius:4px; display:inline-block; margin-top:4px;">{tempat.upper()}</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:0; padding:0; background:white;">
+            <div style="flex:1; padding:12px; border-right:2px solid #E3F2FD; border-bottom:2px solid #E3F2FD;">
+                <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">📋 MAKLUMAT PEMANTAUAN & LAWATAN</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; gap:10px; align-items:center;"><div style="background:#E3F2FD; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">📅</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">TARIKH</div><div style="font-size:12px; font-weight:700;">{tarikh}</div></div></div>
+                    <div style="display:flex; gap:10px; align-items:center;"><div style="background:#FFF3E0; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">🕒</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">MASA</div><div style="font-size:12px; font-weight:700;">{masa}</div></div></div>
+                    <div style="display:flex; gap:10px; align-items:flex-start;"><div style="background:#E8F5E9; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">📍</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">TEMPAT</div><div style="font-size:11px; font-weight:700; line-height:1.3;">{tempat}</div><div style="font-size:10px; color:#0D47A1; font-weight:700; margin-top:2px;">{no_pusat}</div></div></div>
+                    <div style="display:flex; gap:10px; align-items:center; margin-top:4px;"><div style="background:#F3E5F5; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">📚</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">MATA PELAJARAN</div><div style="font-size:11px; font-weight:700; background:#FFF9C4; padding:3px 8px; border-radius:12px; display:inline-block;">{mp[:60]}</div></div></div>
+                </div>
+            </div>
+            <div style="flex:0.9; padding:12px; border-bottom:2px solid #E3F2FD; background:#FAFBFC;">
+                <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">👤 PEGAWAI PEMANTAU</div>
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <div style="background:#0D47A1; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:24px; flex-shrink:0;">👤</div>
+                    <div style="flex:1;">
+                        <div style="font-size:13px; font-weight:800; color:#0D47A1; line-height:1.3;">{nama_pemantau}</div>
+                        <div style="font-size:11px; font-weight:600; color:#37474F; margin-top:4px;">{jawatan}</div>
+                        <div style="background:#E3F2FD; padding:6px 10px; border-radius:8px; margin-top:8px;"><div style="font-size:9px; font-weight:700; color:#0D47A1;">DAERAH / JPN</div><div style="font-size:11px; font-weight:700;">{daerah}</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="padding:12px; background:#F8FAFC; border-bottom:2px solid #E3F2FD;">
+            <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">🎯 OBJEKTIF</div>
+            <div style="display:flex; gap:10px;">
+                <div style="background:#0D47A1; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:20px; flex-shrink:0;">🎯</div>
+                <div style="font-size:11px; line-height:1.5; color:#37474F; font-style:italic; background:white; padding:10px 14px; border-radius:8px; border-left:4px solid #0D47A1; flex:1;">{objektif_text}</div>
+            </div>
+        </div>
+        <div style="display:flex; gap:0; padding:0; background:white; border-bottom:2px solid #E3F2FD;">
+            <div style="flex:1.6; padding:12px; border-right:2px solid #E3F2FD;">
+                <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">📊 DAPATAN PEMANTAUAN</div>
+                <div style="background:#F8FAFC; padding:10px; border-radius:8px;">{dapatan_html}</div>
+            </div>
+            <div style="flex:0.9; padding:10px; background:#F0F7FF;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div style="background:white; border-radius:12px; padding:10px; text-align:center; border:2px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#0D47A1; margin-bottom:4px;">{stat1_label}</div><div style="font-size:28px; font-weight:900; color:#0D47A1;">{stat1_val}</div><div style="font-size:10px; font-weight:700;">orang</div></div>
+                    <div style="background:white; border-radius:12px; padding:10px; text-align:center; border:2px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#EF6C00; margin-bottom:4px;">{stat2_label}</div><div style="font-size:22px; font-weight:900; color:#EF6C00;">{stat2_val}</div><div style="font-size:10px; font-weight:700;">orang</div></div>
+                    <div style="background:#FFF8E1; border-radius:12px; padding:10px; text-align:center; border:2px solid #FFE0B2;"><div style="font-size:9px; font-weight:800; color:#F57F17; margin-bottom:4px;">{stat3_label}</div><div style="font-size:24px; font-weight:900; color:#EF6C00;">{stat3_val}</div><div style="font-size:10px; font-weight:700;">bilik</div></div>
+                    <div style="background:#E3F2FD; border-radius:12px; padding:10px; text-align:center; border:2px solid #90CAF9;"><div style="font-size:9px; font-weight:800; color:#0D47A1; margin-bottom:4px;">{stat4_label}</div><div style="font-size:24px; font-weight:900; color:#0D47A1;">{stat4_val}</div><div style="font-size:10px; font-weight:700;">bilik</div></div>
+                </div>
+                <div style="background:white; border-radius:8px; padding:8px; margin-top:8px; border:1px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#0D47A1;">KEHADIRAN CALON</div><div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;"><span style="background:#E8F5E9; color:#2E7D32; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Hadir: {c_hadir}</span><span style="background:#FFEBEE; color:#C62828; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">TH: {c_th}</span><span style="background:#E3F2FD; color:#0D47A1; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Berdaftar: {c_berdaftar}</span><span style="background:#0D47A1; color:white; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Keseluruhan: {c_keseluruhan}</span></div></div>
+            </div>
+        </div>
+        <div style="padding:12px; background:white; border-bottom:2px solid #E3F2FD;">
+            <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">📸 GAMBAR AKTIVITI PEMANTAUAN</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><div style="height:110px; background:#E3F2FD; display:flex; align-items:center; justify-content:center; font-size:24px;">🏫</div><div style="padding:6px; background:#E3F2FD; font-size:8px; font-weight:700; text-align:center; color:#0D47A1;">Bersama pentadbiran<br/>{tempat[:25]}</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><div style="height:110px; background:#FFF3E0; display:flex; align-items:center; justify-content:center; font-size:24px;">🚶</div><div style="padding:6px; background:#FFF3E0; font-size:8px; font-weight:700; text-align:center; color:#EF6C00;">Kawasan laluan<br/>pusat peperiksaan</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><div style="height:110px; background:#F3E5F5; display:flex; align-items:center; justify-content:center; font-size:20px;">🗺️</div><div style="padding:6px; background:#F3E5F5; font-size:8px; font-weight:700; text-align:center; color:#6A1B9A;">Pelan susun atur bilik<br/>peperiksaan</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><div style="height:110px; background:#E8F5E9; display:flex; align-items:center; justify-content:center; font-size:24px;">📋</div><div style="padding:6px; background:#E8F5E9; font-size:8px; font-weight:700; text-align:center; color:#2E7D32;">Rekod pemantauan<br/>di pusat peperiksaan</div></div>
+            </div>
+        </div>
+        <div style="display:flex; gap:0; padding:0; background:white;">
+            <div style="flex:1.5; padding:12px; border-right:2px solid #E3F2FD;">
+                <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">📝 IMPAK / RUMUSAN</div>
+                <div style="font-size:11px; line-height:1.6; color:#37474F; background:#F8FAFC; padding:10px 12px; border-radius:8px; border-left:4px solid #0D47A1;">Secara keseluruhannya, pihak sekolah menunjukkan komitmen dan kerjasama yang baik dalam memastikan peperiksaan {MODE} berjalan lancar. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan.<br/><br/><i style="background:#FFFEF7; padding:4px 8px; border-radius:4px; border-left:2px solid #FFC107; display:inline-block; margin-top:6px;">❝ {ulasan[:200]} ❞</i></div>
+            </div>
+            <div style="flex:0.8; padding:12px; background:#F1F8E9; display:flex; align-items:center; justify-content:center;">
+                <div style="background:#2E7D32; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">✅</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">PENGURUSAN DAN PELAKSANAAN BERJALAN LANCAR DAN TERATUR</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
+            </div>
+        </div>
+        <div style="background:#0D2A54; padding:8px 20px; display:flex; justify-content:space-between; align-items:center;"><div style="color:#90CAF9; font-size:8px; font-weight:600;">JPN SELANGOR • UNIT PENTAKSIRAN DAN PEPERIKSAAN</div><div style="color:#FFECB3; font-size:8px; font-weight:700;">OPR {MODE} • {tarikh} • SAH & DIREKODKAN</div></div>
+    </div>
+</div>
+        """
+        return opr_html
+    except Exception as e:
+        return f"<div style='padding:20px; background:#FFEBEE; border-radius:12px;'>Error OPR: {e}</div>"
+
+
+
 CHART_PAI_HTML = buat_carta_pai_html(sel)
 
 def badge(text, bg="#E3F2FD", color="#0D47A1"):
@@ -1980,7 +2166,17 @@ html_one = f"""
 </div>
 """
 
-components.html(html_one, height=740, scrolling=True)
+# ===== OPTION 2 - MAIN VIEW =====
+view_key_main2 = f"view_opr_main2_{MODE}_{sel.get('no_pusat','')}_{sel.get('tarikh_lawatan','')}"
+view_choice_main2 = st.radio("📑 Pilih Format Laporan:", ["📄 Laporan Detail (Lama)", "📑 OPR 1 Page (Baru - Cantik)"], horizontal=True, key=view_key_main2)
+if "OPR 1 Page" in view_choice_main2:
+    opr_html_main2 = buat_opr_html(sel, MODE, jenis_label_full, IMG_D, IMG_S)
+    components.html(opr_html_main2, height=1400, scrolling=True)
+    st.success("📑 Format OPR 1 Page - Cantik")
+    full_html_opr_main2 = f"<html><head><meta charset='utf-8'></head><body>{opr_html_main2}</body></html>"
+    st.download_button("🖨️ Cetak PDF OPR (Baru Cantik)", full_html_opr_main2, file_name=f"OPR_{MODE}_{sel['no_pusat']}_{sel['tarikh_lawatan']}.html", mime="text/html", use_container_width=True, type="primary")
+else:
+    components.html(html_one, height=740, scrolling=True)
 
 st.divider()
 c1, c2 = st.columns(2)
