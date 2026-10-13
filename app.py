@@ -135,64 +135,108 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         if b_total > 0:
             dapatan_points.append(f"Pusat peperiksaan menyediakan <b>{b_pep} bilik peperiksaan</b> dan <b>{b_kuar} bilik kuarantin</b> dengan jumlah <b>{b_total} bilik</b>.")
         
-        # Dapatan 1 - Susun atur (dinamik ikut pilihan pemantau)
-        if "❌" in susun_stat:
-            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
-            if cat_susun:
-                txt_susun += f" <i>Catatan: {cat_susun}</i>"
-        elif "⚠️" in susun_stat:
-            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
-            if cat_susun:
-                txt_susun += f" <i>Catatan: {cat_susun}</i>"
-        else:
-            txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur."
-            if cat_susun:
+        # Dapatan 1 - Susun atur (dinamik + custom ayat jika pemantau isi)
+        ayat_susun_custom = sel.get('ayat_susun', '').strip()
+        if ayat_susun_custom:
+            if "❌" in susun_stat:
+                txt_susun = f"<b style='color:#C62828;'>{ayat_susun_custom}</b>"
+            elif "⚠️" in susun_stat:
+                txt_susun = f"<b style='color:#EF6C00;'>{ayat_susun_custom}</b>"
+            else:
+                txt_susun = f"{ayat_susun_custom}"
+            if cat_susun and cat_susun.lower() not in ayat_susun_custom.lower():
                 txt_susun += f" <i>({cat_susun})</i>"
+        else:
+            if "❌" in susun_stat:
+                txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
+                if cat_susun:
+                    txt_susun += f" <i>Catatan: {cat_susun}</i>"
+            elif "⚠️" in susun_stat:
+                txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
+                if cat_susun:
+                    txt_susun += f" <i>Catatan: {cat_susun}</i>"
+            else:
+                txt_susun = f"Susun atur bilik peperiksaan dan kedudukan calon telah disediakan dengan teratur."
+                if cat_susun:
+                    txt_susun += f" <i>({cat_susun})</i>"
         dapatan_points.append(txt_susun)
         
-        # Dapatan 2 - Kertas (dinamik)
-        if "❌" in kertas_stat:
-            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
-            if cat_kertas:
-                txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
-        elif "⚠️" in kertas_stat:
-            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
-            if cat_kertas:
-                txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
-        else:
-            txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur."
-            if cat_kertas:
+        # Dapatan 2 - Kertas (dinamik + custom)
+        ayat_kertas_custom = sel.get('ayat_kertas', '').strip()
+        if ayat_kertas_custom:
+            if "❌" in kertas_stat:
+                txt_kertas = f"<b style='color:#C62828;'>{ayat_kertas_custom}</b>"
+            elif "⚠️" in kertas_stat:
+                txt_kertas = f"<b style='color:#EF6C00;'>{ayat_kertas_custom}</b>"
+            else:
+                txt_kertas = f"{ayat_kertas_custom}"
+            if cat_kertas and cat_kertas.lower() not in ayat_kertas_custom.lower():
                 txt_kertas += f" <i>({cat_kertas})</i>"
+        else:
+            if "❌" in kertas_stat:
+                txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#C62828;'>TIDAK teratur / tidak mematuhi SOP</b>."
+                if cat_kertas:
+                    txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
+            elif "⚠️" in kertas_stat:
+                txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan <b style='color:#EF6C00;'>perlu penambahbaikan</b>."
+                if cat_kertas:
+                    txt_kertas += f" <i>Catatan: {cat_kertas}</i>"
+            else:
+                txt_kertas = f"Pengurusan dan keselamatan kertas serta bahan peperiksaan telah disemak dan berada dalam keadaan teratur."
+                if cat_kertas:
+                    txt_kertas += f" <i>({cat_kertas})</i>"
         dapatan_points.append(txt_kertas)
         
-        # Dapatan 3 - Kemudahan (dinamik)
-        if "❌" in kemudahan_stat:
-            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#C62828;'>TIDAK dipatuhi</b>."
-            if cat_kemudahan:
-                txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
-        elif "⚠️" in kemudahan_stat:
-            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#EF6C00;'>dipatuhi sebahagian / perlu penambahbaikan</b>."
-            if cat_kemudahan:
-                txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
-        else:
-            txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi."
-            if cat_kemudahan:
+        # Dapatan 3 - Kemudahan (dinamik + custom)
+        ayat_kemudahan_custom = sel.get('ayat_kemudahan', '').strip()
+        if ayat_kemudahan_custom:
+            if "❌" in kemudahan_stat:
+                txt_kemudahan = f"<b style='color:#C62828;'>{ayat_kemudahan_custom}</b>"
+            elif "⚠️" in kemudahan_stat:
+                txt_kemudahan = f"<b style='color:#EF6C00;'>{ayat_kemudahan_custom}</b>"
+            else:
+                txt_kemudahan = f"{ayat_kemudahan_custom}"
+            if cat_kemudahan and cat_kemudahan.lower() not in ayat_kemudahan_custom.lower():
                 txt_kemudahan += f" <i>({cat_kemudahan})</i>"
+        else:
+            if "❌" in kemudahan_stat:
+                txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#C62828;'>TIDAK dipatuhi</b>."
+                if cat_kemudahan:
+                    txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
+            elif "⚠️" in kemudahan_stat:
+                txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan <b style='color:#EF6C00;'>dipatuhi sebahagian / perlu penambahbaikan</b>."
+                if cat_kemudahan:
+                    txt_kemudahan += f" <i>Catatan: {cat_kemudahan}</i>"
+            else:
+                txt_kemudahan = f"Kemudahan, dokumentasi dan keselamatan bahan peperiksaan telah dipatuhi."
+                if cat_kemudahan:
+                    txt_kemudahan += f" <i>({cat_kemudahan})</i>"
         dapatan_points.append(txt_kemudahan)
         
-        # Dapatan 4 - Pelaksanaan keseluruhan (dinamik)
-        if "❌" in pelaksanaan_stat:
-            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#C62828;'>berlaku isu / tidak lancar / tidak mematuhi prosedur yang ditetapkan</b>."
-            if cat_pelaksanaan:
-                txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
-        elif "⚠️" in pelaksanaan_stat:
-            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#EF6C00;'>berjalan lancar dengan penambahbaikan diperlukan</b>."
-            if cat_pelaksanaan:
-                txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
-        else:
-            txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan."
-            if cat_pelaksanaan:
+        # Dapatan 4 - Pelaksanaan keseluruhan (dinamik + custom)
+        ayat_pelaksanaan_custom = sel.get('ayat_pelaksanaan', '').strip()
+        if ayat_pelaksanaan_custom:
+            if "❌" in pelaksanaan_stat:
+                txt_pelaksanaan = f"<b style='color:#C62828;'>{ayat_pelaksanaan_custom}</b>"
+            elif "⚠️" in pelaksanaan_stat:
+                txt_pelaksanaan = f"<b style='color:#EF6C00;'>{ayat_pelaksanaan_custom}</b>"
+            else:
+                txt_pelaksanaan = f"{ayat_pelaksanaan_custom}"
+            if cat_pelaksanaan and cat_pelaksanaan.lower() not in ayat_pelaksanaan_custom.lower():
                 txt_pelaksanaan += f" <i>({cat_pelaksanaan})</i>"
+        else:
+            if "❌" in pelaksanaan_stat:
+                txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#C62828;'>berlaku isu / tidak lancar / tidak mematuhi prosedur yang ditetapkan</b>."
+                if cat_pelaksanaan:
+                    txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
+            elif "⚠️" in pelaksanaan_stat:
+                txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} <b style='color:#EF6C00;'>berjalan lancar dengan penambahbaikan diperlukan</b>."
+                if cat_pelaksanaan:
+                    txt_pelaksanaan += f" <i>Catatan: {cat_pelaksanaan}</i>"
+            else:
+                txt_pelaksanaan = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar, terkawal dan mematuhi prosedur yang ditetapkan."
+                if cat_pelaksanaan:
+                    txt_pelaksanaan += f" <i>({cat_pelaksanaan})</i>"
         dapatan_points.append(txt_pelaksanaan)
         
         dapatan_html = ""
@@ -1493,6 +1537,7 @@ pelaksanaan_status = pp4.selectbox("4️⃣ Pelaksanaan keseluruhan peperiksaan"
     ["✅ Lancar, Terkawal & Mematuhi Prosedur", "⚠️ Lancar dengan Penambahbaikan Diperlukan", "❌ Berlaku Isu / Tidak Lancar / Tidak Mematuhi Prosedur"], 
     key=f"pelaksanaan_{MODE}_{pilih_no_final}")
 
+st.markdown("#### 📝 Catatan Ringkas (Optional - akan keluar dalam kurungan)")
 pp5, pp6 = st.columns(2)
 catatan_susun = pp5.text_input("📝 Catatan Susun Atur (jika ada)", placeholder="Contoh: Bilik sempit, jarak calon dekat...", key=f"cat_susun_{MODE}_{pilih_no_final}")
 catatan_kertas = pp6.text_input("📝 Catatan Kertas/Bahan (jika ada)", placeholder="Contoh: Kunci bilik kebal lewat...", key=f"cat_kertas_{MODE}_{pilih_no_final}")
@@ -1500,6 +1545,17 @@ catatan_kertas = pp6.text_input("📝 Catatan Kertas/Bahan (jika ada)", placehol
 pp7, pp8 = st.columns(2)
 catatan_kemudahan = pp7.text_input("📝 Catatan Kemudahan (jika ada)", placeholder="Contoh: Dokumentasi tidak lengkap...", key=f"cat_kemudahan_{MODE}_{pilih_no_final}")
 catatan_pelaksanaan = pp8.text_input("📝 Catatan Pelaksanaan (jika ada)", placeholder="Contoh: Calon lewat 10 minit...", key=f"cat_pelaksanaan_{MODE}_{pilih_no_final}")
+
+st.markdown("#### ✏️ Ayat Custom Dapatan (Optional - Jika isi, OPR akan guna ayat anda sepenuhnya)")
+st.caption("💡 Kosongkan jika nak guna ayat auto ikut status di atas. Jika isi, ayat custom anda akan keluar di OPR (boleh tulis ayat penuh ikut kesesuaian pemantau)")
+
+pp9, pp10 = st.columns(2)
+ayat_susun = pp9.text_area("✏️ Ayat Custom 1️⃣ Susun Atur (Optional)", placeholder="Contoh: Susun atur bilik peperiksaan tidak teratur kerana meja terlalu rapat dan laluan sempit. Jarak antara calon tidak mengikut SOP.", height=80, key=f"ayat_susun_{MODE}_{pilih_no_final}")
+ayat_kertas = pp10.text_area("✏️ Ayat Custom 2️⃣ Kertas/Bahan (Optional)", placeholder="Contoh: Pengurusan kertas soalan didapati bertabur dan tidak disimpan dengan selamat dalam bilik kebal.", height=80, key=f"ayat_kertas_{MODE}_{pilih_no_final}")
+
+pp11, pp12 = st.columns(2)
+ayat_kemudahan = pp11.text_area("✏️ Ayat Custom 3️⃣ Kemudahan (Optional)", placeholder="Contoh: Kemudahan asas seperti kipas dan lampu di bilik peperiksaan tidak berfungsi dengan baik.", height=80, key=f"ayat_kemudahan_{MODE}_{pilih_no_final}")
+ayat_pelaksanaan = pp12.text_area("✏️ Ayat Custom 4️⃣ Pelaksanaan (Optional)", placeholder="Contoh: Pelaksanaan peperiksaan lewat 20 minit kerana kelewatan ketibaan Ketua Pengawas.", height=80, key=f"ayat_pelaksanaan_{MODE}_{pilih_no_final}")
 
 st.divider()
 ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
@@ -1639,6 +1695,10 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "catatan_kertas": catatan_kertas if 'catatan_kertas' in locals() else "",
         "catatan_kemudahan": catatan_kemudahan if 'catatan_kemudahan' in locals() else "",
         "catatan_pelaksanaan": catatan_pelaksanaan if 'catatan_pelaksanaan' in locals() else "",
+        "ayat_susun": ayat_susun if 'ayat_susun' in locals() else "",
+        "ayat_kertas": ayat_kertas if 'ayat_kertas' in locals() else "",
+        "ayat_kemudahan": ayat_kemudahan if 'ayat_kemudahan' in locals() else "",
+        "ayat_pelaksanaan": ayat_pelaksanaan if 'ayat_pelaksanaan' in locals() else "",
         "ulasan": ulasan, "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
         **extra_amali,
