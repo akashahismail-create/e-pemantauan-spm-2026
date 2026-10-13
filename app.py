@@ -100,6 +100,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         daerah = sel.get('daerah_pemantau', sel.get('kod_ppd','-'))
         mp = sel.get('mata_pelajaran','-')
         ulasan = sel.get('ulasan','Tiada ulasan')
+        impak_text = f"Secara keseluruhannya, pihak sekolah menunjukkan komitmen dan kerjasama yang baik dalam memastikan peperiksaan {MODE} berjalan lancar. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan." 
         
         c_berdaftar = sel.get('calon_berdaftar',0)
         c_hadir = sel.get('calon_hadir',0)
@@ -319,7 +320,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             elif has_kuning:
                 impak_text = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar dengan beberapa penambahbaikan diperlukan. Pihak sekolah menunjukkan komitmen dan kerjasama yang baik namun terdapat beberapa aspek yang perlu diperbaiki. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan."
             else:
-                impak_text = f"{impak_text}"
+                impak_text = f"Secara keseluruhannya, pihak sekolah menunjukkan komitmen dan kerjasama yang baik dalam memastikan peperiksaan {MODE} berjalan lancar. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan."
         
 
         opr_html = f"""
