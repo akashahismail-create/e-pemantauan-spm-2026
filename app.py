@@ -304,6 +304,20 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             status_text = "PENGURUSAN DAN PELAKSANAAN BERJALAN LANCAR DAN TERATUR"
         
 
+        
+        # ===== IMPAK / RUMUSAN DINAMIK - IKUT STATUS & CUSTOM JIKA ADA =====
+        impak_custom_input = sel.get('impak_custom', '').strip()
+        if impak_custom_input:
+            impak_text = impak_custom_input
+        else:
+            if has_merah:
+                impak_text = f"Secara keseluruhannya, pemantauan mendapati terdapat ketidakpatuhan SOP dalam pelaksanaan peperiksaan {MODE} yang perlu diberi perhatian serius. Pihak sekolah perlu mengambil tindakan penambahbaikan segera bagi memastikan pengurusan dan pelaksanaan peperiksaan mematuhi prosedur yang ditetapkan. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah untuk penambahbaikan berterusan."
+            elif has_kuning:
+                impak_text = f"Secara keseluruhannya, pelaksanaan peperiksaan {MODE} berjalan lancar dengan beberapa penambahbaikan diperlukan. Pihak sekolah menunjukkan komitmen dan kerjasama yang baik namun terdapat beberapa aspek yang perlu diperbaiki. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan."
+            else:
+                impak_text = f"{impak_text}"
+        
+
         opr_html = f"""
 <div style="width:100%; display:flex; justify-content:center; padding:8px; background:#F5F7FA;">
     <div style="width:100%; max-width:900px; background:white; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.15); border:2px solid #FFC107;">
@@ -376,7 +390,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         <div style="display:flex; gap:0; padding:0; background:white;">
             <div style="flex:1.5; padding:12px; border-right:2px solid #E3F2FD;">
                 <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">📝 IMPAK / RUMUSAN</div>
-                <div style="font-size:11px; line-height:1.6; color:#37474F; background:#F8FAFC; padding:10px 12px; border-radius:8px; border-left:4px solid #0D47A1;">Secara keseluruhannya, pihak sekolah menunjukkan komitmen dan kerjasama yang baik dalam memastikan peperiksaan {MODE} berjalan lancar. Pemantauan ini memberi maklum balas secara langsung kepada pihak sekolah serta memastikan pelaksanaan di lapangan menepati ketetapan yang telah ditetapkan.<br/><br/><i style="background:#FFFEF7; padding:4px 8px; border-radius:4px; border-left:2px solid #FFC107; display:inline-block; margin-top:6px;">❝ {ulasan[:200]} ❞</i></div>
+                <div style="font-size:11px; line-height:1.6; color:#37474F; background:#F8FAFC; padding:10px 12px; border-radius:8px; border-left:4px solid #0D47A1;">{impak_text}<br/><br/><i style="background:#FFFEF7; padding:4px 8px; border-radius:4px; border-left:2px solid #FFC107; display:inline-block; margin-top:6px;">❝ {ulasan[:200]} ❞</i></div>
             </div>
             <div style="flex:0.8; padding:12px; background:{status_bg_light}; display:flex; align-items:center; justify-content:center;">
                 <div style="background:{status_bg}; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">{status_icon}</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">{status_text}</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
@@ -1561,6 +1575,11 @@ st.divider()
 ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
 
 st.divider()
+st.markdown("#### 📝 Impak / Rumusan Custom (Optional)")
+st.caption("💡 Jika kosong, sistem akan auto jana impak ikut status penilaian (merah/kuning/hijau). Jika isi, ayat anda akan keluar di OPR.")
+impak_custom = st.text_area("✏️ Impak / Rumusan Custom (Optional - jika isi, akan ganti ayat fix)", placeholder="Contoh: Secara keseluruhannya, pihak sekolah perlu menambah baik pengurusan bilik peperiksaan dan keselamatan kertas soalan. Pemantauan mendapati beberapa kelemahan yang perlu diambil tindakan segera...", height=120, key=f"impak_custom_{MODE}_{pilih_no_final}")
+
+st.divider()
 st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #37474F 0%, #78909C 100%);">👮</div><div><div class="borang-header-title">Maklumat Pemantau & Ulasan</div><div class="borang-header-subtitle">Nama + Jawatan + Daerah + Ulasan Wajib</div></div></div>', unsafe_allow_html=True)
 p1,p2,p3 = st.columns(3)
 if st.session_state.is_admin:
@@ -1699,7 +1718,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "ayat_kertas": ayat_kertas if 'ayat_kertas' in locals() else "",
         "ayat_kemudahan": ayat_kemudahan if 'ayat_kemudahan' in locals() else "",
         "ayat_pelaksanaan": ayat_pelaksanaan if 'ayat_pelaksanaan' in locals() else "",
-        "ulasan": ulasan, "nama_pemantau": nama_pemantau,
+        "ulasan": ulasan, "impak_custom": impak_custom if 'impak_custom' in locals() else "", "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
         **extra_amali,
         **extra_stam
