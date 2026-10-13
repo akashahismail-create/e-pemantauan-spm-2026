@@ -246,7 +246,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         
         dapatan_html = ""
         for idx_pt, pt in enumerate(dapatan_points, 1):
-            dapatan_html += f'<div style="display:flex; gap:10px; margin-bottom:10px; padding:8px 10px; background:#FAFBFD; border-radius:8px; border-left:3px solid #0D47A1;"><div style="background:linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); color:#0D47A1; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.1);">✓</div><div style="font-size:11.5px; line-height:1.6; color:#0D2A54; font-weight:500; letter-spacing:0.2px;">{pt}</div></div>'
+            dapatan_html += f'<div style="display:flex; gap:8px; margin-bottom:6px; padding:5px 8px; background:#FAFBFD; border-radius:8px; border-left:3px solid #0D47A1;"><div style="background:linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); color:#0D47A1; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.1);">✓</div><div style="font-size:11.5px; line-height:1.6; color:#0D2A54; font-weight:500; letter-spacing:0.2px;">{pt}</div></div>'
         
         if MODE=="STAM":
             stat1_val = c_hadir
@@ -324,9 +324,17 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         
 
         opr_html = f"""
-<div style="width:100%; display:flex; justify-content:center; padding:8px; background:#F5F7FA;">
-    <div style="width:100%; max-width:900px; background:white; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.18); border:3px solid #FFC107; border-radius:12px; font-family:'Plus Jakarta Sans','Inter',sans-serif;">
-        <div style="background: linear-gradient(135deg, #0D2A54 0%, #0D47A1 100%); padding:12px 20px; display:flex; align-items:center; gap:16px; border-bottom:4px solid #FFC107;">
+<style>
+@media print {{
+    @page {{ size: A4 portrait; margin: 8mm 8mm 8mm 8mm; }}
+    body {{ -webkit-print-color-adjust: exact; print-color-adjust: exact; }}
+    .opr-container {{ box-shadow:none !important; border:2px solid #FFC107 !important; border-radius:6px !important; max-width:190mm !important; }}
+    .opr-no-print {{ display:none !important; }}
+}}
+</style>
+<div style="width:100%; display:flex; justify-content:center; padding:4px; background:#F5F7FA; font-family:'Plus Jakarta Sans','Inter',sans-serif;">
+    <div class="opr-container" style="width:100%; max-width:850px; background:white; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.12); border:2px solid #FFC107; border-radius:8px; font-family:'Plus Jakarta Sans','Inter',sans-serif; transform: scale(0.92); transform-origin: top center;">
+        <div style="background: linear-gradient(135deg, #0D2A54 0%, #0D47A1 100%); padding:8px 14px; display:flex; align-items:center; gap:16px; border-bottom:4px solid #FFC107;">
             <div style="background:white; border-radius:8px; padding:6px; width:70px; height:70px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <img src="data:image/png;base64,{IMG_JATA}" style="width:100%; height:100%; object-fit:contain;">
             </div>
@@ -340,7 +348,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             </div>
         </div>
         <div style="display:flex; gap:0; padding:0; background:white;">
-            <div style="flex:1; padding:12px; border-right:2px solid #E3F2FD; border-bottom:2px solid #E3F2FD;">
+            <div style="flex:1; padding:8px; border-right:2px solid #E3F2FD; border-bottom:2px solid #E3F2FD;">
                 <div style="background:linear-gradient(135deg, #0D47A1 0%, #1565C0 100%); color:white; font-size:11px; font-weight:800; padding:7px 14px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; letter-spacing:0.3px; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📋 MAKLUMAT PEMANTAUAN & LAWATAN</div>
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <div style="display:flex; gap:10px; align-items:center;"><div style="background:#E3F2FD; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">📅</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">TARIKH</div><div style="font-size:12px; font-weight:700;">{tarikh}</div></div></div>
@@ -349,7 +357,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                     <div style="display:flex; gap:10px; align-items:center; margin-top:4px;"><div style="background:#F3E5F5; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;">📚</div><div><div style="font-size:9px; font-weight:700; color:#78909C;">MATA PELAJARAN</div><div style="font-size:11px; font-weight:700; background:#FFF9C4; padding:3px 8px; border-radius:12px; display:inline-block;">{mp[:60]}</div></div></div>
                 </div>
             </div>
-            <div style="flex:0.9; padding:12px; border-bottom:2px solid #E3F2FD; background:#FAFBFC;">
+            <div style="flex:0.9; padding:8px; border-bottom:2px solid #E3F2FD; background:#FAFBFC;">
                 <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">👤 PEGAWAI PEMANTAU</div>
                 <div style="display:flex; gap:12px; align-items:flex-start;">
                     <div style="background:#0D47A1; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:24px; flex-shrink:0;">👤</div>
@@ -361,7 +369,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 </div>
             </div>
         </div>
-        <div style="padding:12px; background:#F8FAFC; border-bottom:2px solid #E3F2FD;">
+        <div style="padding:6px 10px; background:#F8FAFC; border-bottom:2px solid #E3F2FD;">
             <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">🎯 OBJEKTIF</div>
             <div style="display:flex; gap:10px;">
                 <div style="background:#0D47A1; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:20px; flex-shrink:0;">🎯</div>
@@ -369,27 +377,27 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             </div>
         </div>
         <div style="display:flex; gap:0; padding:0; background:white; border-bottom:2px solid #E3F2FD;">
-            <div style="flex:1.6; padding:12px; border-right:2px solid #E3F2FD;">
+            <div style="flex:1.6; padding:8px; border-right:2px solid #E3F2FD;">
                 <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">📊 DAPATAN PEMANTAUAN</div>
                 <div style="background:#F8FAFC; padding:10px; border-radius:8px;">{dapatan_html}</div>
             </div>
             <div style="flex:0.9; padding:10px; background:#F0F7FF;">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                    <div style="background:white; border-radius:12px; padding:10px; text-align:center; border:2px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#0D47A1; margin-bottom:4px;">{stat1_label}</div><div style="font-size:28px; font-weight:900; color:#0D47A1;">{stat1_val}</div><div style="font-size:10px; font-weight:700;">orang</div></div>
-                    <div style="background:white; border-radius:12px; padding:10px; text-align:center; border:2px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#EF6C00; margin-bottom:4px;">{stat2_label}</div><div style="font-size:22px; font-weight:900; color:#EF6C00;">{stat2_val}</div><div style="font-size:10px; font-weight:700;">orang</div></div>
-                    <div style="background:#FFF8E1; border-radius:12px; padding:10px; text-align:center; border:2px solid #FFE0B2;"><div style="font-size:9px; font-weight:800; color:#F57F17; margin-bottom:4px;">{stat3_label}</div><div style="font-size:24px; font-weight:900; color:#EF6C00;">{stat3_val}</div><div style="font-size:10px; font-weight:700;">bilik</div></div>
+                    <div style="background:white; border-radius:8px; padding:6px; text-align:center; border:1.5px solid #E3F2FD;"><div style="font-size:8px; font-weight:800; color:#0D47A1; margin-bottom:2px; line-height:1.1;">{stat1_label}</div><div style="font-size:20px; font-weight:900; color:#0D47A1;">{stat1_val}</div><div style="font-size:8px; font-weight:700;">orang</div></div>
+                    <div style="background:white; border-radius:8px; padding:6px; text-align:center; border:1.5px solid #E3F2FD;"><div style="font-size:8px; font-weight:800; color:#EF6C00; margin-bottom:2px; line-height:1.1;">{stat2_label}</div><div style="font-size:18px; font-weight:900; color:#EF6C00;">{stat2_val}</div><div style="font-size:8px; font-weight:700;">orang</div></div>
+                    <div style="background:#FFF8E1; border-radius:8px; padding:6px; text-align:center; border:2px solid #FFE0B2;"><div style="font-size:9px; font-weight:800; color:#F57F17; margin-bottom:4px;">{stat3_label}</div><div style="font-size:18px; font-weight:900; color:#EF6C00;">{stat3_val}</div><div style="font-size:10px; font-weight:700;">bilik</div></div>
                     <div style="background:#E3F2FD; border-radius:12px; padding:10px; text-align:center; border:2px solid #90CAF9;"><div style="font-size:9px; font-weight:800; color:#0D47A1; margin-bottom:4px;">{stat4_label}</div><div style="font-size:24px; font-weight:900; color:#0D47A1;">{stat4_val}</div><div style="font-size:10px; font-weight:700;">bilik</div></div>
                 </div>
                 <div style="background:white; border-radius:8px; padding:8px; margin-top:8px; border:1px solid #E3F2FD;"><div style="font-size:9px; font-weight:800; color:#0D47A1;">KEHADIRAN CALON</div><div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;"><span style="background:#E8F5E9; color:#2E7D32; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Hadir: {c_hadir}</span><span style="background:#FFEBEE; color:#C62828; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">TH: {c_th}</span><span style="background:#E3F2FD; color:#0D47A1; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Berdaftar: {c_berdaftar}</span><span style="background:#0D47A1; color:white; font-size:9px; font-weight:700; padding:3px 8px; border-radius:12px;">Keseluruhan: {c_keseluruhan}</span></div></div>
             </div>
         </div>
-        <div style="padding:12px; background:white; border-bottom:2px solid #E3F2FD;">
-            <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px;">📸 GAMBAR AKTIVITI PEMANTAUAN</div>
+        <div style="padding:6px 8px; background:white; border-bottom:2px solid #E3F2FD;">
+            <div style="background:#0D47A1; color:white; font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:6px;">📸 GAMBAR AKTIVITI PEMANTAUAN</div>
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:8px;">
-                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_1}" style="width:100%; height:110px; object-fit:cover;"><div style="padding:6px; background:#E3F2FD; font-size:8px; font-weight:700; text-align:center; color:#0D47A1;">Dewan peperiksaan<br/>teratur & kemas</div></div>
-                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_2}" style="width:100%; height:110px; object-fit:cover;"><div style="padding:6px; background:#FFF3E0; font-size:8px; font-weight:700; text-align:center; color:#EF6C00;">Pelan susun atur bilik<br/>peperiksaan</div></div>
-                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_3}" style="width:100%; height:110px; object-fit:cover;"><div style="padding:6px; background:#F3E5F5; font-size:8px; font-weight:700; text-align:center; color:#6A1B9A;">Kawasan laluan<br/>pusat peperiksaan</div></div>
-                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_4}" style="width:100%; height:110px; object-fit:cover;"><div style="padding:6px; background:#E8F5E9; font-size:8px; font-weight:700; text-align:center; color:#2E7D32;">Rekod pemantauan<br/>di pusat peperiksaan</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_1}" style="width:100%; height:65px; object-fit:cover;"><div style="padding:3px; background:#E3F2FD; font-size:7px; line-height:1.2; font-weight:700; text-align:center; color:#0D47A1;">Dewan peperiksaan<br/>teratur & kemas</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_2}" style="width:100%; height:65px; object-fit:cover;"><div style="padding:3px; background:#FFF3E0; font-size:7px; line-height:1.2; font-weight:700; text-align:center; color:#EF6C00;">Pelan susun atur bilik<br/>peperiksaan</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_3}" style="width:100%; height:65px; object-fit:cover;"><div style="padding:3px; background:#F3E5F5; font-size:7px; line-height:1.2; font-weight:700; text-align:center; color:#6A1B9A;">Kawasan laluan<br/>pusat peperiksaan</div></div>
+                <div style="border-radius:8px; overflow:hidden; border:2px solid #E3F2FD; background:#F8FAFC;"><img src="data:image/jpeg;base64,{IMG_OPR_4}" style="width:100%; height:65px; object-fit:cover;"><div style="padding:3px; background:#E8F5E9; font-size:7px; line-height:1.2; font-weight:700; text-align:center; color:#2E7D32;">Rekod pemantauan<br/>di pusat peperiksaan</div></div>
             </div>
         </div>
         <div style="display:flex; gap:0; padding:0; background:white;">
@@ -397,7 +405,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                 <div style="background:linear-gradient(135deg, #0D47A1 0%, #1565C0 100%); color:white; font-size:11px; font-weight:800; padding:7px 14px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; letter-spacing:0.3px; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📝 IMPAK / RUMUSAN</div>
                 <div style="font-size:11.5px; line-height:1.7; color:#0D2A54; background:linear-gradient(135deg, #F8FAFC 0%, #F1F8FF 100%); padding:14px 16px; border-radius:10px; border-left:4px solid #0D47A1; font-weight:500; letter-spacing:0.2px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">{impak_text}<br/><br/><i style="background:linear-gradient(135deg, #FFFEF7 0%, #FFF8E1 100%); padding:6px 12px; border-radius:6px; border-left:3px solid #FFC107; display:inline-block; margin-top:8px; font-weight:600; color:#5D4037; box-shadow:0 1px 4px rgba(0,0,0,0.08);">❝ {ulasan[:250]} ❞</i></div>
             </div>
-            <div style="flex:0.8; padding:12px; background:{status_bg_light}; display:flex; align-items:center; justify-content:center;">
+            <div style="flex:0.8; padding:6px; background:{status_bg_light}; display:flex; align-items:center; justify-content:center;">
                 <div style="background:{status_bg}; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">{status_icon}</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">{status_text}</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
             </div>
         </div>
