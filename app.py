@@ -83,10 +83,14 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         IMG_JATA = IMG_JATA_B64 if 'IMG_JATA_B64' in globals() else ""
         IMG_D = IMG_D if IMG_D is not None else (IMG_DEWAN_B64 if 'IMG_DEWAN_B64' in globals() else "")
         IMG_S = IMG_S if IMG_S is not None else (IMG_SEKOLAH_B64 if 'IMG_SEKOLAH_B64' in globals() else "")
-        IMG_OPR_1 = IMG_OPR_1_B64 if 'IMG_OPR_1_B64' in globals() else IMG_D
-        IMG_OPR_2 = IMG_OPR_2_B64 if 'IMG_OPR_2_B64' in globals() else IMG_S
-        IMG_OPR_3 = IMG_OPR_3_B64 if 'IMG_OPR_3_B64' in globals() else IMG_D
-        IMG_OPR_4 = IMG_OPR_4_B64 if 'IMG_OPR_4_B64' in globals() else IMG_S
+        custom_g1 = sel.get('gambar_1_b64', '')
+        custom_g2 = sel.get('gambar_2_b64', '')
+        custom_g3 = sel.get('gambar_3_b64', '')
+        custom_g4 = sel.get('gambar_4_b64', '')
+        IMG_OPR_1 = custom_g1 if custom_g1 else (IMG_OPR_1_B64 if 'IMG_OPR_1_B64' in globals() else IMG_D)
+        IMG_OPR_2 = custom_g2 if custom_g2 else (IMG_OPR_2_B64 if 'IMG_OPR_2_B64' in globals() else IMG_S)
+        IMG_OPR_3 = custom_g3 if custom_g3 else (IMG_OPR_3_B64 if 'IMG_OPR_3_B64' in globals() else IMG_D)
+        IMG_OPR_4 = custom_g4 if custom_g4 else (IMG_OPR_4_B64 if 'IMG_OPR_4_B64' in globals() else IMG_S)
         tarikh = sel.get('tarikh_lawatan','-')
         masa = sel.get('masa_lawatan','-')
         tempat = sel.get('nama_sekolah','-')
@@ -241,7 +245,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         
         dapatan_html = ""
         for idx_pt, pt in enumerate(dapatan_points, 1):
-            dapatan_html += f'<div style="display:flex; gap:10px; margin-bottom:10px; padding:8px 10px; background:#FAFBFD; border-radius:8px; border-left:3px solid #0D47A1;"><div style="background:linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); color:#0D47A1; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.1);">✓</div><div style="font-size:11.5px; line-height:1.6; color:#263238; font-weight:500; letter-spacing:0.2px;">{pt}</div></div>'
+            dapatan_html += f'<div style="display:flex; gap:10px; margin-bottom:10px; padding:8px 10px; background:#FAFBFD; border-radius:8px; border-left:3px solid #0D47A1;"><div style="background:linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%); color:#0D47A1; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0; font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,0.1);">✓</div><div style="font-size:11.5px; line-height:1.6; color:#0D2A54; font-weight:500; letter-spacing:0.2px;">{pt}</div></div>'
         
         if MODE=="STAM":
             stat1_val = c_hadir
@@ -350,7 +354,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
                     <div style="background:#0D47A1; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:24px; flex-shrink:0;">👤</div>
                     <div style="flex:1;">
                         <div style="font-size:13px; font-weight:800; color:#0D47A1; line-height:1.3;">{nama_pemantau}</div>
-                        <div style="font-size:11px; font-weight:600; color:#37474F; margin-top:4px;">{jawatan}</div>
+                        <div style="font-size:11px; font-weight:600; color:#0D2A54; margin-top:4px;">{jawatan}</div>
                         <div style="background:#E3F2FD; padding:6px 10px; border-radius:8px; margin-top:8px;"><div style="font-size:9px; font-weight:700; color:#0D47A1;">DAERAH / JPN</div><div style="font-size:11px; font-weight:700;">{daerah}</div></div>
                     </div>
                 </div>
@@ -360,7 +364,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
             <div style="background:#0D47A1; color:white; font-size:11px; font-weight:800; padding:6px 12px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:8px;">🎯 OBJEKTIF</div>
             <div style="display:flex; gap:10px;">
                 <div style="background:#0D47A1; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:20px; flex-shrink:0;">🎯</div>
-                <div style="font-size:11px; line-height:1.5; color:#37474F; font-style:italic; background:white; padding:10px 14px; border-radius:8px; border-left:4px solid #0D47A1; flex:1;">{objektif_text}</div>
+                <div style="font-size:11px; line-height:1.5; color:#0D2A54; font-style:italic; background:white; padding:10px 14px; border-radius:8px; border-left:4px solid #0D47A1; flex:1;">{objektif_text}</div>
             </div>
         </div>
         <div style="display:flex; gap:0; padding:0; background:white; border-bottom:2px solid #E3F2FD;">
@@ -390,7 +394,7 @@ def buat_opr_html(sel, MODE, jenis_label_full, IMG_D=None, IMG_S=None):
         <div style="display:flex; gap:0; padding:0; background:white;">
             <div style="flex:1.5; padding:12px; border-right:2px solid #E3F2FD;">
                 <div style="background:linear-gradient(135deg, #0D47A1 0%, #1565C0 100%); color:white; font-size:11px; font-weight:800; padding:7px 14px; border-radius:20px; display:inline-flex; align-items:center; gap:6px; margin-bottom:10px; letter-spacing:0.3px; box-shadow:0 2px 8px rgba(13,71,161,0.3);">📝 IMPAK / RUMUSAN</div>
-                <div style="font-size:11.5px; line-height:1.7; color:#263238; background:linear-gradient(135deg, #F8FAFC 0%, #F1F8FF 100%); padding:14px 16px; border-radius:10px; border-left:4px solid #0D47A1; font-weight:500; letter-spacing:0.2px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">{impak_text}<br/><br/><i style="background:linear-gradient(135deg, #FFFEF7 0%, #FFF8E1 100%); padding:6px 12px; border-radius:6px; border-left:3px solid #FFC107; display:inline-block; margin-top:8px; font-weight:600; color:#5D4037; box-shadow:0 1px 4px rgba(0,0,0,0.08);">❝ {ulasan[:250]} ❞</i></div>
+                <div style="font-size:11.5px; line-height:1.7; color:#0D2A54; background:linear-gradient(135deg, #F8FAFC 0%, #F1F8FF 100%); padding:14px 16px; border-radius:10px; border-left:4px solid #0D47A1; font-weight:500; letter-spacing:0.2px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">{impak_text}<br/><br/><i style="background:linear-gradient(135deg, #FFFEF7 0%, #FFF8E1 100%); padding:6px 12px; border-radius:6px; border-left:3px solid #FFC107; display:inline-block; margin-top:8px; font-weight:600; color:#5D4037; box-shadow:0 1px 4px rgba(0,0,0,0.08);">❝ {ulasan[:250]} ❞</i></div>
             </div>
             <div style="flex:0.8; padding:12px; background:{status_bg_light}; display:flex; align-items:center; justify-content:center;">
                 <div style="background:{status_bg}; color:white; border-radius:16px; padding:16px; text-align:center; width:100%;"><div style="background:white; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px; font-size:28px;">{status_icon}</div><div style="font-size:9px; font-weight:700; opacity:0.9;">STATUS PEMANTAUAN:</div><div style="font-size:13px; font-weight:900; margin-top:6px; line-height:1.3;">{status_text}</div><div style="font-size:8px; margin-top:8px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px; display:inline-block;">{MODE} • {tarikh} • {no_pusat}</div></div>
@@ -1572,6 +1576,83 @@ ayat_kemudahan = pp11.text_area("✏️ Ayat Custom 3️⃣ Kemudahan (Optional)
 ayat_pelaksanaan = pp12.text_area("✏️ Ayat Custom 4️⃣ Pelaksanaan (Optional)", placeholder="Contoh: Pelaksanaan peperiksaan lewat 20 minit kerana kelewatan ketibaan Ketua Pengawas.", height=80, key=f"ayat_pelaksanaan_{MODE}_{pilih_no_final}")
 
 st.divider()
+st.markdown('<div class="borang-header"><div class="borang-header-icon" style="background: linear-gradient(135deg, #0D47A1 0%, #42A5F5 100%);">📸</div><div><div class="borang-header-title">Gambar Aktiviti Pemantauan (Optional - Boleh Ambil 1 Gambar Ganti Gambar Mula)</div><div class="borang-header-subtitle">Ambil 1 gambar untuk ganti gambar pertama - Sistem akan compress automatik supaya ringan - Jika tak ambil, guna gambar default supaya report tak kosong</div></div></div>', unsafe_allow_html=True)
+
+st.info("💡 **Tip:** Anda boleh ambil 1 gambar sahaja (contoh: gambar dewan) untuk ganti Gambar 1 (Dewan peperiksaan teratur & kemas). Sistem akan auto compress kepada <100KB supaya sistem ringan. Jika tak ambil gambar, sistem akan kekalkan 4 gambar default supaya report tak kosong.")
+
+g1, g2 = st.columns(2)
+upload_gambar_1 = g1.file_uploader("📸 Gambar 1 - Dewan Peperiksaan (Ganti gambar mula)", type=["jpg","jpeg","png"], help="Ambil 1 gambar dewan - akan compress auto <100KB", key=f"upload_g1_{MODE}_{pilih_no_final}")
+upload_gambar_2 = g2.file_uploader("📸 Gambar 2 - Pelan Susun Atur (Optional)", type=["jpg","jpeg","png"], help="Optional - ganti gambar pelan", key=f"upload_g2_{MODE}_{pilih_no_final}")
+
+g3, g4 = st.columns(2)
+upload_gambar_3 = g3.file_uploader("📸 Gambar 3 - Kawasan Laluan (Optional)", type=["jpg","jpeg","png"], help="Optional - ganti gambar laluan", key=f"upload_g3_{MODE}_{pilih_no_final}")
+upload_gambar_4 = g4.file_uploader("📸 Gambar 4 - Rekod Pemantauan (Optional)", type=["jpg","jpeg","png"], help="Optional - ganti gambar rekod", key=f"upload_g4_{MODE}_{pilih_no_final}")
+
+def compress_image_to_b64(uploaded_file, max_size_kb=100, max_dim=800):
+    try:
+        from PIL import Image
+        import io
+        import base64
+        img = Image.open(uploaded_file)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGB')
+        w, h = img.size
+        if max(w, h) > max_dim:
+            if w > h:
+                new_w = max_dim
+                new_h = int(h * (max_dim / w))
+            else:
+                new_h = max_dim
+                new_w = int(w * (max_dim / h))
+            img = img.resize((new_w, new_h), Image.LANCZOS)
+        quality = 85
+        while quality >= 20:
+            buffer = io.BytesIO()
+            img.save(buffer, format='JPEG', quality=quality, optimize=True)
+            size_kb = len(buffer.getvalue()) / 1024
+            if size_kb <= max_size_kb:
+                break
+            quality -= 10
+        b64_str = base64.b64encode(buffer.getvalue()).decode()
+        return b64_str, len(buffer.getvalue())/1024
+    except Exception as e:
+        st.error(f"Error compress gambar: {e}")
+        return None, 0
+
+gambar_1_b64 = None
+gambar_2_b64 = None
+gambar_3_b64 = None
+gambar_4_b64 = None
+
+if upload_gambar_1 is not None:
+    b64, size_kb = compress_image_to_b64(upload_gambar_1)
+    if b64:
+        gambar_1_b64 = b64
+        g1.success(f"✅ Gambar 1 compress: {size_kb:.1f}KB")
+        g1.image(upload_gambar_1, caption=f"Preview Gambar 1 - {size_kb:.1f}KB (compressed)", use_container_width=True)
+
+if upload_gambar_2 is not None:
+    b64, size_kb = compress_image_to_b64(upload_gambar_2)
+    if b64:
+        gambar_2_b64 = b64
+        g2.success(f"✅ Gambar 2 compress: {size_kb:.1f}KB")
+        g2.image(upload_gambar_2, caption=f"Preview Gambar 2 - {size_kb:.1f}KB", use_container_width=True)
+
+if upload_gambar_3 is not None:
+    b64, size_kb = compress_image_to_b64(upload_gambar_3)
+    if b64:
+        gambar_3_b64 = b64
+        g3.success(f"✅ Gambar 3 compress: {size_kb:.1f}KB")
+        g3.image(upload_gambar_3, caption=f"Preview Gambar 3 - {size_kb:.1f}KB", use_container_width=True)
+
+if upload_gambar_4 is not None:
+    b64, size_kb = compress_image_to_b64(upload_gambar_4)
+    if b64:
+        gambar_4_b64 = b64
+        g4.success(f"✅ Gambar 4 compress: {size_kb:.1f}KB")
+        g4.image(upload_gambar_4, caption=f"Preview Gambar 4 - {size_kb:.1f}KB", use_container_width=True)
+
+st.divider()
 ulasan = st.text_area("📝 Ulasan Pemantau (WAJIB - min 5 huruf)", height=100, placeholder="Tulis ulasan...")
 
 st.divider()
@@ -1718,7 +1799,7 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         "ayat_kertas": ayat_kertas if 'ayat_kertas' in locals() else "",
         "ayat_kemudahan": ayat_kemudahan if 'ayat_kemudahan' in locals() else "",
         "ayat_pelaksanaan": ayat_pelaksanaan if 'ayat_pelaksanaan' in locals() else "",
-        "ulasan": ulasan, "impak_custom": impak_custom if 'impak_custom' in locals() else "", "nama_pemantau": nama_pemantau,
+        "ulasan": ulasan, "gambar_1_b64": gambar_1_b64 if 'gambar_1_b64' in locals() and gambar_1_b64 else "", "gambar_2_b64": gambar_2_b64 if 'gambar_2_b64' in locals() and gambar_2_b64 else "", "gambar_3_b64": gambar_3_b64 if 'gambar_3_b64' in locals() and gambar_3_b64 else "", "gambar_4_b64": gambar_4_b64 if 'gambar_4_b64' in locals() and gambar_4_b64 else "", "impak_custom": impak_custom if 'impak_custom' in locals() else "", "nama_pemantau": nama_pemantau,
         "jawatan_pemantau": jawatan_pemantau, "daerah_pemantau": daerah_pemantau,
         **extra_amali,
         **extra_stam
