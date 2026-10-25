@@ -1890,6 +1890,16 @@ if st.button(f"💾 SIMPAN LAPORAN {MODE}", type="primary", use_container_width=
         **extra_stam
     }
     save_laporan(data)
+    # === SIMPAN KE GOOGLE SHEET JUGA ===
+    try:
+        ok_gs, msg_gs = save_to_gsheet(data, data.get("jenis", MODE))
+        if ok_gs:
+            st.toast(f"✅ Masuk Google Sheet: {msg_gs}", icon="📊")
+        else:
+            st.warning(f"⚠️ GSheet: {msg_gs}")
+    except Exception as e_gs:
+        st.warning(f"⚠️ GSheet error: {e_gs}")
+    # === END GSHEET ===
     st.session_state["last"] = data
     st.success(f"✅ Berjaya SIMPAN {MODE}! Semua maklumat lengkap.")
     st.balloons()
