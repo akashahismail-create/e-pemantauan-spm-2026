@@ -2,6 +2,63 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import os, json
+
+import gspread
+from google.oauth2.service_account import Credentials
+
+# ===== GOOGLE SHEET CONFIG - JPN SELANGOR =====
+GOOGLE_SHEET_ID = "1FiHRuOzs0t3Loog96KuICkr8xjKunFjXH1Nd8tguR4g"
+SHEET_TABS = {"SPM":"SPM","AMALI":"AMALI","UBBM":"UBBM","UBBI":"UBBI","STAM":"STAM","MUET":"MUET"}
+
+@st.cache_resource
+def get_gsheet_client():
+    try:
+        if "gcp_service_account" in st.secrets:
+            creds_dict = dict(st.secrets["gcp_service_account"])
+            creds = Credentials.from_service_account_info(
+                creds_dict,
+                scopes=["https://www.googleapis.com/auth/spreadsheets","https://www.googleapis.com/auth/drive"]
+            )
+            return gspread.authorize(creds)
+    except Exception as e:
+        print(f"GSheet auth error: {e}")
+    return None
+
+def save_to_gsheet(data, MODE):
+    client = get_gsheet_client()
+    if not client:
+        return False, "Service Account belum set di secrets.toml"
+    try:
+        sh = client.open_by_key(GOOGLE_SHEET_ID)
+        tab = SHEET_TABS.get(MODE, MODE)
+        try:
+            ws = sh.worksheet(tab)
+        except:
+            ws = sh.add_worksheet(title=tab, rows=3000, cols=80)
+            ws.append_row(list(data.keys()))
+        # buang b64 gambar untuk jimat cell
+        d = data.copy()
+        for k in list(d.keys()):
+            if "b64" in k.lower() or "gambar" in k.lower():
+                d[k] = "ADA" if d[k] else ""
+        vals = ws.get_all_values()
+        if not vals:
+            ws.append_row(list(d.keys()))
+            header = list(d.keys())
+        else:
+            header = vals[0]
+            new_cols = [k for k in d.keys() if k not in header]
+            if new_cols:
+                header.extend(new_cols)
+                ws.update('1:1', [header])
+        row = [str(d.get(h, "")) for h in header]
+        ws.append_row(row, value_input_option='USER_ENTERED')
+        return True, f"Tab {tab}"
+    except Exception as e:
+        return False, str(e)
+# ===== END GOOGLE SHEET CONFIG =====
+
+
 from datetime import datetime, date, time
 from io import BytesIO
 
@@ -989,6 +1046,15 @@ def save_all_laporan(list_data):
 
 def save_laporan(data):
     ex = load_laporan(); ex.append(data); save_all_laporan(ex)
+    # Auto save ke Google Sheet
+    try:
+        ok, msg = save_to_gsheet(data, data.get("jenis", MODE))
+        if ok:
+            st.toast(f"✅ Masuk Google Sheet: {msg}", icon="📊")
+        else:
+            st.warning(f"⚠️ Sheet: {msg}")
+    except Exception as e:
+        st.warning(f"Sheet error: {e}")
 
 # KOD DAERAH RASMI - BA hingga BK (10 daerah utama Selangor)
 KOD_DAERAH_MAP = {
