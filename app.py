@@ -7,7 +7,12 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # ===== GOOGLE SHEET CONFIG - JPN SELANGOR =====
-GOOGLE_SHEET_ID = "1FiHRuOzs0t3Loog96KuICkr8xjKunFjXH1Nd8tguR4g"
+# Guna ID dari Secrets jika ada, kalau tak guna fallback baru
+try:
+    GOOGLE_SHEET_ID = st.secrets["SHEET_ID"]
+except:
+    GOOGLE_SHEET_ID = "1H-j5Hy5F072bqUJEkiWMu1VvpTonuP09LKJY4W05s6s"  # ID baru e pemantauan spm 2026
+
 SHEET_TABS = {"SPM":"SPM","AMALI":"AMALI","UBBM":"UBBM","UBBI":"UBBI","STAM":"STAM","MUET":"MUET"}
 
 @st.cache_resource
